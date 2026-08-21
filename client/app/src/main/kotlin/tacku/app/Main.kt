@@ -23,7 +23,6 @@ import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.KompotScreen
 import io.github.youndie.kompot.LocalKompotDesignSystem
-import io.github.youndie.kompot.ds.material.Material3DesignSystem
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
 import io.github.youndie.kompot.generated.generatedFormsClientRenderers
@@ -69,7 +68,11 @@ private fun App(baseUrl: String) {
     // design system rather than through anything here. A name it does not know costs a default and a
     // warning — never a broken screen (§6).
     MaterialTheme(colorScheme = darkColorScheme()) {
-        CompositionLocalProvider(LocalKompotDesignSystem provides Material3DesignSystem()) {
+        // Ours, not the toolkit's Material default. The token names on the wire are this product's
+        // — surface_block, agent, meta_agent — and a design system that does not know them resolves
+        // every one to a default with a warning: a screen that renders, in the wrong colours, and
+        // says so only in a log nobody is reading.
+        CompositionLocalProvider(LocalKompotDesignSystem provides remember { TackuDesignSystem() }) {
             when (val current = screen) {
                 is Screen.Loading -> Message("Loading…")
                 is Screen.Failed -> Message(current.reason)

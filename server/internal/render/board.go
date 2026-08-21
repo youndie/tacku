@@ -13,11 +13,19 @@ import (
 // one item of a list. Before that existed the only way to move a task from here was a per-card
 // input, and the busiest screen of the product was the one that could not be cached.
 type Board struct {
-	Title    string
-	MoveURL  string
-	Tasks    []domain.Task
-	Changed  int
-	OpenSeen int
+	Title   string
+	MoveURL string
+	Tasks   []domain.Task
+
+	// Who last touched each task, so that a card can carry provenance.
+	//
+	// It was missing until a check went looking for the agent colour and found none: every card
+	// drew a grey stripe regardless, so the board — the screen a team looks at most — was the one
+	// place the product's central promise was not kept. Nothing failed; the signal was simply
+	// absent, which is how a promise stops being kept without anybody deciding to stop keeping it.
+	LastBy map[domain.TaskID]domain.Provenance
+
+	Changed int
 }
 
 // next is the status a card's button moves to.
@@ -106,9 +114,18 @@ func (b Board) column(status domain.Status) Component {
 func (b Board) card(task domain.Task) Component {
 	id := "card-" + string(task.ID)
 
+	stripe := ColorDivider
+	metaStyle := TextMeta
+	meta := cardMeta(task)
+	if by, ok := b.LastBy[task.ID]; ok && by.ByAgent() {
+		stripe = ColorAgent
+		metaStyle = TextMetaAgent
+		meta = "Agent · on behalf of " + string(by.OnBehalfOf)
+	}
+
 	body := []Component{
 		Text(id+"-title", task.Title, TextBody),
-		Text(id+"-meta", cardMeta(task), TextMeta),
+		Text(id+"-meta", meta, metaStyle),
 	}
 
 	if target, ok := next(task.Status); ok {
@@ -122,7 +139,7 @@ func (b Board) card(task domain.Task) Component {
 	}
 
 	return Row(id, 0, nil,
-		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(ColorDivider)}),
+		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
 		Column(id+"-body", 8,
 			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
 			body...),

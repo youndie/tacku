@@ -192,10 +192,24 @@ func board(store domain.Store) http.HandlerFunc {
 			return
 		}
 
+		// One pass over the journal rather than a query per card. The board is small and the
+		// alternative is a column on the task, which would duplicate what the journal already
+		// knows — and duplicated state is the kind that disagrees later.
+		changes, _, err := store.Changes(r.Context(), domain.Start, 500)
+		if err != nil {
+			fail(w, err)
+			return
+		}
+		lastBy := make(map[domain.TaskID]domain.Provenance, len(tasks))
+		for _, change := range changes {
+			lastBy[change.Task] = change.By
+		}
+
 		respond(w, r, render.Board{
 			Title:   boards[0].Title,
 			MoveURL: moveURL,
 			Tasks:   tasks,
+			LastBy:  lastBy,
 		}.Screen())
 	}
 }

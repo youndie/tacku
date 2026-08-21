@@ -45,3 +45,30 @@ const StripeDp = 3
 
 // RuleDp is the thickness of a line standing in for a border.
 const RuleDp = 1
+
+// ColorTokens and TypographyTokens are what this server actually sends, held against the set the
+// client declares.
+//
+// They are the constants rather than fresh string literals on purpose: the comparison that matters
+// is between the two languages, and a name repeated here would only test whether somebody typed it
+// twice correctly. Renaming a constant therefore fails the check, which is the case worth catching —
+// a token this server sends and the client has never heard of resolves to a default and says so in a
+// log nobody reads.
+func ColorTokens() []string {
+	return []string{
+		ColorSurface, ColorSurfaceBlock, ColorSurfaceField, ColorSurfaceSelected,
+		ColorAccent, ColorAgent, ColorAgentQuiet, ColorDanger, ColorNotice,
+		ColorDivider, ColorStatusActive, ColorStatusDone,
+	}
+}
+
+func TypographyTokens() []string {
+	return []string{
+		TextDisplay, TextTitle, TextSubtitle, TextBody, TextBodyMuted, TextValue,
+		TextLabel, TextMeta, TextMetaAgent, TextError, TextNotice,
+		// The two the server never chooses: a button carries no style field, so which of them a
+		// label is set in is decided by the design system from whether the button has a background.
+		// Listed because the client declares them, and an unlisted name would read as drift.
+		"button_primary", "button_quiet",
+	}
+}
