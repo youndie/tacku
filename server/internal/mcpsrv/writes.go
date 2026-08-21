@@ -16,7 +16,6 @@ import (
 // the journal entry is written inside the same transaction as the change, so replaying the outcome
 // replays nothing at all.
 func registerWrites(server *mcp.Server, deps Deps) {
-	by := deps.provenance()
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:  "create_task",
@@ -24,6 +23,10 @@ func registerWrites(server *mcp.Server, deps Deps) {
 		Description: "File a new task on a board. It is recorded as created by you on behalf of " +
 			"the person you act for, and that pair is visible to the whole team.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in createTaskIn) (*mcp.CallToolResult, taskOut, error) {
+		by, err := deps.actor(ctx)
+		if err != nil {
+			return nil, taskOut{}, err
+		}
 		out, err := idem.Once(ctx, deps.Attempts, in.IdempotencyKey, in, func() (taskOut, error) {
 			task, err := deps.Store.CreateTask(ctx, domain.Task{
 				Board:    domain.BoardID(in.Board),
@@ -46,6 +49,10 @@ func registerWrites(server *mcp.Server, deps Deps) {
 		Description: "Change the status of one task. Moving it to the status it already has changes " +
 			"nothing and is not recorded, so a repeat is safe but also invisible.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in moveTaskIn) (*mcp.CallToolResult, taskOut, error) {
+		by, err := deps.actor(ctx)
+		if err != nil {
+			return nil, taskOut{}, err
+		}
 		out, err := idem.Once(ctx, deps.Attempts, in.IdempotencyKey, in, func() (taskOut, error) {
 			task, err := deps.Store.MoveTask(ctx, domain.TaskID(in.Task), domain.Status(in.Status), by)
 			if err != nil {
@@ -61,6 +68,10 @@ func registerWrites(server *mcp.Server, deps Deps) {
 		Title:       "Assign a task",
 		Description: "Give a task to somebody, or take the assignee away by passing an empty one.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in assignTaskIn) (*mcp.CallToolResult, taskOut, error) {
+		by, err := deps.actor(ctx)
+		if err != nil {
+			return nil, taskOut{}, err
+		}
 		out, err := idem.Once(ctx, deps.Attempts, in.IdempotencyKey, in, func() (taskOut, error) {
 			task, err := deps.Store.AssignTask(ctx, domain.TaskID(in.Task), domain.MemberID(in.Assignee), by)
 			if err != nil {
@@ -76,6 +87,10 @@ func registerWrites(server *mcp.Server, deps Deps) {
 		Title:       "Set or clear the due date",
 		Description: "Set the due date of a task as YYYY-MM-DD, or clear it by passing an empty date.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in setDueIn) (*mcp.CallToolResult, taskOut, error) {
+		by, err := deps.actor(ctx)
+		if err != nil {
+			return nil, taskOut{}, err
+		}
 		out, err := idem.Once(ctx, deps.Attempts, in.IdempotencyKey, in, func() (taskOut, error) {
 			task, err := deps.Store.SetDue(ctx, domain.TaskID(in.Task), in.Due, by)
 			if err != nil {
@@ -92,6 +107,10 @@ func registerWrites(server *mcp.Server, deps Deps) {
 		Description: "Leave a comment. It is attributed to you acting for the person you serve, and " +
 			"the team sees both.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in commentIn) (*mcp.CallToolResult, commentOut, error) {
+		by, err := deps.actor(ctx)
+		if err != nil {
+			return nil, commentOut{}, err
+		}
 		out, err := idem.Once(ctx, deps.Attempts, in.IdempotencyKey, in, func() (commentOut, error) {
 			comment, err := deps.Store.Comment(ctx, domain.TaskID(in.Task), in.Text, by)
 			if err != nil {

@@ -18,6 +18,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/youndie/tacku/server/internal/auth"
+
 	"github.com/youndie/tacku/server/internal/domain"
 )
 
@@ -27,33 +29,61 @@ type Deps struct {
 	Store    domain.Store
 	Attempts domain.Attempts
 
-	// Identity of the agent this process serves, and the person it acts for. Taken from the
-	// environment at start-up: over stdio the agent runs beside its principal.
-	Agent      domain.MemberID
-	Version    string
-	OnBehalfOf domain.MemberID
-}
+	// Version of this build, reported as the server's own.
+	Version string
 
-func (d Deps) provenance() domain.Provenance {
-	return domain.Agent(d.Agent, d.Version, d.OnBehalfOf)
+	// Fallback is the actor to record when the request carries no principal, and it is set by the
+	// stdio transport alone: there the agent runs beside the person it serves and its identity comes
+	// from the environment.
+	//
+	// A pointer, and nil over HTTP on purpose. A fallback that quietly applied there would attribute
+	// every change to one configured actor the moment principal propagation broke — a bug that
+	// produces plausible history rather than an error, which is the kind nobody finds.
+	Fallback *domain.Provenance
 }
 
 func (d Deps) validate() error {
 	if d.Store == nil || d.Attempts == nil {
 		return fmt.Errorf("mcpsrv: no store")
 	}
-	return d.provenance().Validate()
+	if d.Fallback != nil {
+		return d.Fallback.Validate()
+	}
+	return nil
+}
+
+// actor resolves who is acting on this call.
+func (d Deps) actor(ctx context.Context) (domain.Provenance, error) {
+	principal, err := auth.PrincipalFrom(ctx)
+	if err == nil {
+		return principal.Provenance, nil
+	}
+	if d.Fallback != nil {
+		return *d.Fallback, nil
+	}
+	return domain.Provenance{}, err
 }
 
 // New builds the server with every tool registered.
-func New(deps Deps) (*mcp.Server, error) {
+func New(deps Deps) (*mcp.Server, error) { return build(deps, true) }
+
+// NewReadOnly omits the tools that change anything.
+//
+// Hiding them rather than refusing them later is what the specification points at: the set of tools
+// "MAY vary by the authorization presented on the request". A model that cannot see a tool does not
+// spend a turn discovering it may not use it.
+func NewReadOnly(deps Deps) (*mcp.Server, error) { return build(deps, false) }
+
+func build(deps Deps, writes bool) (*mcp.Server, error) {
 	if err := deps.validate(); err != nil {
 		return nil, err
 	}
 
 	server := mcp.NewServer(&mcp.Implementation{Name: "tacku", Version: deps.Version}, nil)
 	registerReads(server, deps)
-	registerWrites(server, deps)
+	if writes {
+		registerWrites(server, deps)
+	}
 	return server, nil
 }
 

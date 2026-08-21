@@ -35,9 +35,10 @@ func start(t *testing.T) harness {
 	}
 	t.Cleanup(func() { _ = store.Close() })
 
+	fallback := domain.Agent(robot, "0.1.0", anna)
 	server, err := mcpsrv.New(mcpsrv.Deps{
 		Store: store, Attempts: store,
-		Agent: robot, Version: "0.1.0", OnBehalfOf: anna,
+		Version: "0.1.0", Fallback: &fallback,
 	})
 	if err != nil {
 		t.Fatal(err)

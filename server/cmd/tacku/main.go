@@ -7,13 +7,18 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/youndie/tacku/server/internal/auth"
 	"github.com/youndie/tacku/server/internal/domain"
+	"github.com/youndie/tacku/server/internal/httpsrv"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
 	"github.com/youndie/tacku/server/internal/store/sqlite"
 )
@@ -26,12 +31,18 @@ func main() {
 }
 
 func usage() error {
-	return fmt.Errorf("usage: tacku mcp [-db path]\n\n" +
-		"  mcp   serve the Model Context Protocol on stdin and stdout\n\n" +
-		"Identity comes from the environment, which is what MCP asks of a stdio server:\n" +
+	return fmt.Errorf("usage: tacku mcp [-db path]\n" +
+		"       tacku serve [-db path] [-addr :8080]\n\n" +
+		"  mcp     serve the Model Context Protocol on stdin and stdout\n" +
+		"  serve   serve it over HTTP as an OAuth 2.1 resource server\n\n" +
+		"stdio takes identity from the environment, which is what MCP asks of it:\n" +
 		"  TACKU_AGENT_ID        the agent's own member identifier\n" +
 		"  TACKU_AGENT_VERSION   the build acting, recorded on every change\n" +
-		"  TACKU_ON_BEHALF_OF    the person the agent acts for")
+		"  TACKU_ON_BEHALF_OF    the person the agent acts for\n\n" +
+		"HTTP takes identity from the token, and needs the authorization server named:\n" +
+		"  TACKU_RESOURCE        this server's canonical URI, and the audience a token must carry\n" +
+		"  TACKU_ISSUER          the authorization server's issuer identifier\n" +
+		"  TACKU_JWKS_URL        where that issuer publishes its signing keys")
 }
 
 func run(args []string) error {
@@ -42,6 +53,8 @@ func run(args []string) error {
 	switch args[0] {
 	case "mcp":
 		return runMCP(args[1:])
+	case "serve":
+		return runServe(args[1:])
 	default:
 		return usage()
 	}
@@ -54,11 +67,13 @@ func runMCP(args []string) error {
 		return err
 	}
 
-	deps := mcpsrv.Deps{
-		Agent:      domain.MemberID(os.Getenv("TACKU_AGENT_ID")),
-		Version:    os.Getenv("TACKU_AGENT_VERSION"),
-		OnBehalfOf: domain.MemberID(os.Getenv("TACKU_ON_BEHALF_OF")),
-	}
+	version := os.Getenv("TACKU_AGENT_VERSION")
+	fallback := domain.Agent(
+		domain.MemberID(os.Getenv("TACKU_AGENT_ID")),
+		version,
+		domain.MemberID(os.Getenv("TACKU_ON_BEHALF_OF")),
+	)
+	deps := mcpsrv.Deps{Version: version, Fallback: &fallback}
 
 	store, err := sqlite.Open(*path)
 	if err != nil {
@@ -74,4 +89,58 @@ func runMCP(args []string) error {
 	defer stop()
 
 	return mcpsrv.RunStdio(ctx, deps)
+}
+
+func runServe(args []string) error {
+	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
+	path := flags.String("db", "tacku.db", "path to the database file")
+	addr := flags.String("addr", ":8080", "address to listen on")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+
+	store, err := sqlite.Open(*path)
+	if err != nil {
+		return err
+	}
+	defer store.Close()
+
+	// No fallback actor here, deliberately: over HTTP the actor comes from the token, and a
+	// configured one would take over silently the moment that stopped working.
+	handler, err := httpsrv.New(httpsrv.Config{
+		Deps: mcpsrv.Deps{Store: store, Attempts: store, Version: version()},
+		Verifier: auth.VerifierConfig{
+			Issuer:   os.Getenv("TACKU_ISSUER"),
+			Resource: os.Getenv("TACKU_RESOURCE"),
+			JWKSURL:  os.Getenv("TACKU_JWKS_URL"),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	server := &http.Server{Addr: *addr, Handler: handler, ReadHeaderTimeout: 10 * time.Second}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		<-ctx.Done()
+		shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = server.Shutdown(shutdown)
+	}()
+
+	fmt.Fprintf(os.Stderr, "tacku: listening on %s as %s\n", *addr, os.Getenv("TACKU_RESOURCE"))
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
+}
+
+func version() string {
+	if v := os.Getenv("TACKU_AGENT_VERSION"); v != "" {
+		return v
+	}
+	return "0.1.0"
 }

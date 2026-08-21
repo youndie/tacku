@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (28)
+## Open (27)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -65,7 +65,6 @@
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
 | [B-34](docs/backlog/B-34-viddik-screenshots.md) `[ ]` | Скриншот-тесты клиента на viddik | P1 | M | B-18 |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
-| [B-17](docs/backlog/B-17-mcp-over-http-and-oauth.md) `[ ]` | MCP по HTTP: сервер авторизации и метаданные защищённого ресурса | P2 | XL | B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[ ]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
 | [B-23](docs/backlog/B-23-bulk-status-change.md) `[ ]` | Массовая смена статуса вместо перетаскивания | P2 | M | B-09 |
 | [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[ ]` | Полоса `agent` — цветовой сигнал; проверить на людях | P2 | XS | B-19 |
@@ -76,7 +75,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (8)
+## Closed (9)
 
 **Чем меряем**
 
@@ -94,6 +93,7 @@
 **Агентская поверхность**
 
 - [B-15](docs/backlog/B-15-mcp-tools-over-stdio.md) `[x]` - MCP-инструменты по stdio: чтение курсором и запись с идемпотентностью
+- [B-17](docs/backlog/B-17-mcp-over-http-and-oauth.md) `[x]` - MCP по HTTP: сервер авторизации и метаданные защищённого ресурса
 
 <!-- END INDEX -->
 
