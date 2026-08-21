@@ -120,6 +120,8 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("POST /submit/move", submitMove(config.Deps.Store))
 	screens.Handle("GET /forms/my-tasks", myTasks(config.Deps.Store))
 	screens.Handle("GET /pages/tasks", tasksPage(config.Deps.Store))
+	screens.Handle("GET /forms/task/{task}", taskScreen(config.Deps.Store))
+	screens.Handle("POST /submit/task-view", submitTaskView(config.Deps.Store))
 	screens.Handle("GET /forms/new-board", newBoardForm())
 	screens.Handle("POST /submit/new-board", submitNewBoard(config.Deps.Store))
 	screens.Handle("POST /submit/seen", submitSeen(config.Seen, config.Deps.Store))

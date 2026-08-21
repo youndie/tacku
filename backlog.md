@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (20)
+## Open (19)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -56,7 +56,6 @@
 | [B-27](docs/backlog/B-27-last-visit-boundary.md) `[?]` | Что считать «прошлым визитом» в догоняющей ленте | P1 | S | B-20 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
 | [B-34](docs/backlog/B-34-viddik-screenshots.md) `[ ]` | Скриншот-тесты клиента на viddik | P1 | M | B-18 |
-| [B-37](docs/backlog/B-37-task-screen.md) `[ ]` | Экран задачи: описание, история и боковая колонка | P1 | M | B-09 |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[ ]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
 | [B-23](docs/backlog/B-23-bulk-status-change.md) `[ ]` | Массовая смена статуса вместо перетаскивания | P2 | M | B-09 |
@@ -68,7 +67,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (17)
+## Closed (18)
 
 **Чем меряем**
 
@@ -89,6 +88,7 @@
 - [B-13](docs/backlog/B-13-navigation-graph.md) `[x]` - Граф навигации: простые экраны и формат deeplink
 - [B-14](docs/backlog/B-14-tck-harness-and-run.md) `[x]` - Харнесс TCK и первый прогон против Go-сервера
 - [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[x]` - Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap`
+- [B-37](docs/backlog/B-37-task-screen.md) `[x]` - Экран задачи: описание, история и боковая колонка
 
 **Агентская поверхность**
 

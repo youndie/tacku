@@ -120,11 +120,12 @@ func submitNewTask(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		// Back to the board rather than to the task. A per-task screen is not built yet, and a
-		// deeplink the client cannot resolve is one it must ignore — a button that does nothing,
-		// silently. Recorded as B-37 instead of emitted hopefully.
-		_ = task
-		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": render.LinkBoard})
+		// To the task itself, which exists now. It briefly answered with the board instead, because
+		// a deeplink the client cannot resolve is one it must ignore — a button doing nothing, in
+		// silence.
+		writeJSON(w, http.StatusOK, map[string]any{
+			"type": "navigate", "deeplink": render.LinkTask + string(task.ID),
+		})
 	}
 }
 

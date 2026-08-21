@@ -33,6 +33,13 @@ type Store interface {
 	// returned, so a reader that stops early does not skip the remainder.
 	Changes(ctx context.Context, after Cursor, limit int) ([]Change, Cursor, error)
 
+	// TaskChanges is the history of one task, oldest first.
+	//
+	// A separate read rather than a filter over Changes: the journal is walked by cursor for the
+	// two readers who follow it forward, and a task's own history is a different question asked of
+	// the same rows.
+	TaskChanges(ctx context.Context, id TaskID) ([]Change, error)
+
 	// Latest is the cursor standing after everything written so far.
 	Latest(ctx context.Context) (Cursor, error)
 

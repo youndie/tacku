@@ -306,6 +306,9 @@ type readOnlyField struct {
 //
 // It has no fieldId and is declared in no schema: its value arrives finished and never travels back
 // in a submit, which is why it is the one input-looking component the form builder does not own.
-func ReadOnlyField(id, label, value, helper string) Component {
-	return readOnlyField{Type: "read_only_field", ID: id, Label: label, Value: value, HelperText: helper}
+func ReadOnlyField(id, label, value, helper string, modifiers ...Modifier) Component {
+	return readOnlyField{
+		Type: "read_only_field", ID: id, Modifiers: modifiers,
+		Label: label, Value: value, HelperText: helper,
+	}
 }

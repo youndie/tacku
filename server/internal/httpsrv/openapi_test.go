@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/youndie/tacku/server/internal/httpsrv"
@@ -39,9 +40,13 @@ func TestTheDescriptionOnlyPromisesRoutesThatExist(t *testing.T) {
 
 	var document struct {
 		Paths map[string]map[string]struct {
-			Kind      string         `json:"x-kompot-endpoint-kind"`
-			Responses map[string]any `json:"responses"`
-			Security  *[]any         `json:"security"`
+			Kind       string         `json:"x-kompot-endpoint-kind"`
+			Responses  map[string]any `json:"responses"`
+			Security   *[]any         `json:"security"`
+			Parameters []struct {
+				Name string `json:"name"`
+				In   string `json:"in"`
+			} `json:"parameters"`
 		} `json:"paths"`
 	}
 	if err := json.Unmarshal(httpsrv.OpenAPI(r.url), &document); err != nil {
@@ -52,8 +57,16 @@ func TestTheDescriptionOnlyPromisesRoutesThatExist(t *testing.T) {
 		"patch": true, "data_source": true, "wizard_start": true, "wizard_resume": true,
 		"graph": true, "updates_stream": true}
 
-	for path, methods := range document.Paths {
+	for templatePath, methods := range document.Paths {
 		for method, operation := range methods {
+			// A templated path is asked with a value in it. Checking the template literally tests
+			// whether the server serves a route named `{task}`, which it does not and should not.
+			path := templatePath
+			for _, parameter := range operation.Parameters {
+				if parameter.In == "path" {
+					path = strings.ReplaceAll(path, "{"+parameter.Name+"}", "TAC-1")
+				}
+			}
 			if !kinds[operation.Kind] {
 				t.Errorf("%s %s declares kind %q, which the protocol does not define", method, path, operation.Kind)
 			}

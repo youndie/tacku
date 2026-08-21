@@ -59,9 +59,9 @@ fun main() {
             ).run()
         }
 
-    println(TckGate.describe(report))
+    println(TckGate.describe(report, TckGate.judge(report, spec.openApi)))
 
-    val verdict = TckGate.judge(report)
+    val verdict = TckGate.judge(report, spec.openApi)
     if (!verdict.passed) {
         System.exit(1)
     }

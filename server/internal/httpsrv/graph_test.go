@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/youndie/tacku/server/internal/render"
@@ -30,10 +31,22 @@ func TestEveryDeeplinkTheServerEmitsResolves(t *testing.T) {
 	for _, native := range render.ClientNative {
 		known[native] = true
 	}
+	resolves := func(link string) bool {
+		if known[link] {
+			return true
+		}
+		for _, prefix := range render.ClientNativePrefixes {
+			if strings.HasPrefix(link, prefix) && len(link) > len(prefix) {
+				return true
+			}
+		}
+		return false
+	}
 
 	// Every tree this server can serve, since a deeplink is only reachable through one.
 	screens := []string{
 		"/screens/catch-up",
+		"/forms/task/TAC-1",
 		"/screens/board",
 		"/forms/my-tasks",
 		"/forms/new-task",
@@ -75,7 +88,7 @@ func TestEveryDeeplinkTheServerEmitsResolves(t *testing.T) {
 	}
 
 	for link, where := range emitted {
-		if !known[link] {
+		if !resolves(link) {
 			t.Errorf("%s is emitted by %v and is neither a route of the graph nor known to the client: pressing it does nothing", link, where)
 		}
 	}

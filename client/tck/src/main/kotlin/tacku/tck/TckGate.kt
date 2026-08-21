@@ -1,6 +1,8 @@
 package tacku.tck
 
 import io.github.youndie.kompot.tck.TckReport
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * What it means for a conformance run to have proved something.
@@ -48,25 +50,68 @@ object TckGate {
         val unknown: List<String>,
         val findings: Int,
         val exercised: Map<String, Int>,
+        val bodiesDeclared: Int = 0,
+        val bodiesChecked: Int = 0,
     ) {
-        val passed: Boolean get() = unexercised.isEmpty() && unknown.isEmpty() && findings == 0
+        val passed: Boolean
+            get() =
+                unexercised.isEmpty() &&
+                    unknown.isEmpty() &&
+                    findings == 0 &&
+                    bodiesChecked >= bodiesDeclared
     }
 
-    fun judge(report: TckReport): Verdict {
+    /**
+     * Endpoints whose successful body the `schema` check validates.
+     *
+     * Counting them is the second half of the same argument the target counters make. A check with
+     * no targets proves nothing; so does a check with plenty of targets that happens to have skipped
+     * a whole endpoint. The first is visible in the report, the second is not — the run that
+     * prompted this was green while the most complicated screen in the product had never been
+     * fetched, because its path carries a parameter and the walk quietly passed over it.
+     */
+    private val bodyKinds = setOf("screen", "form", "page", "graph")
+
+    fun judge(
+        report: TckReport,
+        openApi: JsonObject? = null,
+    ): Verdict {
         val exercised = report.exercised
+        val declared = openApi?.let { countBodyEndpoints(it) } ?: 0
         return Verdict(
             unexercised = expectedChecks.filter { (exercised[it] ?: 0) < 1 }.sorted(),
             unknown = exercised.keys.filterNot { it in expectedChecks }.sorted(),
             findings = report.findings.size,
             exercised = exercised.toSortedMap(),
+            bodiesDeclared = declared,
+            bodiesChecked = exercised["schema"] ?: 0,
         )
+    }
+
+    private fun countBodyEndpoints(openApi: JsonObject): Int {
+        val paths = openApi["paths"] as? JsonObject ?: return 0
+        return paths.values.sumOf { path ->
+            (path as? JsonObject)
+                ?.values
+                ?.count { operation ->
+                    val kind =
+                        (
+                            (operation as? JsonObject)
+                                ?.get("x-kompot-endpoint-kind") as? JsonPrimitive
+                        )?.content
+                    kind in bodyKinds
+                } ?: 0
+        }
     }
 
     /**
      * Throws with a report a person can act on. Called from the test that runs the kit.
      */
-    fun require(report: TckReport) {
-        val verdict = judge(report)
+    fun require(
+        report: TckReport,
+        openApi: JsonObject? = null,
+    ) {
+        val verdict = judge(report, openApi)
         if (!verdict.passed) {
             throw AssertionError(describe(report, verdict))
         }
@@ -93,6 +138,22 @@ object TckGate {
                         count.toString()
                     }
                 appendLine("  %-14s %s".format(check, note))
+            }
+
+            if (verdict.bodiesDeclared > 0) {
+                appendLine()
+                appendLine(
+                    "bodies: %d of %d declared endpoints had a response checked".format(
+                        verdict.bodiesChecked,
+                        verdict.bodiesDeclared,
+                    ),
+                )
+                if (verdict.bodiesChecked < verdict.bodiesDeclared) {
+                    appendLine(
+                        "  an endpoint the walk never fetched is one no check could have failed, " +
+                            "and a report cannot say so about an endpoint it skipped",
+                    )
+                }
             }
 
             if (verdict.unknown.isNotEmpty()) {

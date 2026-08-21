@@ -60,6 +60,13 @@ func OpenAPI(resource string) json.RawMessage {
 				"get": operation("tasksPage", kindPage,
 					ref("kompot-standard.schema.json#/$defs/KompotPageResponse")),
 			},
+			"/forms/task/{task}": map[string]any{
+				"get": templated(operation("taskScreen", kindForm,
+					ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))),
+			},
+			"/submit/task-view": map[string]any{
+				"post": submitOperation("submitTaskView"),
+			},
 			"/forms/new-board": map[string]any{
 				"get": operation("newBoardForm", kindForm,
 					ref("kompot-forms.schema.json#/$defs/KompotFormResponse")),
@@ -161,6 +168,21 @@ func public(op map[string]any) map[string]any {
 	if op["x-kompot-endpoint-kind"] == kindForm {
 		delete(responses, "401")
 	}
+	return op
+}
+
+// templated declares the one path parameter this server has.
+//
+// A screen addressed by naming a thing cannot be in the navigation graph — a route's endpoint is a
+// literal path — so it is resolved by the client from a prefix, and described here so that the
+// description still covers every route the server answers.
+func templated(op map[string]any) map[string]any {
+	op["parameters"] = []any{map[string]any{
+		"name":     "task",
+		"in":       "path",
+		"required": true,
+		"schema":   map[string]any{"type": "string", "pattern": "^TAC-[1-9][0-9]*$"},
+	}}
 	return op
 }
 

@@ -88,3 +88,28 @@ func (s *Store) Latest(ctx context.Context) (domain.Cursor, error) {
 	}
 	return domain.CursorAt(seq.Int64), nil
 }
+
+func (s *Store) TaskChanges(ctx context.Context, id domain.TaskID) ([]domain.Change, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`select seq, task, board, kind, from_value, to_value,
+		        actor_kind, actor_member, actor_version, on_behalf_of, created_at
+		 from changes where task = ? order by seq`, string(id))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var changes []domain.Change
+	for rows.Next() {
+		var c domain.Change
+		var created string
+		if err := rows.Scan(&c.Seq, &c.Task, &c.Board, &c.Kind, &c.From, &c.To,
+			&c.By.Executor.Kind, &c.By.Executor.Member, &c.By.Executor.Version,
+			&c.By.OnBehalfOf, &created); err != nil {
+			return nil, err
+		}
+		c.CreatedAt = parseStamp(created)
+		changes = append(changes, c)
+	}
+	return changes, rows.Err()
+}

@@ -24,6 +24,9 @@ const (
 	// and the protocol has no action for it, so a navigate is the nearest thing.
 	LinkSignIn  = "app://sign-in"
 	LinkSignOut = "app://sign-out"
+
+	// The prefix a task identifier follows. Client-known of necessity: the graph has no parameters.
+	LinkTask = "app://task/"
 )
 
 // Route is one entry of the navigation graph.
@@ -63,3 +66,9 @@ var Graph = []Route{
 // implicit, so that the test which demands every emitted deeplink resolve has something to check
 // them against — an unlisted one is a dead button and not a special case.
 var ClientNative = []string{LinkSignIn, LinkSignOut}
+
+// ClientNativePrefixes are destinations that carry an identifier after them.
+//
+// Listed separately because the graph cannot express them at all: a route's endpoint is a literal
+// path, so anything addressed by naming a thing is resolved by the client from a prefix it knows.
+var ClientNativePrefixes = []string{LinkTask}
