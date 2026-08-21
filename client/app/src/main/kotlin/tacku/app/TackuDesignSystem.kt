@@ -29,6 +29,15 @@ import io.github.youndie.kompot.TypographyToken
  */
 class TackuDesignSystem(
     private val dark: Boolean = true,
+    /**
+     * What every style is built on top of.
+     *
+     * It exists because a `TextStyle` with no font family is drawn in whatever font the machine
+     * happens to have, and a screenshot of that is a picture of the machine. The screenshot harness
+     * passes a font it carries with it; the product leaves this alone and gets the system font,
+     * which is what a desktop application should look like.
+     */
+    private val base: TextStyle = TextStyle.Default,
 ) : KompotDesignSystem {
     @Composable
     override fun resolveColor(token: ColorToken): Color =
@@ -94,7 +103,7 @@ class TackuDesignSystem(
         size: Int,
         weight: FontWeight,
         color: Long,
-    ) = TextStyle(fontSize = size.sp, fontWeight = weight, color = Color(color))
+    ) = base.copy(fontSize = size.sp, fontWeight = weight, color = Color(color))
 
     /**
      * A name the design system does not know costs a default and a line in the log — never a broken

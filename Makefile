@@ -18,7 +18,7 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: shots-image shots-verify check gate docs server client spec tck probe shots format report probes fix help
+.PHONY: check gate docs server client spec tck probe shots format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
@@ -48,10 +48,11 @@ docs:
 # a formatter enforced on one language of a two-language repository is a rule that gets argued about
 # in the other.
 #
-# The pixel comparison is not here: it runs in a container, for reasons written down beside the
-# image. It is still part of the gate, on every machine.
-client: shots-verify
-	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test
+# viddikVerify compares pixels. The goldens are portable because the harness draws in a font it
+# carries rather than one the machine happens to have — see the note in Screenshots.kt, which is
+# where the portability is actually earned.
+client:
+	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test :app:viddikVerify
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
@@ -88,30 +89,9 @@ tck:
 		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
 		rm -f /tmp/tacku-tck.token; exit $$status
 
-# Screenshots are recorded and compared in one pinned environment rather than on whatever machine
-# is running — see client/shots.Dockerfile for the measurement that forced it. `make shots` rewrites
-# the goldens; the gate calls `shots-verify`, which does not.
-#
-# The container keeps its build directories to itself, mounted over the host's. Sharing one would
-# have the two invalidating each other's up-to-date checks on every alternation; pointing the
-# container at a second directory instead does not work, because a generated-source directory is
-# registered by literal path and both copies then compile together as a redeclaration. Volumes,
-# unlike a build-directory property, cannot be bypassed by a hardcoded path.
-SHOTS_IMAGE := tacku-shots
-SHOTS_RUN = docker run --rm --platform linux/amd64 \
-	-v $(CURDIR):/w -v tacku-gradle:/gradle \
-	-v tacku-build-client:/w/client/build -v tacku-build-app:/w/client/app/build \
-	-w /w/client $(SHOTS_IMAGE) \
-	./gradlew --no-daemon --quiet --console=plain --project-cache-dir /tmp/pc
-
-shots-image:
-	@docker build -q --platform linux/amd64 -f client/shots.Dockerfile -t $(SHOTS_IMAGE) client >/dev/null
-
-shots: shots-image
-	$(SHOTS_RUN) :app:viddikRecord
-
-shots-verify: shots-image
-	$(SHOTS_RUN) :app:viddikVerify
+# Rewrites the goldens. The gate compares them; only this rewrites them.
+shots:
+	cd client && ./gradlew --quiet :app:viddikRecord
 
 # The client as a measuring instrument: a response can satisfy the schema and still not decode, and
 # only the code that will actually draw the screen can say so.

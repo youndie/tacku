@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.KompotScreen
@@ -23,6 +25,9 @@ import io.github.youndie.kompot.kompotStandardRenderers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import ru.workinprogress.viddik.annotations.ViddikScreenshot
+import ru.workinprogress.viddik.core.ViddikFontFamily
+import ru.workinprogress.viddik.core.ViddikPlatformTextStyle
+import ru.workinprogress.viddik.core.viddikTypography
 
 /**
  * What the states actually look like.
@@ -40,9 +45,19 @@ private val transport = Transport("http://localhost:0")
 private val registry =
     KompotRegistry(kompotCoreRenderers + kompotStandardRenderers + generatedFormsClientRenderers)
 
+/**
+ * The font is carried in, not found on the machine.
+ *
+ * A [TextStyle] with no family is drawn in whatever the host has installed, and the same five
+ * screens recorded on two operating systems then differ in glyphs — measured here at 2.5-8.6% of
+ * pixels before the font was pinned. The harness ships a Roboto with normalised vertical metrics
+ * for exactly this, so the golden is a property of the code rather than of the laptop.
+ */
+private val viddikBase = TextStyle(fontFamily = ViddikFontFamily, platformStyle = ViddikPlatformTextStyle)
+
 @Composable
 private fun Shot(body: String) {
-    MaterialTheme(colorScheme = darkColorScheme()) {
+    MaterialTheme(colorScheme = darkColorScheme(), typography = viddikTypography(Typography())) {
         Inner(body)
     }
 }
@@ -50,7 +65,7 @@ private fun Shot(body: String) {
 @Composable
 private fun Inner(body: String) {
     CompositionLocalProvider(
-        LocalKompotDesignSystem provides TackuDesignSystem(),
+        LocalKompotDesignSystem provides TackuDesignSystem(base = viddikBase),
         LocalKompotPageLoader provides transport.pageLoader(),
     ) {
         Box(Modifier.fillMaxSize().background(Color(0xFF101114)).padding(16.dp)) {
