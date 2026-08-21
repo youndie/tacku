@@ -39,10 +39,21 @@ jobs:
 
       # 25 because kompot is published for it: resolution fails outright on 21 with "only
       # compatible with JVM runtime version 25 or newer".
+      #
+      # The cache is not here for speed. Hosted runners share addresses with everybody else's, and
+      # Maven Central answers 429 to them often enough that the first run of this workflow died on
+      # one — a red build nobody caused, which is the kind people learn to ignore. A warm cache
+      # does not ask for the artefacts at all.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "25"
+          cache: gradle
+          cache-dependency-path: |
+            client/*.gradle.kts
+            client/**/*.gradle.kts
+            client/gradle.properties
+            client/gradle/wrapper/gradle-wrapper.properties
 
       - run: pip install pyyaml
 
