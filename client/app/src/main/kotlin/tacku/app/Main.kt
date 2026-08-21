@@ -23,6 +23,7 @@ import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.KompotScreen
 import io.github.youndie.kompot.LocalKompotDesignSystem
+import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
 import io.github.youndie.kompot.generated.generatedFormsClientRenderers
@@ -72,7 +73,13 @@ private fun App(baseUrl: String) {
         // — surface_block, agent, meta_agent — and a design system that does not know them resolves
         // every one to a default with a warning: a screen that renders, in the wrong colours, and
         // says so only in a log nobody is reading.
-        CompositionLocalProvider(LocalKompotDesignSystem provides remember { TackuDesignSystem() }) {
+        CompositionLocalProvider(
+            LocalKompotDesignSystem provides remember { TackuDesignSystem() },
+            // Required rather than optional: the list renderer reads it and throws when it is
+            // absent, so a screen with a list dies at render. Missing here until a screenshot of an
+            // empty column said so.
+            LocalKompotPageLoader provides remember(transport) { transport.pageLoader() },
+        ) {
             when (val current = screen) {
                 is Screen.Loading -> Message("Loading…")
                 is Screen.Failed -> Message(current.reason)

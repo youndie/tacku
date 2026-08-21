@@ -11,6 +11,7 @@ import io.github.youndie.kompot.forms.KompotFormResponse
 import io.github.youndie.kompot.kompotEngineSerializersModule
 import io.github.youndie.kompot.kompotJson
 import io.github.youndie.kompot.navigation.NavigationGraph
+import io.github.youndie.kompot.standard.KompotPageLoader
 import io.github.youndie.kompot.standard.KompotPageResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -86,6 +87,36 @@ class Transport(
     suspend fun graph(): NavigationGraph = json.decodeFromString(get("/graph"))
 
     suspend fun page(url: String): KompotPageResponse = json.decodeFromString(get(url))
+
+    /**
+     * The loader the list renderer asks for a next page.
+     *
+     * Required, not optional: the toolkit reads it from a composition local and throws when it is
+     * absent, so a screen carrying a list crashes at render rather than degrading. This client had
+     * no loader at all until a screenshot of an empty column failed with "LocalKompotPageLoader not
+     * provided" — the feed and the board would both have died on first sight. Decoding a body proves
+     * the wire; only drawing it proves the screen.
+     *
+     * The query the caller passes is the reload case: values of the form on the same screen, sent as
+     * parameters, under names §8.4 does not fix — this client uses the field identifiers, which is
+     * the assumption Q-04 records on the other side of the wire.
+     */
+    fun pageLoader(): KompotPageLoader =
+        object : KompotPageLoader {
+            override suspend fun loadPage(
+                url: String,
+                query: Map<String, String>,
+            ): KompotPageResponse {
+                val address =
+                    if (query.isEmpty()) {
+                        url
+                    } else {
+                        val separator = if (url.contains('?')) "&" else "?"
+                        url + separator + query.entries.joinToString("&") { (key, value) -> "$key=$value" }
+                    }
+                return page(address)
+            }
+        }
 
     /**
      * A submit answers an action, and the caller runs it through the same chain as any other

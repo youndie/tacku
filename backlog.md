@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (18)
+## Open (17)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -54,7 +54,6 @@
 | [B-26](docs/backlog/B-26-client-capability-flag.md) `[?]` | Флаг возможностей клиента: может ли сервер узнать версию словаря | P1 | M | - |
 | [B-27](docs/backlog/B-27-last-visit-boundary.md) `[?]` | Что считать «прошлым визитом» в догоняющей ленте | P1 | S | B-20 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
-| [B-34](docs/backlog/B-34-viddik-screenshots.md) `[ ]` | Скриншот-тесты клиента на viddik | P1 | M | B-18 |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[ ]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
 | [B-23](docs/backlog/B-23-bulk-status-change.md) `[ ]` | Массовая смена статуса вместо перетаскивания | P2 | M | B-09 |
@@ -66,7 +65,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (19)
+## Closed (20)
 
 **Чем меряем**
 
@@ -98,6 +97,7 @@
 
 - [B-18](docs/backlog/B-18-compose-desktop-client.md) `[x]` - Клиент на Compose Desktop поверх опубликованных модулей kompot
 - [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[x]` - Набор токенов как публикуемый артефакт клиента
+- [B-34](docs/backlog/B-34-viddik-screenshots.md) `[x]` - Скриншот-тесты клиента на viddik
 
 <!-- END INDEX -->
 

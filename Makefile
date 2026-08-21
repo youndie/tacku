@@ -18,7 +18,7 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: check gate docs server client spec tck probe format report probes fix help
+.PHONY: check gate docs server client spec tck probe shots format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
@@ -26,6 +26,7 @@ help:
 	@echo "make format  - apply ktlint and gofmt in place"
 	@echo "make tck     - start the server and walk it with the conformance kit"
 	@echo "make probe   - start the server and decode every screen with the toolkit's parsers"
+	@echo "make shots   - re-record the screenshot goldens; review the diff as carefully as code"
 	@echo "make probes  - re-run the research probes; a probe that stops building is a changed fact"
 	@echo "make report  - non-blocking reports: BDD coverage, code anchors"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
@@ -47,7 +48,7 @@ docs:
 # a formatter enforced on one language of a two-language repository is a rule that gets argued about
 # in the other.
 client:
-	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test
+	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test :app:viddikVerify
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
@@ -83,6 +84,9 @@ tck:
 		status=$$?; \
 		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
 		rm -f /tmp/tacku-tck.token; exit $$status
+
+shots:
+	cd client && ./gradlew --quiet :app:viddikRecord
 
 # The client as a measuring instrument: a response can satisfy the schema and still not decode, and
 # only the code that will actually draw the screen can say so.

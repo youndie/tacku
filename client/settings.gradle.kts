@@ -7,6 +7,10 @@ pluginManagement {
         mavenCentral()
         // Compose Multiplatform's plugin is published by JetBrains rather than to the portal.
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        // viddik, the screenshot harness, is published beside kompot.
+        maven("https://reposilite.kotlin.website/snapshots") {
+            mavenContent { includeGroupAndSubgroups("ru.workinprogress") }
+        }
     }
 }
 
@@ -26,7 +30,10 @@ dependencyResolutionManagement {
         }
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://reposilite.kotlin.website/snapshots") {
-            mavenContent { includeGroup("io.github.youndie") }
+            mavenContent {
+                includeGroup("io.github.youndie")
+                includeGroupAndSubgroups("ru.workinprogress")
+            }
         }
     }
 }

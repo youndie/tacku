@@ -5,6 +5,15 @@ plugins {
     kotlin("plugin.serialization")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
+    id("ru.workinprogress.viddik")
+}
+
+// The screenshots are the only tests here that look at pixels, and what they watch is the states
+// nobody exercises by hand: an unknown component, an empty column, a field in error. Those are what
+// break unnoticed, because nothing about a screen that renders says which branch it took.
+viddik {
+    jvmTarget.set("25")
 }
 
 val kompotVersion: String = property("kompot.version").toString()
