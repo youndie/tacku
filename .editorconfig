@@ -17,6 +17,10 @@ ktlint_code_style = ktlint_official
 # function in the same source is still held to camel case.
 ktlint_function_naming_ignore_when_annotated_with = Composable
 
+# No star imports. A wildcard hides which module a name came from, and in this repository the wire
+# types arrive from six modules whose names are the point.
+ij_kotlin_packages_to_use_import_on_demand = false
+
 [*.go]
 indent_style = tab
 
@@ -26,3 +30,10 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Generated sources — Compose resource accessors among them — are rewritten on every build and must
+# not be edited, so a formatter running on them would fail a build nobody can fix. The ktlint gradle
+# plugin's own filters do not reach here: it fixes the file list before this setting would apply,
+# which is why the exclusion lives in .editorconfig and not in the build script.
+[**/build/**.kt]
+ktlint = disabled
