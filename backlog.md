@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (27)
+## Open (28)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -72,6 +72,7 @@
 | [B-31](docs/backlog/B-31-wizard-submit-label.md) `[ ]` | Подпись кнопки завершения сценария — `submitLabel` у `wizard_screen` | P2 | S | B-26 |
 | [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[ ]` | Что показывать, когда массовое действие применилось частично | P2 | S | B-23 |
 | [B-33](docs/backlog/B-33-wizard-scenario-state-lifetime.md) `[ ]` | Срок жизни состояния сценария: отменить его нечем | P2 | S | B-09 |
+| [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[?]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
