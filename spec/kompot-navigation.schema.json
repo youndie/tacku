@@ -27,7 +27,10 @@
       "properties": {
         "deeplink": {
           "type": "string",
-          "pattern": "^(?!https?:)[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "not": {
+            "pattern": "^https?:"
+          },
           "description": "Matches the string a server puts into navigate.deeplink"
         },
         "endpoint": {

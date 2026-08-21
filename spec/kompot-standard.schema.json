@@ -83,7 +83,10 @@
         },
         "deeplink": {
           "type": "string",
-          "pattern": "^(?!https?:)[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "not": {
+            "pattern": "^https?:"
+          },
           "description": "The identifier of an application screen: a URI with its own scheme, not a web address. Both the scheme and the set of values are the application's (see NavigationGraph in :kompot-navigation); a client must ignore an unknown deeplink"
         }
       },
