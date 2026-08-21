@@ -254,6 +254,13 @@ func runSeed(args []string) error {
 		{"Audit the session cookie flags", domain.StatusTodo, "", "", anna},
 		{"Ship the settings redesign", domain.StatusInProgress, "maria", "2026-08-28", anna},
 		{"Update the onboarding copy", domain.StatusDone, "maria", "", agent},
+		{"Write the migration note for the auth change", domain.StatusTodo, "anna", "", agent},
+		{"Replace the deploy script", domain.StatusInProgress, "ivan", "", anna},
+		{"Tighten the empty states copy", domain.StatusInReview, "maria", "", anna},
+		{"Check the staging redirect trace", domain.StatusTodo, "anna", "2026-09-01", agent},
+		{"Rotate the SSO signing keys", domain.StatusTodo, "anna", "", anna},
+		{"Drop the unused feature flag", domain.StatusBlocked, "ivan", "", anna},
+		{"Measure where people change status", domain.StatusTodo, "anna", "", anna},
 	}
 
 	for _, seed := range seeds {

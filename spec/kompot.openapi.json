@@ -14,6 +14,32 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/forms/my-tasks": {
+      "get": {
+        "operationId": "myTasks",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-forms.schema.json#/$defs/KompotFormResponse"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "form"
+      }
+    },
     "/forms/new-task": {
       "get": {
         "operationId": "newTaskForm",
@@ -88,6 +114,32 @@
     "/pages/changes": {
       "get": {
         "operationId": "changesPage",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-standard.schema.json#/$defs/KompotPageResponse"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "page"
+      }
+    },
+    "/pages/tasks": {
+      "get": {
+        "operationId": "tasksPage",
         "responses": {
           "200": {
             "content": {

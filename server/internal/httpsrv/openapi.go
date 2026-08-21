@@ -52,6 +52,14 @@ func OpenAPI(resource string) json.RawMessage {
 			"/submit/move": map[string]any{
 				"post": submitOperation("submitMove"),
 			},
+			"/forms/my-tasks": map[string]any{
+				"get": operation("myTasks", kindForm,
+					ref("kompot-forms.schema.json#/$defs/KompotFormResponse")),
+			},
+			tasksPagePath: map[string]any{
+				"get": operation("tasksPage", kindPage,
+					ref("kompot-standard.schema.json#/$defs/KompotPageResponse")),
+			},
 			"/forms/sign-in": map[string]any{
 				"get": public(operation("signInForm", kindForm,
 					ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))),

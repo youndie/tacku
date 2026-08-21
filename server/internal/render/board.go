@@ -192,3 +192,34 @@ func EmptyWorkspace() Component {
 		),
 	)
 }
+
+// TaskRow is one line of a task list: the same card as on a board, without the move button. A list
+// filtered by status has no next status to name.
+func TaskRow(task domain.Task) Component {
+	id := "row-" + string(task.ID)
+	return Row(id, 0, nil,
+		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(ColorDivider)}),
+		Column(id+"-body", 6,
+			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
+			Text(id+"-title", task.Title, TextBody),
+			Text(id+"-meta", cardMeta(task)+" · "+StatusName(string(task.Status)), TextMeta),
+		),
+	)
+}
+
+// EmptyMyTasks is a whole screen of emptiness, so it gets a heading and a way out — unlike an empty
+// column, which gets one line. The scale of the emptiness decides the form.
+func EmptyMyTasks() Component {
+	return Column("my-tasks-empty", 8,
+		[]Modifier{Padding(32), Background(ColorSurfaceBlock)},
+		Text("my-tasks-empty-title", "Nothing is assigned to you", TextTitle),
+		Text("my-tasks-empty-body",
+			"Tasks show up here when someone assigns them to you — or when your agent picks work up on your behalf.",
+			TextBodyMuted),
+		Row("my-tasks-empty-actions", 0, nil,
+			Button("my-tasks-empty-go", "Go to the board", Navigate("app://board"),
+				PaddingXY(12, 20)),
+			Spacer("my-tasks-empty-spacer"),
+		),
+	)
+}

@@ -43,11 +43,10 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (23)
+## Open (22)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-10](docs/backlog/B-10-paginated-task-list.md) `[ ]` | Список задач: пагинация и перезагрузка первой страницы фильтром | P0 | M | B-08 |
 | [B-11](docs/backlog/B-11-idempotency-middleware.md) `[ ]` | Идемпотентность: один механизм на обе поверхности | P0 | M | B-09 |
 | [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
@@ -71,7 +70,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (13)
+## Closed (14)
 
 **Чем меряем**
 
@@ -87,6 +86,7 @@
 - [B-07](docs/backlog/B-07-domain-core-and-change-log.md) `[x]` - Доменное ядро: доски, задачи, журнал изменений, произносимые идентификаторы
 - [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[x]` - Экраны доски и карточки задачи с условной отдачей по ETag
 - [B-09](docs/backlog/B-09-task-form-and-submit.md) `[x]` - Форма задачи: схема, дерево, сабмит и патч
+- [B-10](docs/backlog/B-10-paginated-task-list.md) `[x]` - Список задач: пагинация и перезагрузка первой страницы фильтром
 - [B-14](docs/backlog/B-14-tck-harness-and-run.md) `[x]` - Харнесс TCK и первый прогон против Go-сервера
 - [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[x]` - Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap`
 

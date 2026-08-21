@@ -122,7 +122,9 @@ func (s *Store) Task(ctx context.Context, id domain.TaskID) (domain.Task, error)
 }
 
 func (s *Store) Tasks(ctx context.Context, board domain.BoardID) ([]domain.Task, error) {
-	rows, err := s.db.QueryContext(ctx, taskColumns+` from tasks where board = ? order by id`, string(board))
+	// Ordered by the number rather than by the identifier: TAC-10 sorts before TAC-2 as text, and a
+	// walk paged by "after this one" then revisits what it has already handed out.
+	rows, err := s.db.QueryContext(ctx, taskColumns+` from tasks where board = ? order by number`, string(board))
 	if err != nil {
 		return nil, err
 	}

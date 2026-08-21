@@ -63,9 +63,9 @@ func (s *Store) CreateTask(ctx context.Context, draft domain.Task, by domain.Pro
 		}
 
 		_, err = tx.ExecContext(ctx,
-			`insert into tasks (id, board, title, body, status, assignee, due, created_at, updated_at)
-			 values (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			string(id), string(draft.Board), draft.Title, draft.Body, string(draft.Status),
+			`insert into tasks (id, number, board, title, body, status, assignee, due, created_at, updated_at)
+			 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			string(id), number, string(draft.Board), draft.Title, draft.Body, string(draft.Status),
 			string(draft.Assignee), draft.Due, now, now)
 		if err != nil {
 			return err
