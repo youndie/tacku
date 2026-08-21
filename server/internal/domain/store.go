@@ -33,6 +33,14 @@ type Store interface {
 	// returned, so a reader that stops early does not skip the remainder.
 	Changes(ctx context.Context, after Cursor, limit int) ([]Change, Cursor, error)
 
+	// LastActors is who last touched each task, by task.
+	//
+	// A query and not a walk over the journal: the board used to read the first 500 entries and
+	// keep the last one it saw per task, which is right until the journal passes 500 and then
+	// silently wrong — the newest changes stop being read at all, and the provenance stripe fades
+	// off the busiest boards first. Nothing fails; the signal just stops being there.
+	LastActors(ctx context.Context) (map[TaskID]Provenance, error)
+
 	// TaskChanges is the history of one task, oldest first.
 	//
 	// A separate read rather than a filter over Changes: the journal is walked by cursor for the

@@ -114,14 +114,7 @@ func (b Board) column(status domain.Status) Component {
 func (b Board) card(task domain.Task) Component {
 	id := "card-" + string(task.ID)
 
-	stripe := ColorDivider
-	metaStyle := TextMeta
-	meta := cardMeta(task)
-	if by, ok := b.LastBy[task.ID]; ok && by.ByAgent() {
-		stripe = ColorAgent
-		metaStyle = TextMetaAgent
-		meta = "Agent · on behalf of " + string(by.OnBehalfOf)
-	}
+	stripe, metaStyle, meta := mark(b.LastBy[task.ID], cardMeta(task))
 
 	body := []Component{
 		Text(id+"-title", task.Title, TextBody),
@@ -212,14 +205,31 @@ func EmptyWorkspace() Component {
 
 // TaskRow is one line of a task list: the same card as on a board, without the move button. A list
 // filtered by status has no next status to name.
-func TaskRow(task domain.Task) Component {
+// mark is the one place a list decides how a person and an agent look different.
+//
+// Shared by every list in the product on purpose. It used to be written out inside the board card
+// and nowhere else, and the row of a filtered list — same product, same promise — drew a grey
+// stripe for everyone. One copy means the next list cannot forget.
+func mark(by domain.Provenance, human string) (stripe, style, meta string) {
+	if by.ByAgent() {
+		return ColorAgent, TextMetaAgent, "Agent · on behalf of " + string(by.OnBehalfOf)
+	}
+	return ColorDivider, TextMeta, human
+}
+
+// TaskRow is one line of a filtered list — "my tasks" and every page after it.
+func TaskRow(task domain.Task, by domain.Provenance) Component {
 	id := "row-" + string(task.ID)
+	stripe, metaStyle, meta := mark(by, cardMeta(task))
+	// The status stays on the line either way: this list crosses columns, so a row that does not
+	// say where it stands is a row the reader has to open to place.
+	meta += " · " + StatusName(string(task.Status))
 	return Row(id, 0, nil,
-		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(ColorDivider)}),
+		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
 		Column(id+"-body", 6,
 			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
 			Text(id+"-title", task.Title, TextBody),
-			Text(id+"-meta", cardMeta(task)+" · "+StatusName(string(task.Status)), TextMeta),
+			Text(id+"-meta", meta, metaStyle),
 		),
 	)
 }

@@ -43,12 +43,11 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (17)
+## Open (16)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
-| [B-19](docs/backlog/B-19-provenance-in-ui.md) `[ ]` | Провенанс виден в интерфейсе: кто сделал и от чьего имени | P1 | M | B-07, B-18 |
 | [B-20](docs/backlog/B-20-catch-up-feed.md) `[ ]` | Догоняющая лента: что изменилось с прошлого визита | P1 | M | B-07, B-18 |
 | [B-25](docs/backlog/B-25-interface-copy-ownership.md) `[?]` | У строк интерфейса должен быть владелец и место | P1 | S | - |
 | [B-26](docs/backlog/B-26-client-capability-flag.md) `[?]` | Флаг возможностей клиента: может ли сервер узнать версию словаря | P1 | M | - |
@@ -65,7 +64,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (20)
+## Closed (21)
 
 **Чем меряем**
 
@@ -96,6 +95,7 @@
 **Человеческая поверхность**
 
 - [B-18](docs/backlog/B-18-compose-desktop-client.md) `[x]` - Клиент на Compose Desktop поверх опубликованных модулей kompot
+- [B-19](docs/backlog/B-19-provenance-in-ui.md) `[x]` - Провенанс виден в интерфейсе: кто сделал и от чьего имени
 - [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[x]` - Набор токенов как публикуемый артефакт клиента
 - [B-34](docs/backlog/B-34-viddik-screenshots.md) `[x]` - Скриншот-тесты клиента на viddik
 

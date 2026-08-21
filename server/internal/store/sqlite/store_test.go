@@ -319,3 +319,56 @@ func TestAgentWithoutAPrincipalIsRefused(t *testing.T) {
 		}
 	}
 }
+
+// Who touched a task last is a question with no page size.
+//
+// This used to be answered by reading the first five hundred journal entries and keeping the last
+// one seen per task. Correct until a team writes the five hundred and first, and then wrong in the
+// quietest way available: the newest entries stop being read, so the provenance stripe fades off
+// the busiest boards first while every test on a small fixture stays green.
+func TestTheLastActorIsFoundBeyondAnyPage(t *testing.T) {
+	s, ctx := open(t)
+	b := board(t, s, ctx)
+
+	subject, err := s.CreateTask(ctx, domain.Task{Board: b.ID, Title: "watched"}, domain.Human(anna))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Enough noise to bury the entry that matters under any bound a reader might have picked.
+	noise, err := s.CreateTask(ctx, domain.Task{Board: b.ID, Title: "noisy"}, domain.Human(anna))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range 600 {
+		if _, err := s.Comment(ctx, noise.ID, "chatter", domain.Human(ivan)); err != nil {
+			t.Fatalf("comment %d: %v", i, err)
+		}
+	}
+
+	if _, err := s.Comment(ctx, subject.ID, "an agent had the last word", domain.Agent(robot, "0.1.0", anna)); err != nil {
+		t.Fatal(err)
+	}
+
+	actors, err := s.LastActors(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	last, ok := actors[subject.ID]
+	if !ok {
+		t.Fatalf("no last actor for %s at all", subject.ID)
+	}
+	if !last.ByAgent() {
+		t.Errorf("the last word on %s was an agent's and the answer names %q — the newest entry was not read",
+			subject.ID, last.Executor.Member)
+	}
+	if last.OnBehalfOf != anna {
+		t.Errorf("on behalf of %q, want %q", last.OnBehalfOf, anna)
+	}
+
+	// The neighbour keeps its own answer, so this is not a check that everything looks like an agent.
+	if noisy := actors[noise.ID]; noisy.ByAgent() {
+		t.Error("the noisy task reports an agent, and nothing an agent did touched it")
+	}
+}

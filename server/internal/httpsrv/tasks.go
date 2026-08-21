@@ -118,9 +118,15 @@ func myTasks(store domain.Store) http.HandlerFunc {
 		status := form.Select("status", "Status", "Any status", append(
 			[]render.SelectOption{{ID: "", Label: "Any status"}}, statusOptions()...), nil)
 
+		lastBy, err := store.LastActors(r.Context())
+		if err != nil {
+			fail(w, err)
+			return
+		}
+
 		items := make([]render.Component, 0, len(page))
 		for _, task := range page {
-			items = append(items, render.TaskRow(task))
+			items = append(items, render.TaskRow(task, lastBy[task.ID]))
 		}
 
 		next := ""
@@ -158,9 +164,18 @@ func tasksPage(store domain.Store) http.HandlerFunc {
 		filter := filterOf(r)
 		page, last, more := filter.page(tasks)
 
+		// The continuation carries provenance too. A signal present on the first page and absent
+		// from the second is worse than one that is absent everywhere: it teaches the reader that
+		// grey means a person.
+		lastBy, err := store.LastActors(r.Context())
+		if err != nil {
+			fail(w, err)
+			return
+		}
+
 		items := make([]render.Component, 0, len(page))
 		for _, task := range page {
-			items = append(items, render.TaskRow(task))
+			items = append(items, render.TaskRow(task, lastBy[task.ID]))
 		}
 
 		next := ""

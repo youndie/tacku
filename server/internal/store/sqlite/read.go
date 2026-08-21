@@ -76,6 +76,34 @@ func (s *Store) Changes(ctx context.Context, after domain.Cursor, limit int) ([]
 	return changes, domain.CursorAt(last), nil
 }
 
+// LastActors answers "who touched this last" for every task at once.
+//
+// The join picks the newest sequence per task inside the database rather than by reading rows and
+// keeping the last one, so no page size stands between a board and the truth about its cards.
+func (s *Store) LastActors(ctx context.Context) (map[domain.TaskID]domain.Provenance, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`select c.task, c.actor_kind, c.actor_member, c.actor_version, c.on_behalf_of
+		 from changes c
+		 join (select task, max(seq) as seq from changes group by task) latest
+		   on latest.task = c.task and latest.seq = c.seq`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	actors := map[domain.TaskID]domain.Provenance{}
+	for rows.Next() {
+		var task domain.TaskID
+		var by domain.Provenance
+		if err := rows.Scan(&task, &by.Executor.Kind, &by.Executor.Member,
+			&by.Executor.Version, &by.OnBehalfOf); err != nil {
+			return nil, err
+		}
+		actors[task] = by
+	}
+	return actors, rows.Err()
+}
+
 // Latest is the cursor standing after everything written so far — what a client stores when it
 // wants "from now on" rather than "from the beginning".
 func (s *Store) Latest(ctx context.Context) (domain.Cursor, error) {
