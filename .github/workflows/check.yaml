@@ -1,8 +1,10 @@
 # The documentation gate. `docs/` lives inside this repository, so `make check` needs no arguments.
 #
-# RUNNER. GitHub-hosted minutes are not paid for on this account: a job on `ubuntu-latest` is not
-# merely slow to start, it does not start at all, and the run sits there reporting nothing. Both
-# jobs therefore go to the self-hosted runner from the outset. Registering it is part of B-01.
+# RUNNER. GitHub-hosted, because this repository is public and standard runners are free for public
+# repositories. The account's other, private repositories run on a self-hosted runner instead —
+# their billed minutes are unpaid, and a job there does not merely start slowly, it never starts.
+# That is a property of those repositories, not of this workflow: do not copy the label from here
+# into a private one without checking which side of that line it falls on.
 
 name: check
 
@@ -23,7 +25,7 @@ jobs:
   # turns "green here, red there" into the normal state of affairs, and then neither is read.
   check:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: [self-hosted, Linux, wsl]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -79,7 +81,7 @@ jobs:
   # by machine, so the report is read by a person. Add `--check` once the stale list reaches zero.
   anchors:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, Linux, wsl]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
