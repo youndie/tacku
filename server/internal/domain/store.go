@@ -38,3 +38,18 @@ type Store interface {
 
 	Close() error
 }
+
+// Outcome is what a previous attempt produced, kept so that a repeat does not produce a second one.
+type Outcome struct {
+	RequestHash string
+	Body        []byte
+}
+
+// Attempts records and replays the outcome of an attempt, keyed by the caller's idempotency key.
+//
+// Split out of Store so the interface reads as two responsibilities rather than one long list, and
+// because a second adapter may well satisfy one of them and not the other.
+type Attempts interface {
+	Outcome(ctx context.Context, key string) (Outcome, bool, error)
+	Remember(ctx context.Context, key string, outcome Outcome) error
+}

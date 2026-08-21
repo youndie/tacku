@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (29)
+## Open (28)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -53,7 +53,6 @@
 | [B-10](docs/backlog/B-10-paginated-task-list.md) `[ ]` | Список задач: пагинация и перезагрузка первой страницы фильтром | P0 | M | B-08 |
 | [B-11](docs/backlog/B-11-idempotency-middleware.md) `[ ]` | Идемпотентность: один механизм на обе поверхности | P0 | M | B-09 |
 | [B-14](docs/backlog/B-14-tck-harness-and-run.md) `[ ]` | Харнесс TCK и первый прогон против Go-сервера | P0 | M | B-06, B-13 |
-| [B-15](docs/backlog/B-15-mcp-tools-over-stdio.md) `[ ]` | MCP-инструменты по stdio: чтение курсором и запись с идемпотентностью | P0 | L | B-07 |
 | [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
 | [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[?]` | Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap` | P0 | M | B-06 |
@@ -77,7 +76,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (6)
+## Closed (7)
 
 **Чем меряем**
 
@@ -90,6 +89,10 @@
 **Сервер по спеке**
 
 - [B-07](docs/backlog/B-07-domain-core-and-change-log.md) `[x]` - Доменное ядро: доски, задачи, журнал изменений, произносимые идентификаторы
+
+**Агентская поверхность**
+
+- [B-15](docs/backlog/B-15-mcp-tools-over-stdio.md) `[x]` - MCP-инструменты по stdio: чтение курсором и запись с идемпотентностью
 
 <!-- END INDEX -->
 
