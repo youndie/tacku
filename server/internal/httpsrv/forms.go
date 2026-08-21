@@ -101,7 +101,7 @@ func submitNewTask(store domain.Store) http.HandlerFunc {
 		}
 
 		var request submitRequest
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		if err := decodeSubmit(r, &request); err != nil {
 			http.Error(w, `{"error":"the body is not a form submission"}`, http.StatusBadRequest)
 			return
 		}
@@ -120,9 +120,11 @@ func submitNewTask(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		writeJSON(w, http.StatusOK, map[string]any{
-			"type": "navigate", "deeplink": "app://task/" + string(task.ID),
-		})
+		// Back to the board rather than to the task. A per-task screen is not built yet, and a
+		// deeplink the client cannot resolve is one it must ignore — a button that does nothing,
+		// silently. Recorded as B-37 instead of emitted hopefully.
+		_ = task
+		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": render.LinkBoard})
 	}
 }
 
@@ -212,7 +214,7 @@ func submitMove(store domain.Store) http.HandlerFunc {
 		}
 
 		var request submitRequest
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		if err := decodeSubmit(r, &request); err != nil {
 			http.Error(w, `{"error":"the body is not a form submission"}`, http.StatusBadRequest)
 			return
 		}
@@ -230,4 +232,9 @@ func submitMove(store domain.Store) http.HandlerFunc {
 		// describe a tree.
 		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": "app://board"})
 	}
+}
+
+// decodeSubmit reads the envelope both a submit and a patch travel in.
+func decodeSubmit(r *http.Request, into *submitRequest) error {
+	return json.NewDecoder(r.Body).Decode(into)
 }

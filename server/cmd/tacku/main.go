@@ -126,6 +126,7 @@ func runServe(args []string) error {
 	handler, err := httpsrv.New(httpsrv.Config{
 		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: version()},
 		Members:    store,
+		Seen:       store,
 		SessionKey: key,
 		Verifier: auth.VerifierConfig{
 			Issuer:   os.Getenv("TACKU_ISSUER"),

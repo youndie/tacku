@@ -20,7 +20,7 @@ const (
 )
 
 // catchUp serves the one screen of this product that takes no input.
-func catchUp(store domain.Store) http.HandlerFunc {
+func catchUp(store domain.Store, seen domain.Seen) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
@@ -28,7 +28,15 @@ func catchUp(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		changes, next, err := store.Changes(r.Context(), cursorOf(r), pageSize)
+		// From where this person had read up to, which is what makes the screen a catch-up rather
+		// than a list of everything that ever happened.
+		from, err := seen.SeenAt(r.Context(), principal.Provenance.OnBehalfOf)
+		if err != nil {
+			fail(w, err)
+			return
+		}
+
+		changes, next, err := store.Changes(r.Context(), from, pageSize)
 		if err != nil {
 			fail(w, err)
 			return
@@ -46,6 +54,7 @@ func catchUp(store domain.Store) http.HandlerFunc {
 
 		respond(w, r, render.Feed{
 			Person:   principal.Provenance.OnBehalfOf,
+			SeenURL:  seenURL,
 			Changes:  changes,
 			Boards:   len(boards),
 			NextPage: more,

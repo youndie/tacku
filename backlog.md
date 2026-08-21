@@ -50,7 +50,6 @@
 | [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
-| [B-13](docs/backlog/B-13-navigation-graph.md) `[ ]` | Граф навигации: простые экраны и формат deeplink | P1 | S | B-08 |
 | [B-19](docs/backlog/B-19-provenance-in-ui.md) `[ ]` | Провенанс виден в интерфейсе: кто сделал и от чьего имени | P1 | M | B-07, B-18 |
 | [B-20](docs/backlog/B-20-catch-up-feed.md) `[ ]` | Догоняющая лента: что изменилось с прошлого визита | P1 | M | B-07, B-18 |
 | [B-25](docs/backlog/B-25-interface-copy-ownership.md) `[?]` | У строк интерфейса должен быть владелец и место | P1 | S | - |
@@ -58,6 +57,7 @@
 | [B-27](docs/backlog/B-27-last-visit-boundary.md) `[?]` | Что считать «прошлым визитом» в догоняющей ленте | P1 | S | B-20 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
 | [B-34](docs/backlog/B-34-viddik-screenshots.md) `[ ]` | Скриншот-тесты клиента на viddik | P1 | M | B-18 |
+| [B-37](docs/backlog/B-37-task-screen.md) `[ ]` | Экран задачи: описание, история и боковая колонка | P1 | M | B-09 |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[ ]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
 | [B-23](docs/backlog/B-23-bulk-status-change.md) `[ ]` | Массовая смена статуса вместо перетаскивания | P2 | M | B-09 |
@@ -69,7 +69,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (15)
+## Closed (16)
 
 **Чем меряем**
 
@@ -87,6 +87,7 @@
 - [B-09](docs/backlog/B-09-task-form-and-submit.md) `[x]` - Форма задачи: схема, дерево, сабмит и патч
 - [B-10](docs/backlog/B-10-paginated-task-list.md) `[x]` - Список задач: пагинация и перезагрузка первой страницы фильтром
 - [B-11](docs/backlog/B-11-idempotency-middleware.md) `[x]` - Идемпотентность: один механизм на обе поверхности
+- [B-13](docs/backlog/B-13-navigation-graph.md) `[x]` - Граф навигации: простые экраны и формат deeplink
 - [B-14](docs/backlog/B-14-tck-harness-and-run.md) `[x]` - Харнесс TCK и первый прогон против Go-сервера
 - [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[x]` - Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap`
 

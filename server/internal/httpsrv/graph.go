@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/youndie/tacku/server/internal/auth"
+	"github.com/youndie/tacku/server/internal/render"
 )
 
 // navigationGraph lists the screens a client can reach without new client code.
@@ -13,21 +14,13 @@ import (
 // else is needed. A screen wanting idempotency, a subscription or a multi-step scenario stays out
 // and ships with a release.
 func navigationGraph() http.HandlerFunc {
-	type route struct {
-		Deeplink string `json:"deeplink"`
-		Endpoint string `json:"endpoint"`
-	}
 	graph := struct {
-		Routes []route `json:"routes"`
-	}{
-		Routes: []route{
-			{Deeplink: "app://catch-up", Endpoint: "/screens/catch-up"},
-		},
-	}
+		Routes []render.Route `json:"routes"`
+	}{Routes: render.Graph}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if _, err := principalOf(r); err != nil {
-			http.Error(w, `{"error":"unauthenticated"}`, http.StatusUnauthorized)
+			unauthenticated(w)
 			return
 		}
 		respond(w, r, graph)

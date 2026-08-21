@@ -292,3 +292,20 @@ func Perform(url string, payload map[string]any) Action {
 func FieldText(text string) map[string]any {
 	return map[string]any{"type": "text_value", "text": text}
 }
+
+type readOnlyField struct {
+	Type       string     `json:"type"`
+	ID         string     `json:"id"`
+	Modifiers  []Modifier `json:"modifiers,omitempty"`
+	Label      string     `json:"label"`
+	Value      string     `json:"value"`
+	HelperText string     `json:"helperText,omitempty"`
+}
+
+// ReadOnlyField shows a value the server has already decided.
+//
+// It has no fieldId and is declared in no schema: its value arrives finished and never travels back
+// in a submit, which is why it is the one input-looking component the form builder does not own.
+func ReadOnlyField(id, label, value, helper string) Component {
+	return readOnlyField{Type: "read_only_field", ID: id, Label: label, Value: value, HelperText: helper}
+}

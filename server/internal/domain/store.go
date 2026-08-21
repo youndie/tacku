@@ -53,3 +53,12 @@ type Attempts interface {
 	Outcome(ctx context.Context, key string) (Outcome, bool, error)
 	Remember(ctx context.Context, key string, outcome Outcome) error
 }
+
+// Seen is where a person had read up to.
+//
+// A cursor and not a timestamp, so that "what changed since" is one question with one answer for
+// both readers: an agent asks it of its own cursor, a person of theirs.
+type Seen interface {
+	SeenAt(ctx context.Context, member MemberID) (Cursor, error)
+	MarkSeen(ctx context.Context, member MemberID, cursor Cursor) error
+}

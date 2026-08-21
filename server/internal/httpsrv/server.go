@@ -32,6 +32,9 @@ type Config struct {
 	Deps     mcpsrv.Deps
 	Verifier auth.VerifierConfig
 
+	// Seen is where each person had read up to, which the catch-up screen is measured from.
+	Seen domain.Seen
+
 	// Members and SessionKey belong to the KOMPOT surface, whose tokens this server issues itself
 	// through the sign-in form. See auth.Sessions for why there are two token systems here.
 	Members    domain.Members
@@ -109,7 +112,7 @@ func New(config Config) (http.Handler, error) {
 	// spending a credential bound by audience to somewhere else is the confused deputy arriving
 	// through the front door.
 	screens := http.NewServeMux()
-	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store))
+	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store, config.Seen))
 	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
 	screens.Handle("GET /screens/board", board(config.Deps.Store))
 	screens.Handle("GET /forms/new-task", newTaskForm(config.Deps.Store))
@@ -117,6 +120,9 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("POST /submit/move", submitMove(config.Deps.Store))
 	screens.Handle("GET /forms/my-tasks", myTasks(config.Deps.Store))
 	screens.Handle("GET /pages/tasks", tasksPage(config.Deps.Store))
+	screens.Handle("GET /forms/new-board", newBoardForm())
+	screens.Handle("POST /submit/new-board", submitNewBoard(config.Deps.Store))
+	screens.Handle("POST /submit/seen", submitSeen(config.Seen, config.Deps.Store))
 	screens.Handle("GET /graph", navigationGraph())
 
 	mux := http.NewServeMux()

@@ -62,7 +62,7 @@ func (b Board) header() Component {
 			Text("board-count", b.summary(), TextBodyMuted),
 		),
 		Spacer("board-header-spacer"),
-		Button("board-new", "New task", Navigate("app://new-task"),
+		Button("board-new", "New task", Navigate(LinkNewTask),
 			PaddingXY(12, 20), Background(ColorAccent)),
 	)
 }
@@ -183,7 +183,7 @@ func EmptyWorkspace() Component {
 					"Boards are created by people. Your agent can fill one with tasks, but it cannot make one.",
 					TextBodyMuted),
 				Row("board-empty-actions", 0, nil,
-					Button("board-empty-new", "New board", Navigate("app://new-board"),
+					Button("board-empty-new", "New board", Navigate(LinkNewBoard),
 						PaddingXY(12, 20), Background(ColorAccent)),
 					Spacer("board-empty-spacer"),
 				),
@@ -217,7 +217,7 @@ func EmptyMyTasks() Component {
 			"Tasks show up here when someone assigns them to you — or when your agent picks work up on your behalf.",
 			TextBodyMuted),
 		Row("my-tasks-empty-actions", 0, nil,
-			Button("my-tasks-empty-go", "Go to the board", Navigate("app://board"),
+			Button("my-tasks-empty-go", "Go to the board", Navigate(LinkBoard),
 				PaddingXY(12, 20)),
 			Spacer("my-tasks-empty-spacer"),
 		),

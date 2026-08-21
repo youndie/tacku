@@ -12,6 +12,7 @@ import (
 // rather than a `form` — which is also why it is the only one conditional delivery applies to.
 type Feed struct {
 	Person   domain.MemberID
+	SeenURL  string
 	Changes  []domain.Change
 	NextPage string
 	Boards   int
@@ -36,13 +37,13 @@ func (f Feed) navigation() Component {
 		[]Modifier{WidthDp(240), Background(ColorSurfaceBlock), PaddingXY(20, 0)},
 		Text("nav-brand", "tacku", TextTitle, PaddingXY(0, 20)),
 		Column("nav-current", 0, []Modifier{Background(ColorSurfaceSelected)},
-			Button("nav-catchup", "Catch-up", Navigate("app://catch-up"), PaddingXY(12, 20)),
+			Button("nav-catchup", "Catch-up", Navigate(LinkCatchUp), PaddingXY(12, 20)),
 		),
-		Button("nav-boards", "Boards", Navigate("app://boards"), PaddingXY(12, 20)),
-		Button("nav-mine", "My tasks", Navigate("app://my-tasks"), PaddingXY(12, 20)),
+		Button("nav-boards", "Boards", Navigate(LinkBoard), PaddingXY(12, 20)),
+		Button("nav-mine", "My tasks", Navigate(LinkMyTasks), PaddingXY(12, 20)),
 		Spacer("nav-spacer"),
 		Text("nav-person", string(f.Person), TextMeta, PaddingXY(0, 20)),
-		Button("nav-signout", "Sign out", Navigate("app://sign-out"), PaddingXY(12, 20)),
+		Button("nav-signout", "Sign out", Navigate(LinkSignOut), PaddingXY(12, 20)),
 	)
 }
 
@@ -61,7 +62,10 @@ func (f Feed) header() Component {
 			Text("feed-count", f.summary(), TextBodyMuted),
 		),
 		Spacer("feed-header-spacer"),
-		Button("feed-seen", "Mark all as seen", Navigate("app://catch-up?seen=all"), PaddingXY(12, 20)),
+		// A perform and not a navigate: marking everything seen changes state, and it used to be a
+		// navigate to the same screen with a query on the end — a state change wearing the clothes
+		// of navigation, which is also a deeplink the graph could never carry.
+		Button("feed-seen", "Mark all as seen", Perform(f.SeenURL, nil), PaddingXY(12, 20)),
 	)
 }
 
@@ -125,7 +129,7 @@ func emptyFeed() Component {
 			"You are up to date. Anything your agent does on your behalf will show up here first.",
 			TextBodyMuted),
 		Row("feed-empty-actions", 0, nil,
-			Button("feed-empty-go", "Go to your boards", Navigate("app://boards"), PaddingXY(12, 20)),
+			Button("feed-empty-go", "Go to your boards", Navigate(LinkBoard), PaddingXY(12, 20)),
 			Spacer("feed-empty-spacer"),
 		),
 	)

@@ -141,6 +141,7 @@ func newResource(t *testing.T) *resource {
 	handler, err := httpsrv.New(httpsrv.Config{
 		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: "0.1.0"},
 		Members:    store,
+		Seen:       store,
 		SessionKey: []byte("a key of at least thirty-two bytes"),
 		Verifier: auth.VerifierConfig{
 			Issuer:   as.issuer,
