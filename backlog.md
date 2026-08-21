@@ -43,11 +43,10 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (21)
+## Open (20)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
 | [B-19](docs/backlog/B-19-provenance-in-ui.md) `[ ]` | Провенанс виден в интерфейсе: кто сделал и от чьего имени | P1 | M | B-07, B-18 |
@@ -69,7 +68,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (16)
+## Closed (17)
 
 **Чем меряем**
 
@@ -95,6 +94,10 @@
 
 - [B-15](docs/backlog/B-15-mcp-tools-over-stdio.md) `[x]` - MCP-инструменты по stdio: чтение курсором и запись с идемпотентностью
 - [B-17](docs/backlog/B-17-mcp-over-http-and-oauth.md) `[x]` - MCP по HTTP: сервер авторизации и метаданные защищённого ресурса
+
+**Человеческая поверхность**
+
+- [B-18](docs/backlog/B-18-compose-desktop-client.md) `[x]` - Клиент на Compose Desktop поверх опубликованных модулей kompot
 
 <!-- END INDEX -->
 

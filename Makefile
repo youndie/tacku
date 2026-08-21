@@ -18,13 +18,14 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: check gate docs server client spec tck format report probes fix help
+.PHONY: check gate docs server client spec tck probe format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
 	@echo "make spec    - regenerate the committed KOMPOT spec of this build"
 	@echo "make format  - apply ktlint and gofmt in place"
 	@echo "make tck     - start the server and walk it with the conformance kit"
+	@echo "make probe   - start the server and decode every screen with the toolkit's parsers"
 	@echo "make probes  - re-run the research probes; a probe that stops building is a changed fact"
 	@echo "make report  - non-blocking reports: BDD coverage, code anchors"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
@@ -46,7 +47,7 @@ docs:
 # a formatter enforced on one language of a two-language repository is a rule that gets argued about
 # in the other.
 client:
-	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test
+	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
@@ -82,6 +83,22 @@ tck:
 		status=$$?; \
 		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
 		rm -f /tmp/tacku-tck.token; exit $$status
+
+# The client as a measuring instrument: a response can satisfy the schema and still not decode, and
+# only the code that will actually draw the screen can say so.
+probe:
+	@lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true
+	@rm -f /tmp/tacku-probe.db
+	@cd server && go run ./cmd/tacku seed -db /tmp/tacku-probe.db
+	@cd server && go run ./cmd/devauth -addr :8478 >/dev/null 2>&1 & sleep 4
+	@cd server && TACKU_RESOURCE=http://localhost:8477 \
+		TACKU_ISSUER=http://localhost:8478 TACKU_JWKS_URL=http://localhost:8478/jwks \
+		TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
+		go run ./cmd/tacku serve -db /tmp/tacku-probe.db -addr :8477 >/dev/null 2>&1 & sleep 5
+	@cd client && ./gradlew --quiet :app:probe --console=plain; \
+		status=$$?; \
+		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
+		exit $$status
 
 # Not in the gate: it rewrites committed files. Run it when the wire types change, then review the
 # diff of spec/ as carefully as the code.

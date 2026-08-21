@@ -12,6 +12,11 @@ indent_size = 4
 max_line_length = 120
 ktlint_code_style = ktlint_official
 
+# A composable is named like a type, not like a function, and Compose reads that way everywhere.
+# The exemption is the rule's own, aimed at the annotation rather than at the file: an ordinary
+# function in the same source is still held to camel case.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
 [*.go]
 indent_style = tab
 
