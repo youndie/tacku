@@ -45,7 +45,7 @@ docs:
 # a formatter enforced on one language of a two-language repository is a rule that gets argued about
 # in the other.
 client:
-	cd client && ./gradlew --quiet :spec-gen:ktlintCheck :spec-gen:test
+	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)

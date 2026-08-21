@@ -13,3 +13,4 @@ dependencyResolutionManagement {
 rootProject.name = "tacku-client"
 
 include(":spec-gen")
+include(":tck")
