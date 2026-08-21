@@ -7,7 +7,6 @@ import (
 
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/forms"
-	"github.com/youndie/tacku/server/internal/idem"
 	"github.com/youndie/tacku/server/internal/render"
 )
 
@@ -93,20 +92,11 @@ func statusOptions() []render.SelectOption {
 
 // submitNewTask answers a KompotAction, never a redirect and never an empty 200 (§16.4): the client
 // runs the answer through the same chain as any other intent.
-func submitNewTask(store domain.Store, attempts domain.Attempts) http.HandlerFunc {
+func submitNewTask(store domain.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
 			unauthenticated(w)
-			return
-		}
-
-		key := r.Header.Get(idempotencyHeader)
-		if key == "" {
-			// §16.5, and the code is 400 rather than 422: the request is malformed rather than
-			// refused on its merits, and the difference is what tells a client to fix the call
-			// rather than the data.
-			http.Error(w, `{"error":"`+idempotencyHeader+` is required"}`, http.StatusBadRequest)
 			return
 		}
 
@@ -116,24 +106,23 @@ func submitNewTask(store domain.Store, attempts domain.Attempts) http.HandlerFun
 			return
 		}
 
-		action, err := idem.Once(r.Context(), attempts, key, request, func() (map[string]any, error) {
-			task, err := store.CreateTask(r.Context(), domain.Task{
-				Board:  domain.BoardID(request.text("board")),
-				Title:  request.text("title"),
-				Status: domain.Status(request.text("status")),
-				Due:    request.text("due"),
-			}, principal.Provenance)
-			if err != nil {
-				return nil, err
-			}
-			return map[string]any{"type": "navigate", "deeplink": "app://task/" + string(task.ID)}, nil
-		})
+		// No idempotency here, and that is the change B-11 made: a repeat never reaches this
+		// handler, so nothing it does — including the journal entry inside the store — can happen
+		// twice.
+		task, err := store.CreateTask(r.Context(), domain.Task{
+			Board:  domain.BoardID(request.text("board")),
+			Title:  request.text("title"),
+			Status: domain.Status(request.text("status")),
+			Due:    request.text("due"),
+		}, principal.Provenance)
 		if err != nil {
 			fail(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, action)
+		writeJSON(w, http.StatusOK, map[string]any{
+			"type": "navigate", "deeplink": "app://task/" + string(task.ID),
+		})
 	}
 }
 
@@ -161,8 +150,6 @@ func (s submitRequest) text(field string) string {
 	}
 	return strings.TrimSpace(value.Text)
 }
-
-const idempotencyHeader = "Idempotency-Key"
 
 func unauthenticated(w http.ResponseWriter) {
 	http.Error(w, `{"error":"unauthenticated"}`, http.StatusUnauthorized)
@@ -216,17 +203,11 @@ const moveURL = "/submit/move"
 //
 // A submit endpoint like any other: it answers a KompotAction and it requires an idempotency key.
 // An agent retries; so does a person with a slow connection and an impatient finger.
-func submitMove(store domain.Store, attempts domain.Attempts) http.HandlerFunc {
+func submitMove(store domain.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
 			unauthenticated(w)
-			return
-		}
-
-		key := r.Header.Get(idempotencyHeader)
-		if key == "" {
-			http.Error(w, `{"error":"`+idempotencyHeader+` is required"}`, http.StatusBadRequest)
 			return
 		}
 
@@ -236,25 +217,17 @@ func submitMove(store domain.Store, attempts domain.Attempts) http.HandlerFunc {
 			return
 		}
 
-		action, err := idem.Once(r.Context(), attempts, key, request, func() (map[string]any, error) {
-			task, err := store.MoveTask(r.Context(),
-				domain.TaskID(request.text("task")),
-				domain.Status(request.text("status")),
-				principal.Provenance)
-			if err != nil {
-				return nil, err
-			}
-			// A navigate back to the board, which the client runs through the same handler chain as
-			// any other intent — and which makes the moved card appear in its new column without
-			// this endpoint having to describe a tree.
-			_ = task
-			return map[string]any{"type": "navigate", "deeplink": "app://board"}, nil
-		})
-		if err != nil {
+		if _, err := store.MoveTask(r.Context(),
+			domain.TaskID(request.text("task")),
+			domain.Status(request.text("status")),
+			principal.Provenance); err != nil {
 			fail(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, action)
+		// A navigate back to the board, which the client runs through the same chain as any other
+		// intent — and which puts the moved card in its new column without this endpoint having to
+		// describe a tree.
+		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": "app://board"})
 	}
 }

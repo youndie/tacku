@@ -23,6 +23,11 @@ import (
 // Requests are compared by a hash of their canonical JSON rather than byte for byte. A client is
 // free to reorder the keys of an object when it retries, and byte comparison would answer a
 // conflict to an honest retry — see Q-01, where the specification leaves this undefined.
+// Once is the agent-facing half of the same mechanism: an MCP tool takes the key as an argument,
+// there being no header to carry it.
+//
+// The HTTP half is Middleware, which wraps the handler rather than the operation — see the reason
+// there. A tool has no side effects outside its own body, so wrapping the call is enough here.
 func Once[T any](ctx context.Context, attempts domain.Attempts, key string, request any, fn func() (T, error)) (T, error) {
 	var zero T
 
@@ -35,7 +40,11 @@ func Once[T any](ctx context.Context, attempts domain.Attempts, key string, requ
 		return zero, err
 	}
 
-	previous, found, err := attempts.Outcome(ctx, key)
+	// Scoped away from the HTTP key space: the same string arriving at both surfaces would
+	// otherwise replay one shape of answer into the other.
+	scoped := "mcp:" + key
+
+	previous, found, err := attempts.Outcome(ctx, scoped)
 	if err != nil {
 		return zero, err
 	}
@@ -63,7 +72,7 @@ func Once[T any](ctx context.Context, attempts domain.Attempts, key string, requ
 	if err != nil {
 		return zero, err
 	}
-	if err := attempts.Remember(ctx, key, domain.Outcome{RequestHash: hash, Body: body}); err != nil {
+	if err := attempts.Remember(ctx, scoped, domain.Outcome{RequestHash: hash, Body: body}); err != nil {
 		return zero, err
 	}
 	return result, nil

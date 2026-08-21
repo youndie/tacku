@@ -17,6 +17,7 @@ import (
 
 	"github.com/youndie/tacku/server/internal/auth"
 	"github.com/youndie/tacku/server/internal/domain"
+	"github.com/youndie/tacku/server/internal/idem"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
 )
 
@@ -112,8 +113,8 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
 	screens.Handle("GET /screens/board", board(config.Deps.Store))
 	screens.Handle("GET /forms/new-task", newTaskForm(config.Deps.Store))
-	screens.Handle("POST /submit/new-task", submitNewTask(config.Deps.Store, config.Deps.Attempts))
-	screens.Handle("POST /submit/move", submitMove(config.Deps.Store, config.Deps.Attempts))
+	screens.Handle("POST /submit/new-task", submitNewTask(config.Deps.Store))
+	screens.Handle("POST /submit/move", submitMove(config.Deps.Store))
 	screens.Handle("GET /forms/my-tasks", myTasks(config.Deps.Store))
 	screens.Handle("GET /pages/tasks", tasksPage(config.Deps.Store))
 	screens.Handle("GET /graph", navigationGraph())
@@ -121,11 +122,20 @@ func New(config Config) (http.Handler, error) {
 	mux := http.NewServeMux()
 	mux.Handle(MetadataPath, metadata)
 	mux.Handle(MCPPath, guarded)
-	mux.Handle("/screens/", requireSession(sessions, screens))
-	mux.Handle("/pages/", requireSession(sessions, screens))
-	mux.Handle("/forms/", requireSession(sessions, screens))
-	mux.Handle("/submit/", requireSession(sessions, screens))
-	mux.Handle("/graph", requireSession(sessions, screens))
+	// Idempotency wraps the handlers rather than living inside them: a repeat then never reaches
+	// one, so nothing a handler does can happen twice — not the operation and not the journal
+	// entry, the log line or the update frame beside it.
+	//
+	// And it sits *inside* the session check, not outside. The other order answered an anonymous
+	// caller with 400 for a missing idempotency key: telling somebody who has not authenticated
+	// what else their request lacks, and hiding the reason it was going to be refused anyway.
+	guardedScreens := requireSession(sessions, idem.Middleware(config.Deps.Attempts, screens))
+
+	mux.Handle("/screens/", guardedScreens)
+	mux.Handle("/pages/", guardedScreens)
+	mux.Handle("/forms/", guardedScreens)
+	mux.Handle("/submit/", guardedScreens)
+	mux.Handle("/graph", guardedScreens)
 
 	// Public, and the only route of this surface that is: a person with no session has to be able
 	// to reach the form that starts one.
