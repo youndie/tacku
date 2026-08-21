@@ -33,6 +33,17 @@ jobs:
         with:
           python-version: "3.11"
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+
+      # 25 because kompot is published for it: resolution fails outright on 21 with "only
+      # compatible with JVM runtime version 25 or newer".
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
       - run: pip install pyyaml
 
       # BEFORE `make check`, and that order is the whole value of this step. Both checks catch a

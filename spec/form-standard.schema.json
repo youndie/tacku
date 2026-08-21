@@ -1,0 +1,472 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/form-standard.schema.json",
+  "title": "form-standard",
+  "description": "The standard form fields, rules, values and conditions",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "FieldValue": {
+      "amount_value": "#/$defs/FieldValueAmountValue",
+      "boolean_value": "#/$defs/FieldValueBooleanValue",
+      "entity_value": "#/$defs/FieldValueEntityValue",
+      "text_value": "#/$defs/FieldValueTextValue"
+    },
+    "FormCondition": {
+      "equals": "#/$defs/FormConditionEquals",
+      "not_equals": "#/$defs/FormConditionNotEquals"
+    },
+    "FormFieldDefinition": {
+      "amount_field": "#/$defs/FormFieldDefinitionAmountField",
+      "autocomplete_field": "#/$defs/FormFieldDefinitionAutocompleteField",
+      "checkbox_field": "#/$defs/FormFieldDefinitionCheckboxField",
+      "selection_field": "#/$defs/FormFieldDefinitionSelectionField",
+      "text_field": "#/$defs/FormFieldDefinitionTextField"
+    },
+    "ValidationRule": {
+      "max_amount_from_field": "#/$defs/ValidationRuleMaxAmountFromField",
+      "regex": "#/$defs/ValidationRuleRegex",
+      "required": "#/$defs/ValidationRuleRequired",
+      "required_if": "#/$defs/ValidationRuleRequiredIf"
+    }
+  },
+  "$defs": {
+    "FieldValueAmountValue": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "amount_value",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "amount_value"
+        },
+        "long": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "long"
+      ],
+      "additionalProperties": true
+    },
+    "FieldValueBooleanValue": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "boolean_value",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "boolean_value"
+        },
+        "value": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "additionalProperties": true
+    },
+    "FieldValueEntityValue": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "entity_value",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "entity_value"
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "rawMetadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary metadata available to the client locally. Two keys are reserved by the protocol: \"currency\" is the currency amount_input.currencyFromField picks up, \"balance\" is the remaining amount max_amount_from_field reads. Every other key is a convention of the particular form"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "title"
+      ],
+      "additionalProperties": true
+    },
+    "FieldValueTextValue": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "text_value",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "text_value"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": true
+    },
+    "FormConditionEquals": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "equals",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "equals"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "expectedValue": {
+          "$ref": "form-core.schema.json#/$defs/FieldValue"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId",
+        "expectedValue"
+      ],
+      "additionalProperties": true
+    },
+    "FormConditionNotEquals": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "not_equals",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "not_equals"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "expectedValue": {
+          "$ref": "form-core.schema.json#/$defs/FieldValue"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId",
+        "expectedValue"
+      ],
+      "additionalProperties": true
+    },
+    "FormFieldDefinitionAmountField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "amount_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "amount_field"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "form-core.schema.json#/$defs/ValidationRule"
+          }
+        },
+        "visibleIf": {
+          "anyOf": [
+            {
+              "$ref": "form-core.schema.json#/$defs/FormCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "triggersPatch": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId",
+        "rules"
+      ],
+      "additionalProperties": true
+    },
+    "FormFieldDefinitionAutocompleteField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "autocomplete_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "autocomplete_field"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "form-core.schema.json#/$defs/ValidationRule"
+          }
+        },
+        "dataSourceId": {
+          "type": "string"
+        },
+        "visibleIf": {
+          "anyOf": [
+            {
+              "$ref": "form-core.schema.json#/$defs/FormCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "triggersPatch": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId",
+        "dataSourceId"
+      ],
+      "additionalProperties": true
+    },
+    "FormFieldDefinitionCheckboxField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "checkbox_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "checkbox_field"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "form-core.schema.json#/$defs/ValidationRule"
+          }
+        },
+        "visibleIf": {
+          "anyOf": [
+            {
+              "$ref": "form-core.schema.json#/$defs/FormCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "triggersPatch": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId"
+      ],
+      "additionalProperties": true
+    },
+    "FormFieldDefinitionSelectionField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "selection_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "selection_field"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "form-core.schema.json#/$defs/ValidationRule"
+          }
+        },
+        "visibleIf": {
+          "anyOf": [
+            {
+              "$ref": "form-core.schema.json#/$defs/FormCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "triggersPatch": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId"
+      ],
+      "additionalProperties": true
+    },
+    "FormFieldDefinitionTextField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "text_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "text_field"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "form-core.schema.json#/$defs/ValidationRule"
+          }
+        },
+        "keyboardType": {
+          "$ref": "#/$defs/KeyboardType"
+        },
+        "mask": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "visibleIf": {
+          "anyOf": [
+            {
+              "$ref": "form-core.schema.json#/$defs/FormCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "triggersPatch": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId",
+        "rules"
+      ],
+      "additionalProperties": true
+    },
+    "KeyboardType": {
+      "x-kompot-kind": "enum",
+      "type": "string",
+      "enum": [
+        "TEXT",
+        "NUMBER",
+        "EMAIL",
+        "PHONE"
+      ]
+    },
+    "ValidationRuleMaxAmountFromField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "max_amount_from_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "max_amount_from_field"
+        },
+        "balanceFieldId": {
+          "type": "string"
+        },
+        "balanceMetadataKey": {
+          "type": "string",
+          "description": "The key in the chosen entity_value's rawMetadata the remaining amount is read from. Defaults to \"balance\""
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "balanceFieldId",
+        "errorMessage"
+      ],
+      "additionalProperties": true
+    },
+    "ValidationRuleRegex": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "regex",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "regex"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "pattern",
+        "errorMessage"
+      ],
+      "additionalProperties": true
+    },
+    "ValidationRuleRequired": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "required",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "required"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "errorMessage"
+      ],
+      "additionalProperties": true
+    },
+    "ValidationRuleRequiredIf": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "required_if",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "required_if"
+        },
+        "targetFieldId": {
+          "type": "string"
+        },
+        "expectedValue": {
+          "$ref": "form-core.schema.json#/$defs/FieldValue"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "targetFieldId",
+        "expectedValue",
+        "errorMessage"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

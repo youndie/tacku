@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-core.schema.json",
+  "title": "kompot-core",
+  "description": "The open contracts of the protocol: the KompotComponent/KompotAction bases, the closed modifier chain and the design-system tokens",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "$defs": {
+    "ColorToken": {
+      "x-kompot-kind": "token",
+      "description": "An open design-system string key (io.github.youndie.kompot.ColorToken)",
+      "type": "string"
+    },
+    "KompotAction": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": true,
+      "x-kompot-degrades": true,
+      "description": "An intent the server sends the client in response to an interaction. The hierarchy is OPEN on the same terms as KompotComponent.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The variant discriminator. The closed list of values is in the build's profile"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponent": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": true,
+      "x-kompot-degrades": true,
+      "description": "A node of the screen tree. The hierarchy is OPEN: a server may send a type the client does not know, and the client must degrade to a placeholder rather than fail (see SPEC.md, \"Unknown types\").",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The variant discriminator. The closed list of values is in the build's profile"
+        },
+        "id": {
+          "type": "string",
+          "description": "Unique within one screen tree: point updates are addressed by it (see UpdateComponentMessage in :kompot-realtime)"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/KompotModifierNode"
+          },
+          "description": "The order of nodes matters — they are applied left to right"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": true
+    },
+    "KompotModifierNode": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "#/$defs/KompotModifierNodeBackground"
+        },
+        {
+          "$ref": "#/$defs/KompotModifierNodeGradient"
+        },
+        {
+          "$ref": "#/$defs/KompotModifierNodePadding"
+        },
+        {
+          "$ref": "#/$defs/KompotModifierNodeSize"
+        },
+        {
+          "$ref": "#/$defs/KompotModifierNodeWeight"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "background": "#/$defs/KompotModifierNodeBackground",
+          "gradient": "#/$defs/KompotModifierNodeGradient",
+          "padding": "#/$defs/KompotModifierNodePadding",
+          "size": "#/$defs/KompotModifierNodeSize",
+          "weight": "#/$defs/KompotModifierNodeWeight"
+        }
+      }
+    },
+    "KompotModifierNodeBackground": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "background",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "background"
+        },
+        "color": {
+          "$ref": "#/$defs/ColorToken"
+        }
+      },
+      "required": [
+        "type",
+        "color"
+      ],
+      "additionalProperties": true
+    },
+    "KompotModifierNodeGradient": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "gradient",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "gradient"
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ColorToken"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "colors"
+      ],
+      "additionalProperties": true
+    },
+    "KompotModifierNodePadding": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "padding",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "padding"
+        },
+        "all": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "top": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "bottom": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "KompotModifierNodeSize": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "size",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "size"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SizeType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SizeType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "KompotModifierNodeWeight": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "weight",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "weight"
+        },
+        "value": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "additionalProperties": true
+    },
+    "SizeType": {
+      "x-kompot-kind": "enum",
+      "type": "string",
+      "enum": [
+        "Fill",
+        "Wrap"
+      ]
+    },
+    "TypographyToken": {
+      "x-kompot-kind": "token",
+      "description": "An open design-system string key (io.github.youndie.kompot.TypographyToken)",
+      "type": "string"
+    }
+  }
+}

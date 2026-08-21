@@ -1,0 +1,407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-forms.schema.json",
+  "title": "kompot-forms",
+  "description": "The form UI: input components, the submit action and the form/patch response envelopes",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "KompotAction": {
+      "submit_form": "#/$defs/KompotActionSubmitForm"
+    },
+    "KompotComponent": {
+      "amount_input": "#/$defs/KompotComponentAmountInput",
+      "autocomplete_input": "#/$defs/KompotComponentAutocompleteInput",
+      "checkbox_input": "#/$defs/KompotComponentCheckboxInput",
+      "radio_group": "#/$defs/KompotComponentRadioGroup",
+      "read_only_field": "#/$defs/KompotComponentReadOnlyField",
+      "select_input": "#/$defs/KompotComponentSelectInput",
+      "text_input": "#/$defs/KompotComponentTextInput"
+    }
+  },
+  "$defs": {
+    "FormPatchRequest": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "formId": {
+          "type": "string"
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "form-core.schema.json#/$defs/FieldValue"
+          }
+        }
+      },
+      "required": [
+        "formId",
+        "fieldId",
+        "values"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionSubmitForm": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "submit_form",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "submit_form"
+        },
+        "formId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "formId"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentAmountInput": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "amount_input",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "amount_input"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "currencySuffix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currencyFromField": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "fieldId",
+        "label"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentAutocompleteInput": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "autocomplete_input",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "autocomplete_input"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "dataSourceId": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "fieldId",
+        "label",
+        "dataSourceId"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentCheckboxInput": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "checkbox_input",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "checkbox_input"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "fieldId",
+        "label"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentRadioGroup": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "radio_group",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "radio_group"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SelectOption"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "fieldId",
+        "label",
+        "options"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentReadOnlyField": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "read_only_field",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "read_only_field"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "helperText": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "label",
+        "value"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentSelectInput": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "select_input",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "select_input"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SelectOption"
+          }
+        },
+        "placeholder": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "fieldId",
+        "label",
+        "options"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentTextInput": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "text_input",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "text_input"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "fieldId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mask": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uppercase": {
+          "type": "boolean"
+        },
+        "secret": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "fieldId",
+        "label"
+      ],
+      "additionalProperties": true
+    },
+    "KompotFormResponse": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "form-core.schema.json#/$defs/FormSchema"
+        },
+        "screen": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        },
+        "realtimeTopic": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_]*(:[A-Za-z0-9._-]+)*$",
+          "description": "The live-update topic of this screen. The string is opaque to the client; a server must make it per-subject wherever the data is personal (see SPEC.md §10.4)"
+        }
+      },
+      "required": [
+        "schema",
+        "screen"
+      ],
+      "additionalProperties": true
+    },
+    "SelectOption": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "rawMetadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Arbitrary metadata available to the client locally. Two keys are reserved by the protocol: \"currency\" is the currency amount_input.currencyFromField picks up, \"balance\" is the remaining amount max_amount_from_field reads. Every other key is a convention of the particular form"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

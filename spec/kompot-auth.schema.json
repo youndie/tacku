@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-auth.schema.json",
+  "title": "kompot-auth",
+  "description": "The action that updates the session after a login",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "KompotAction": {
+      "update_session": "#/$defs/KompotActionUpdateSession"
+    }
+  },
+  "$defs": {
+    "KompotActionUpdateSession": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "update_session",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "update_session"
+        },
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "accessToken",
+        "refreshToken"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/form-core.schema.json",
+  "title": "form-core",
+  "description": "The form contracts: schema, field definitions, validation rules, values, visibility conditions",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "$defs": {
+    "FieldValue": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": true,
+      "x-kompot-degrades": false,
+      "description": "The value of a form field. It travels both ways: server -> client in a patch, client -> server on submit. No runtime fallback.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The variant discriminator. The closed list of values is in the build's profile"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "FormCondition": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": true,
+      "x-kompot-degrades": false,
+      "description": "A field's visibility condition (visibleIf). No runtime fallback.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The variant discriminator. The closed list of values is in the build's profile"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "FormFieldDefinition": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": true,
+      "x-kompot-degrades": false,
+      "description": "The definition of a form field: the data contract, not its presentation. The hierarchy is extended by plug-ins but has NO runtime fallback: an unknown type breaks the parse of the whole form schema.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The variant discriminator. The closed list of values is in the build's profile"
+        },
+        "fieldId": {
+          "type": "string",
+          "description": "Unique within a FormSchema; ties the definition to the UI component that refers to it"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValidationRule"
+          }
+        },
+        "visibleIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FormCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Evaluated by the client locally, with no round trip to the server"
+        },
+        "triggersPatch": {
+          "type": "boolean",
+          "description": "Changing the value requires asking the server for a patch"
+        }
+      },
+      "required": [
+        "type",
+        "fieldId"
+      ],
+      "additionalProperties": true
+    },
+    "FormPatch": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "updates": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/FieldValue"
+          }
+        },
+        "clearFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "focusOn": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "FormSchema": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "formId": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FormFieldDefinition"
+          }
+        }
+      },
+      "required": [
+        "formId",
+        "fields"
+      ],
+      "additionalProperties": true
+    },
+    "ValidationRule": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": true,
+      "x-kompot-degrades": false,
+      "description": "A client-side validation rule for a field. No runtime fallback (see FormFieldDefinition).",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The variant discriminator. The closed list of values is in the build's profile"
+        },
+        "errorMessage": {
+          "type": "string",
+          "description": "Ready localised error text, not a translation key"
+        }
+      },
+      "required": [
+        "type",
+        "errorMessage"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

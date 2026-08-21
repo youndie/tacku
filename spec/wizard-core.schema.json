@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/wizard-core.schema.json",
+  "title": "wizard-core",
+  "description": "A transition of a multi-step flow (Next/Back/Finish/JumpTo)",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "$defs": {
+    "WizardTransition": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "#/$defs/WizardTransitionBack"
+        },
+        {
+          "$ref": "#/$defs/WizardTransitionFinish"
+        },
+        {
+          "$ref": "#/$defs/WizardTransitionJumpTo"
+        },
+        {
+          "$ref": "#/$defs/WizardTransitionNext"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "back": "#/$defs/WizardTransitionBack",
+          "finish": "#/$defs/WizardTransitionFinish",
+          "jump_to": "#/$defs/WizardTransitionJumpTo",
+          "next": "#/$defs/WizardTransitionNext"
+        }
+      }
+    },
+    "WizardTransitionBack": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "back",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "back"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "WizardTransitionFinish": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "finish",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "finish"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "WizardTransitionJumpTo": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "jump_to",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "jump_to"
+        },
+        "stepId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "stepId"
+      ],
+      "additionalProperties": true
+    },
+    "WizardTransitionNext": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "next",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "next"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

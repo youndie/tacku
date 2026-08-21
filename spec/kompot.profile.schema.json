@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot.profile.schema.json",
+  "title": "KOMPOT profile",
+  "description": "The closed list of types supported by this build of the protocol",
+  "x-kompot-generated-by": "KompotSpec.profile — this file is generated, do not edit by hand",
+  "x-kompot-modules": [
+    "kompot-core",
+    "form-core",
+    "wizard-core",
+    "kompot-standard",
+    "kompot-forms",
+    "kompot-images",
+    "kompot-realtime",
+    "kompot-wizard",
+    "kompot-navigation",
+    "kompot-auth",
+    "form-standard"
+  ],
+  "$defs": {
+    "FieldValue": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "form-standard.schema.json#/$defs/FieldValueAmountValue"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FieldValueBooleanValue"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FieldValueEntityValue"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FieldValueTextValue"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "amount_value": "form-standard.schema.json#/$defs/FieldValueAmountValue",
+          "boolean_value": "form-standard.schema.json#/$defs/FieldValueBooleanValue",
+          "entity_value": "form-standard.schema.json#/$defs/FieldValueEntityValue",
+          "text_value": "form-standard.schema.json#/$defs/FieldValueTextValue"
+        }
+      }
+    },
+    "FormCondition": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormConditionEquals"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormConditionNotEquals"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "equals": "form-standard.schema.json#/$defs/FormConditionEquals",
+          "not_equals": "form-standard.schema.json#/$defs/FormConditionNotEquals"
+        }
+      }
+    },
+    "FormFieldDefinition": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionAmountField"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionAutocompleteField"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionCheckboxField"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionSelectionField"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionTextField"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "amount_field": "form-standard.schema.json#/$defs/FormFieldDefinitionAmountField",
+          "autocomplete_field": "form-standard.schema.json#/$defs/FormFieldDefinitionAutocompleteField",
+          "checkbox_field": "form-standard.schema.json#/$defs/FormFieldDefinitionCheckboxField",
+          "selection_field": "form-standard.schema.json#/$defs/FormFieldDefinitionSelectionField",
+          "text_field": "form-standard.schema.json#/$defs/FormFieldDefinitionTextField"
+        }
+      }
+    },
+    "KompotAction": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionClose"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionCopyText"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionLoadPage"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionNavigate"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotActionSubmitForm"
+        },
+        {
+          "$ref": "kompot-auth.schema.json#/$defs/KompotActionUpdateSession"
+        },
+        {
+          "$ref": "kompot-wizard.schema.json#/$defs/KompotActionWizardBack"
+        },
+        {
+          "$ref": "kompot-wizard.schema.json#/$defs/KompotActionWizardFinish"
+        },
+        {
+          "$ref": "kompot-wizard.schema.json#/$defs/KompotActionWizardNext"
+        },
+        {
+          "$ref": "kompot-wizard.schema.json#/$defs/KompotActionWizardStepResult"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "close": "kompot-standard.schema.json#/$defs/KompotActionClose",
+          "copy_text": "kompot-standard.schema.json#/$defs/KompotActionCopyText",
+          "load_page": "kompot-standard.schema.json#/$defs/KompotActionLoadPage",
+          "navigate": "kompot-standard.schema.json#/$defs/KompotActionNavigate",
+          "submit_form": "kompot-forms.schema.json#/$defs/KompotActionSubmitForm",
+          "update_session": "kompot-auth.schema.json#/$defs/KompotActionUpdateSession",
+          "wizard_back": "kompot-wizard.schema.json#/$defs/KompotActionWizardBack",
+          "wizard_finish": "kompot-wizard.schema.json#/$defs/KompotActionWizardFinish",
+          "wizard_next": "kompot-wizard.schema.json#/$defs/KompotActionWizardNext",
+          "wizard_step_result": "kompot-wizard.schema.json#/$defs/KompotActionWizardStepResult"
+        }
+      }
+    },
+    "KompotComponent": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentAmountInput"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentAutocompleteInput"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentButton"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentCheckboxInput"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentColumn"
+        },
+        {
+          "$ref": "kompot-images.schema.json#/$defs/KompotComponentImage"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentPaginatedList"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentRadioGroup"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentReadOnlyField"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentRow"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentSelectInput"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentTable"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentText"
+        },
+        {
+          "$ref": "kompot-forms.schema.json#/$defs/KompotComponentTextInput"
+        },
+        {
+          "$ref": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "amount_input": "kompot-forms.schema.json#/$defs/KompotComponentAmountInput",
+          "autocomplete_input": "kompot-forms.schema.json#/$defs/KompotComponentAutocompleteInput",
+          "button": "kompot-standard.schema.json#/$defs/KompotComponentButton",
+          "checkbox_input": "kompot-forms.schema.json#/$defs/KompotComponentCheckboxInput",
+          "column": "kompot-standard.schema.json#/$defs/KompotComponentColumn",
+          "image": "kompot-images.schema.json#/$defs/KompotComponentImage",
+          "paginated_list": "kompot-standard.schema.json#/$defs/KompotComponentPaginatedList",
+          "radio_group": "kompot-forms.schema.json#/$defs/KompotComponentRadioGroup",
+          "read_only_field": "kompot-forms.schema.json#/$defs/KompotComponentReadOnlyField",
+          "row": "kompot-standard.schema.json#/$defs/KompotComponentRow",
+          "select_input": "kompot-forms.schema.json#/$defs/KompotComponentSelectInput",
+          "table": "kompot-standard.schema.json#/$defs/KompotComponentTable",
+          "text": "kompot-standard.schema.json#/$defs/KompotComponentText",
+          "text_input": "kompot-forms.schema.json#/$defs/KompotComponentTextInput",
+          "wizard_screen": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen"
+        }
+      }
+    },
+    "ValidationRule": {
+      "x-kompot-kind": "hierarchy",
+      "x-kompot-open": false,
+      "oneOf": [
+        {
+          "$ref": "form-standard.schema.json#/$defs/ValidationRuleMaxAmountFromField"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/ValidationRuleRegex"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/ValidationRuleRequired"
+        },
+        {
+          "$ref": "form-standard.schema.json#/$defs/ValidationRuleRequiredIf"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "max_amount_from_field": "form-standard.schema.json#/$defs/ValidationRuleMaxAmountFromField",
+          "regex": "form-standard.schema.json#/$defs/ValidationRuleRegex",
+          "required": "form-standard.schema.json#/$defs/ValidationRuleRequired",
+          "required_if": "form-standard.schema.json#/$defs/ValidationRuleRequiredIf"
+        }
+      }
+    }
+  }
+}

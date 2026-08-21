@@ -1,0 +1,385 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-standard.schema.json",
+  "title": "kompot-standard",
+  "description": "The basic layout and text set: containers, text, button, table, paginated list",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "KompotAction": {
+      "close": "#/$defs/KompotActionClose",
+      "copy_text": "#/$defs/KompotActionCopyText",
+      "load_page": "#/$defs/KompotActionLoadPage",
+      "navigate": "#/$defs/KompotActionNavigate"
+    },
+    "KompotComponent": {
+      "button": "#/$defs/KompotComponentButton",
+      "column": "#/$defs/KompotComponentColumn",
+      "paginated_list": "#/$defs/KompotComponentPaginatedList",
+      "row": "#/$defs/KompotComponentRow",
+      "table": "#/$defs/KompotComponentTable",
+      "text": "#/$defs/KompotComponentText"
+    }
+  },
+  "$defs": {
+    "KompotActionClose": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "close",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "close"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionCopyText": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "copy_text",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "copy_text"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionLoadPage": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "load_page",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "load_page"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^/[^\\s#]*$",
+          "description": "The relative address of the next page"
+        }
+      },
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionNavigate": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "navigate",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "navigate"
+        },
+        "deeplink": {
+          "type": "string",
+          "pattern": "^(?!https?:)[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "description": "The identifier of an application screen: a URI with its own scheme, not a web address. Both the scheme and the set of values are the application's (see NavigationGraph in :kompot-navigation); a client must ignore an unknown deeplink"
+        }
+      },
+      "required": [
+        "type",
+        "deeplink"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentButton": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "button",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "button"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "action": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "text",
+        "action"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentColumn": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "column",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "column"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+          }
+        },
+        "spacing": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "children"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentPaginatedList": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "paginated_list",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "paginated_list"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "initialItems": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+          }
+        },
+        "loadMoreAction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LoadPage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reloadUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^/[^\\s#]*$",
+          "description": "The relative address of the first page; the form's field values go there as query parameters"
+        },
+        "emptyState": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "initialItems"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentRow": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "row",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "row"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+          }
+        },
+        "spacing": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "children"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentTable": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "table",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "table"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TableRow"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "rows"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentText": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "text",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/TypographyToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "text"
+      ],
+      "additionalProperties": true
+    },
+    "KompotPageResponse": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+          }
+        },
+        "nextLoadAction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LoadPage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": true
+    },
+    "LoadPage": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^/[^\\s#]*$",
+          "description": "The relative address of the next page"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": true
+    },
+    "TableRow": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "header": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "cells"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

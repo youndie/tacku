@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-realtime.schema.json",
+  "title": "kompot-realtime",
+  "description": "One frame of the component live-update channel",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "$defs": {
+    "UpdateComponentMessage": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "componentId": {
+          "type": "string"
+        },
+        "component": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        }
+      },
+      "required": [
+        "componentId",
+        "component"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

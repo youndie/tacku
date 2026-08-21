@@ -1,7 +1,7 @@
 ---
 id: B-01
 title: "Завести обе сборки и один `make check`, который зовёт обе"
-status: open
+status: done
 priority: P0
 size: M
 stage: s0-foundation
@@ -32,3 +32,8 @@ stage: s0-foundation
 - AC: на чистом чекауте `make check` проходит и печатает, что именно он проверил; удаление любой из
   трёх частей (Go, Gradle, доки) делает его красным; прогон в CI **завершается** — не `queued`.
 - Anchors: `Makefile`, `server/go.mod`, `client/settings.gradle.kts`.
+
+**Закрыто 21.08.2026.** `server/` (Go-модуль, загрузчик спеки и тесты) и `client/` (Gradle,
+`:spec-gen`) заведены; `make check` зовёт все три части — доки, Kotlin, Go, — и падает, если хоть
+одна не проходит. Сторож `gofmt` проверен порчей файла: на неотформатированном коде цель падает, а
+не проходит молча. CI получил `setup-go` и `setup-java` 25 и гоняет тот же `make check`.

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-navigation.schema.json",
+  "title": "kompot-navigation",
+  "description": "The route graph of plain screens: deeplink -> endpoint",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "$defs": {
+    "NavigationGraph": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ScreenRoute"
+          }
+        }
+      },
+      "required": [
+        "routes"
+      ],
+      "additionalProperties": true
+    },
+    "ScreenRoute": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "deeplink": {
+          "type": "string",
+          "pattern": "^(?!https?:)[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "description": "Matches the string a server puts into navigate.deeplink"
+        },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^/[^\\s#]*$",
+          "description": "The relative address the screen tree is fetched from"
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "deeplink",
+        "endpoint"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

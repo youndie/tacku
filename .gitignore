@@ -3,13 +3,11 @@
 # Go
 /server/bin/
 /probes/*/probe
-/probes/*/mcp-mux
-/probes/*/sqlite-nocgo
 
 # Gradle / JVM
 .gradle/
 build/
 local.properties
 
-# generated spec: produced by `make check`, never committed - the generator is the source of truth
-/client/spec/out/
+# The generated spec in /spec IS committed: the Go half cannot run the generator, so it reads
+# finished JSON. Drift is caught by client/spec-gen's golden test, not by ignoring the files.

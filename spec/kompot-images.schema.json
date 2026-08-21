@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-images.schema.json",
+  "title": "kompot-images",
+  "description": "A content image by URL",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "KompotComponent": {
+      "image": "#/$defs/KompotComponentImage"
+    }
+  },
+  "$defs": {
+    "ImageScaleType": {
+      "x-kompot-kind": "enum",
+      "type": "string",
+      "enum": [
+        "crop",
+        "fit",
+        "fill_bounds"
+      ]
+    },
+    "KompotComponentImage": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "image",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "image"
+        },
+        "id": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "contentDescription": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scaleType": {
+          "$ref": "#/$defs/ImageScaleType"
+        },
+        "tint": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/ColorToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "url"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

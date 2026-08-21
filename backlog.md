@@ -43,14 +43,12 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (33)
+## Open (30)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-01](docs/backlog/B-01-repo-and-two-builds.md) `[ ]` | Завести обе сборки и один `make check`, который зовёт обе | P0 | M | - |
 | [B-04](docs/backlog/B-04-conformance-levels-adopted.md) `[ ]` | Зафиксировать, какие уровни соответствия tacku принимает, а какие нет | P0 | S | - |
 | [B-05](docs/backlog/B-05-tck-target-counters-gate.md) `[ ]` | Гейт формулируется по счётчикам целей TCK, а не по отсутствию находок | P0 | S | B-01 |
-| [B-06](docs/backlog/B-06-tacku-spec-profile.md) `[ ]` | Спека сборки tacku: профиль и файлы схемы, генерируемые на JVM | P0 | M | B-01 |
 | [B-07](docs/backlog/B-07-domain-core-and-change-log.md) `[ ]` | Доменное ядро: доски, задачи, журнал изменений, произносимые идентификаторы | P0 | L | B-01 |
 | [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[ ]` | Экраны доски и карточки задачи с условной отдачей по ETag | P0 | M | B-06, B-07 |
 | [B-09](docs/backlog/B-09-task-form-and-submit.md) `[ ]` | Форма задачи: схема, дерево, сабмит и патч | P0 | L | B-08 |
@@ -60,7 +58,6 @@
 | [B-15](docs/backlog/B-15-mcp-tools-over-stdio.md) `[ ]` | MCP-инструменты по stdio: чтение курсором и запись с идемпотентностью | P0 | L | B-07 |
 | [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
-| [B-02](docs/backlog/B-02-build-environment.md) `[?]` | Решить, где собирается Go-половина: мак или Linux-машина | P1 | XS | B-01 |
 | [B-03](docs/backlog/B-03-report-form-standard-spec-gap.md) `[ ]` | Сообщить в kompot: у `form-standard` нет модуля спеки | P1 | XS | - |
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
 | [B-13](docs/backlog/B-13-navigation-graph.md) `[ ]` | Граф навигации: простые экраны и формат deeplink | P1 | S | B-08 |
@@ -81,7 +78,13 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (0)
+## Closed (3)
+
+**Чем меряем**
+
+- [B-01](docs/backlog/B-01-repo-and-two-builds.md) `[x]` - Завести обе сборки и один `make check`, который зовёт обе
+- [B-02](docs/backlog/B-02-build-environment.md) `[x]` - Решить, где собирается Go-половина: мак или Linux-машина
+- [B-06](docs/backlog/B-06-tacku-spec-profile.md) `[x]` - Спека сборки tacku: профиль и файлы схемы, генерируемые на JVM
 
 <!-- END INDEX -->
 

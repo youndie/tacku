@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-wizard.schema.json",
+  "title": "kompot-wizard",
+  "description": "The step screen of a flow, the Next/Back/Finish transitions and the result of a step",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "KompotAction": {
+      "wizard_back": "#/$defs/KompotActionWizardBack",
+      "wizard_finish": "#/$defs/KompotActionWizardFinish",
+      "wizard_next": "#/$defs/KompotActionWizardNext",
+      "wizard_step_result": "#/$defs/KompotActionWizardStepResult"
+    },
+    "KompotComponent": {
+      "wizard_screen": "#/$defs/KompotComponentWizardScreen"
+    }
+  },
+  "$defs": {
+    "KompotActionWizardBack": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "wizard_back",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "wizard_back"
+        },
+        "formId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "formId"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionWizardFinish": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "wizard_finish",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "wizard_finish"
+        },
+        "formId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "formId"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionWizardNext": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "wizard_next",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "wizard_next"
+        },
+        "formId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "formId"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionWizardStepResult": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "wizard_step_result",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "wizard_step_result"
+        },
+        "formId": {
+          "type": "string"
+        },
+        "schema": {
+          "$ref": "form-core.schema.json#/$defs/FormSchema"
+        },
+        "screen": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        }
+      },
+      "required": [
+        "type",
+        "formId",
+        "schema",
+        "screen"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentWizardScreen": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "wizard_screen",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "wizard_screen"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "formId": {
+          "type": "string"
+        },
+        "stepId": {
+          "type": "string"
+        },
+        "stepIndex": {
+          "type": "integer"
+        },
+        "totalSteps": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "canGoBack": {
+          "type": "boolean"
+        },
+        "content": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "formId",
+        "stepId",
+        "stepIndex",
+        "content"
+      ],
+      "additionalProperties": true
+    },
+    "WizardResumeRequest": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "transition": {
+          "$ref": "wizard-core.schema.json#/$defs/WizardTransition"
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "form-core.schema.json#/$defs/FieldValue"
+          }
+        }
+      },
+      "required": [
+        "transition"
+      ],
+      "additionalProperties": true
+    }
+  }
+}
