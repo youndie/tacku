@@ -39,6 +39,7 @@
 | [design-brief.md](design/design-brief.md) | бриф: в каких границах вообще рисуется интерфейс и почему |
 | [design-review.md](design/design-review.md) | сверка присланного макета с **машиночитаемым** профилем: шесть расхождений и два вопроса к протоколу |
 | [design-spec-tokens.md](design/design-spec-tokens.md) | набор токенов из макета — исходник для констант клиента |
+| [design-tasks.md](design/design-tasks.md) | задания дизайнеру, вытекающие из сверки |
 
 ## Соглашения
 
