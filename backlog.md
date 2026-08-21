@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (27)
+## Open (28)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -64,6 +64,7 @@
 | [B-26](docs/backlog/B-26-client-capability-flag.md) `[?]` | Флаг возможностей клиента: может ли сервер узнать версию словаря | P1 | M | - |
 | [B-27](docs/backlog/B-27-last-visit-boundary.md) `[?]` | Что считать «прошлым визитом» в догоняющей ленте | P1 | S | B-20 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
+| [B-34](docs/backlog/B-34-viddik-screenshots.md) `[ ]` | Скриншот-тесты клиента на viddik | P1 | M | B-18 |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-17](docs/backlog/B-17-mcp-over-http-and-oauth.md) `[ ]` | MCP по HTTP: сервер авторизации и метаданные защищённого ресурса | P2 | XL | B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[ ]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
