@@ -5,7 +5,7 @@ status: open
 priority: P0
 size: M
 stage: s1-protocol
-blocked_by: [B-06, B-07]
+blocked_by: [B-06, B-07, B-35]
 ---
 
 # B-08 — Экраны доски и карточки задачи с условной отдачей по ETag
@@ -27,3 +27,7 @@ blocked_by: [B-06, B-07]
   данных дают один и тот же `ETag`; проверки `schema`, `component-id` и `etag` из набора TCK находят
   цели и проходят.
 - Anchors: `server/internal/http/screens.go`, `server/internal/render/`.
+
+**Заблокирована 21.08.2026** до ответа по [B-35](B-35-layout-without-numeric-size.md): у `size` нет
+числовых значений, а лента состоит из панели фиксированной ширины, разделителя 1 dp и полос
+происхождения 2 dp. Начинать экран, не зная, чем эти три вещи выражаются, значит закрепить догадку.

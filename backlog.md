@@ -43,12 +43,12 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (28)
+## Open (29)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-05](docs/backlog/B-05-tck-target-counters-gate.md) `[ ]` | Гейт формулируется по счётчикам целей TCK, а не по отсутствию находок | P0 | S | B-01 |
-| [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[ ]` | Экраны доски и карточки задачи с условной отдачей по ETag | P0 | M | B-06, B-07 |
+| [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[ ]` | Экраны доски и карточки задачи с условной отдачей по ETag | P0 | M | B-06, B-07, B-35 |
 | [B-09](docs/backlog/B-09-task-form-and-submit.md) `[ ]` | Форма задачи: схема, дерево, сабмит и патч | P0 | L | B-08 |
 | [B-10](docs/backlog/B-10-paginated-task-list.md) `[ ]` | Список задач: пагинация и перезагрузка первой страницы фильтром | P0 | M | B-08 |
 | [B-11](docs/backlog/B-11-idempotency-middleware.md) `[ ]` | Идемпотентность: один механизм на обе поверхности | P0 | M | B-09 |
@@ -56,6 +56,7 @@
 | [B-15](docs/backlog/B-15-mcp-tools-over-stdio.md) `[ ]` | MCP-инструменты по stdio: чтение курсором и запись с идемпотентностью | P0 | L | B-07 |
 | [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
+| [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[?]` | Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap` | P0 | M | B-06 |
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
 | [B-13](docs/backlog/B-13-navigation-graph.md) `[ ]` | Граф навигации: простые экраны и формат deeplink | P1 | S | B-08 |
 | [B-19](docs/backlog/B-19-provenance-in-ui.md) `[ ]` | Провенанс виден в интерфейсе: кто сделал и от чьего имени | P1 | M | B-07, B-18 |
