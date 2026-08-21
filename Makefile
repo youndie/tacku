@@ -18,12 +18,13 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: check gate docs server client spec format report probes fix help
+.PHONY: check gate docs server client spec tck format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
 	@echo "make spec    - regenerate the committed KOMPOT spec of this build"
 	@echo "make format  - apply ktlint and gofmt in place"
+	@echo "make tck     - start the server and walk it with the conformance kit"
 	@echo "make probes  - re-run the research probes; a probe that stops building is a changed fact"
 	@echo "make report  - non-blocking reports: BDD coverage, code anchors"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
@@ -51,6 +52,30 @@ server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
 	cd server && go vet ./...
 	cd server && go test ./...
+
+# Not in the gate, because it needs a listening server rather than a working tree — and because a
+# red conformance run is a finding about the server, which somebody reads, rather than a broken
+# build. It starts a throwaway server, walks it and stops it whatever happens.
+#
+# devauth mints one token and serves the key set behind it. A walk with no token proves almost
+# nothing — every endpoint answers 401 and each check reports that same fact in its own words — so
+# the fixture exists to make the findings be about the server.
+tck:
+	@# Killed by port rather than by name. `go run` executes a binary it built in a temporary
+	@# directory, so pkill on the package path matches the parent and leaves the server listening —
+	@# and a previous devauth still holding the port serves the key set of a key that no longer
+	@# signs anything, which arrives as an unexplained 401 on every request.
+	@lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true
+	@rm -f /tmp/tacku-tck.db /tmp/tacku-tck.token
+	@cd server && go run ./cmd/devauth -addr :8478 > /tmp/tacku-tck.token 2>/dev/null & sleep 4
+	@cd server && TACKU_RESOURCE=http://localhost:8477 \
+		TACKU_ISSUER=http://localhost:8478 TACKU_JWKS_URL=http://localhost:8478/jwks \
+		go run ./cmd/tacku serve -db /tmp/tacku-tck.db -addr :8477 >/dev/null 2>&1 & sleep 5
+	@cd client && TACKU_TCK_TOKEN=$$(cat /tmp/tacku-tck.token) \
+		./gradlew --quiet :tck:tck -Ptarget=http://localhost:8477 --console=plain; \
+		status=$$?; \
+		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
+		rm -f /tmp/tacku-tck.token; exit $$status
 
 # Not in the gate: it rewrites committed files. Run it when the wire types change, then review the
 # diff of spec/ as carefully as the code.

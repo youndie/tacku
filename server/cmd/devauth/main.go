@@ -1,0 +1,78 @@
+// Command devauth is a fixture authorization server for local conformance runs.
+//
+// Not part of the product and deliberately not inside it: tacku is a resource server, and putting a
+// token minter in the same binary would be a backdoor wearing a flag. This one generates a key on
+// each start, serves a key set and prints one token, then keeps serving until it is killed.
+//
+// It exists because a conformance walk with no token proves almost nothing: every endpoint answers
+// 401 and each check reports the same fact in its own words.
+package main
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"encoding/base64"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"math/big"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+func main() {
+	addr := flag.String("addr", ":8478", "address to serve the key set on")
+	issuer := flag.String("issuer", "http://localhost:8478", "issuer identifier to put in the token")
+	audience := flag.String("audience", "http://localhost:8477", "the resource the token is for")
+	subject := flag.String("subject", "anna-agent", "who the token is issued to")
+	onBehalfOf := flag.String("on-behalf-of", "anna", "who they act for")
+	flag.Parse()
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		fail(err)
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"iss":           *issuer,
+		"sub":           *subject,
+		"aud":           *audience,
+		"exp":           time.Now().Add(time.Hour).Unix(),
+		"iat":           time.Now().Unix(),
+		"scope":         "tasks:read tasks:write",
+		"agent_version": "dev",
+		"on_behalf_of":  *onBehalfOf,
+	})
+	token.Header["kid"] = "dev"
+
+	signed, err := token.SignedString(key)
+	if err != nil {
+		fail(err)
+	}
+
+	// The token goes to stdout alone so a caller can capture it; everything else goes to stderr.
+	fmt.Println(signed)
+
+	http.HandleFunc("GET /jwks", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"keys": []any{map[string]string{
+			"kty": "RSA",
+			"kid": "dev",
+			"n":   base64.RawURLEncoding.EncodeToString(key.N.Bytes()),
+			"e":   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(key.E)).Bytes()),
+		}}})
+	})
+
+	fmt.Fprintf(os.Stderr, "devauth: serving a key set on %s for %s\n", *addr, *audience)
+	if err := http.ListenAndServe(*addr, nil); err != nil {
+		fail(err)
+	}
+}
+
+func fail(err error) {
+	fmt.Fprintln(os.Stderr, "devauth:", err)
+	os.Exit(1)
+}

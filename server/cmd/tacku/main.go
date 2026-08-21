@@ -33,8 +33,10 @@ func main() {
 func usage() error {
 	return fmt.Errorf("usage: tacku mcp [-db path]\n" +
 		"       tacku serve [-db path] [-addr :8080]\n\n" +
-		"  mcp     serve the Model Context Protocol on stdin and stdout\n" +
-		"  serve   serve it over HTTP as an OAuth 2.1 resource server\n\n" +
+		"       tacku openapi [-resource URL]\n\n" +
+		"  mcp       serve the Model Context Protocol on stdin and stdout\n" +
+		"  serve     serve it over HTTP as an OAuth 2.1 resource server\n" +
+		"  openapi   print the description of the HTTP layer\n\n" +
 		"stdio takes identity from the environment, which is what MCP asks of it:\n" +
 		"  TACKU_AGENT_ID        the agent's own member identifier\n" +
 		"  TACKU_AGENT_VERSION   the build acting, recorded on every change\n" +
@@ -55,6 +57,8 @@ func run(args []string) error {
 		return runMCP(args[1:])
 	case "serve":
 		return runServe(args[1:])
+	case "openapi":
+		return runOpenAPI(args[1:])
 	default:
 		return usage()
 	}
@@ -143,4 +147,19 @@ func version() string {
 		return v
 	}
 	return "0.1.0"
+}
+
+// runOpenAPI prints the description of the HTTP layer.
+//
+// Generated from the code that mounts the routes rather than written by hand, and committed so the
+// conformance harness — which is Kotlin and cannot run this — reads a file. A committed artefact
+// drifts from its generator, so a test compares them.
+func runOpenAPI(args []string) error {
+	flags := flag.NewFlagSet("openapi", flag.ContinueOnError)
+	resource := flags.String("resource", "http://localhost:8080", "the server this description is of")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	_, err := os.Stdout.Write(httpsrv.OpenAPI(*resource))
+	return err
 }

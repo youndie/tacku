@@ -1,0 +1,109 @@
+{
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "tacku",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/graph": {
+      "get": {
+        "operationId": "navigationGraph",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-navigation.schema.json#/$defs/NavigationGraph"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "graph"
+      }
+    },
+    "/pages/changes": {
+      "get": {
+        "operationId": "changesPage",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-standard.schema.json#/$defs/KompotPageResponse"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "page"
+      }
+    },
+    "/screens/catch-up": {
+      "get": {
+        "operationId": "catchUp",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "304": {
+            "description": "the client already holds this body"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "screen"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ]
+}
