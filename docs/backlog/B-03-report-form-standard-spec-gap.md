@@ -1,7 +1,7 @@
 ---
 id: B-03
 title: "Сообщить в kompot: у `form-standard` нет модуля спеки"
-status: open
+status: done
 priority: P1
 size: XS
 stage: s0-foundation
@@ -35,3 +35,8 @@ stage: s0-foundation
 - AC: задача заведена в kompot с адресами проверки; в
   [журнале вопросов](../research/questions.md) появилась запись с исходом.
 - Anchors: `docs/research/research-architecture.md` (§1.2).
+
+**Закрыто 21.08.2026.** Заведено в kompot: https://github.com/youndie/kompot/issues/2 — с адресами
+проверки, следствием для потребителя (аннотации зарезервированных ключей §9.7 переписываются
+вручную каждым) и вторым кандидатом `kompot-theme`, поднятым как вопрос, а не как утверждение:
+исходников его я не читал. Ответ и его исход попадут в [журнал вопросов](../research/questions.md).
