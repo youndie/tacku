@@ -7,6 +7,7 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"flag"
 	"fmt"
@@ -46,7 +47,9 @@ func usage() error {
 		"HTTP takes identity from the token, and needs the authorization server named:\n" +
 		"  TACKU_RESOURCE        this server's canonical URI, and the audience a token must carry\n" +
 		"  TACKU_ISSUER          the authorization server's issuer identifier\n" +
-		"  TACKU_JWKS_URL        where that issuer publishes its signing keys")
+		"  TACKU_JWKS_URL        where that issuer publishes its signing keys\n\n" +
+		"The KOMPOT client carries tokens this server issues through the sign-in form:\n" +
+		"  TACKU_SESSION_KEY     at least 32 characters; generated per run when unset")
 }
 
 func run(args []string) error {
@@ -115,8 +118,15 @@ func runServe(args []string) error {
 
 	// No fallback actor here, deliberately: over HTTP the actor comes from the token, and a
 	// configured one would take over silently the moment that stopped working.
+	key, err := sessionKey()
+	if err != nil {
+		return err
+	}
+
 	handler, err := httpsrv.New(httpsrv.Config{
-		Deps: mcpsrv.Deps{Store: store, Attempts: store, Version: version()},
+		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: version()},
+		Members:    store,
+		SessionKey: key,
 		Verifier: auth.VerifierConfig{
 			Issuer:   os.Getenv("TACKU_ISSUER"),
 			Resource: os.Getenv("TACKU_RESOURCE"),
@@ -144,6 +154,28 @@ func runServe(args []string) error {
 		return err
 	}
 	return nil
+}
+
+// sessionKey signs the pair the KOMPOT client carries.
+//
+// Generated when unset, and the consequence is stated rather than hidden: every restart invalidates
+// every session, because the previous key is gone. Fine for a local run, wrong for anything else,
+// and a deployment that skips the variable finds out at the first restart rather than at the first
+// incident.
+func sessionKey() ([]byte, error) {
+	if configured := os.Getenv("TACKU_SESSION_KEY"); configured != "" {
+		if len(configured) < 32 {
+			return nil, fmt.Errorf("TACKU_SESSION_KEY must be at least 32 characters")
+		}
+		return []byte(configured), nil
+	}
+
+	key := make([]byte, 32)
+	if _, err := rand.Read(key); err != nil {
+		return nil, err
+	}
+	fmt.Fprintln(os.Stderr, "tacku: TACKU_SESSION_KEY is unset; sessions will not survive a restart")
+	return key, nil
 }
 
 func version() string {
@@ -188,6 +220,20 @@ func runSeed(args []string) error {
 	defer store.Close()
 
 	ctx := context.Background()
+
+	// The password is fixed and printed, because this command exists to fill a throwaway database
+	// and a secret nobody can look up is not a secret, only an obstacle. It is never generated for
+	// a real deployment: that is what inviting a person will be.
+	for _, person := range []struct{ id, email, name string }{
+		{"anna", "anna@tacku.team", "Anna Petrova"},
+		{"ivan", "ivan@tacku.team", "Ivan Sokolov"},
+		{"maria", "maria@tacku.team", "Maria Kim"},
+	} {
+		if _, err := store.AddMember(ctx, domain.MemberID(person.id), person.email, person.name, SeedPassword); err != nil {
+			return err
+		}
+	}
+
 	board, err := store.CreateBoard(ctx, "Sprint 24")
 	if err != nil {
 		return err
@@ -225,6 +271,11 @@ func runSeed(args []string) error {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "tacku: seeded %s with %d tasks on %q\n", *path, len(seeds), board.Title)
+	fmt.Fprintf(os.Stderr, "tacku: seeded %s with %d tasks on %q; sign in as anna@tacku.team / %s\n",
+		*path, len(seeds), board.Title, SeedPassword)
 	return nil
 }
+
+// SeedPassword is what the seeded people sign in with. Exported so a conformance harness can use it
+// without a second place to keep it in step.
+const SeedPassword = "conformance-stand"

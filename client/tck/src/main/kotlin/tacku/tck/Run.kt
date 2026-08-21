@@ -5,8 +5,6 @@ import io.github.youndie.kompot.tck.TckConfig
 import io.github.youndie.kompot.tck.TckRunner
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.header
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -25,25 +23,14 @@ fun main() {
 
     val spec = readSpec(specDir)
 
-    // The token is held by the harness and sent on EVERY request, and that is a known lie to the
-    // kit rather than a feature.
+    // No token held here any more, and that is the point of this change.
     //
-    // The kit obtains credentials for itself through `loginPath`, and this build has no form to log
-    // in with, so there is no supported way to hand it one. Injecting the header covers the gap for
-    // seven checks and breaks the eighth: `auth-required` probes an endpoint deliberately without a
-    // token, the header goes on anyway, and the 200 it then sees is real. Those findings are the
-    // harness lying, not the server misbehaving — verified by walking anonymously, where the same
-    // three endpoints answer 401 correctly.
-    //
-    // The honest fix is a login endpoint, which is B-09. Until then the run prints what it is doing
-    // so nobody reads the three findings as a defect.
-    val token = System.getenv("TACKU_TCK_TOKEN").orEmpty()
-    val client =
-        HttpClient(CIO) {
-            if (token.isNotEmpty()) {
-                defaultRequest { header("Authorization", "Bearer $token") }
-            }
-        }
+    // The kit signs in for itself through `loginPath`, which is how it is meant to work: it holds
+    // the credential and decides which requests carry it, so the probes `auth-required` makes
+    // deliberately without one stay without one. The harness used to inject a header on every
+    // request, which covered seven checks and made the eighth report five findings that were the
+    // harness lying rather than the server misbehaving.
+    val client = HttpClient(CIO)
     val transport = RemoteTckTransport(target, client)
 
     val report =
@@ -56,7 +43,12 @@ fun main() {
                     // No login path: this build has no form to log in with, so the walk stays
                     // anonymous. That is a real limitation and not a configuration choice — it is
                     // why several checks below will have nothing to look at.
-                    loginPath = null,
+                    loginPath = "/submit/sign-in",
+                    loginValues =
+                        mapOf(
+                            "email" to textValue("anna@tacku.team"),
+                            "password" to textValue("conformance-stand"),
+                        ),
                     // The idempotency check performs a real operation — there is no way to reach
                     // 400 and 409 otherwise, the handler refusing on the merits long before it
                     // looks at the header — so it only runs when a payload is given. This walk is
@@ -67,14 +59,6 @@ fun main() {
             ).run()
         }
 
-    if (token.isNotEmpty()) {
-        println(
-            "note: this walk sends a token on every request, including the probes auth-required " +
-                "means to be anonymous. Its findings are an artefact of that and not a defect; " +
-                "see B-14.",
-        )
-        println()
-    }
     println(TckGate.describe(report))
 
     val verdict = TckGate.judge(report)

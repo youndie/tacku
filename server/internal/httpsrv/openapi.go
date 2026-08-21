@@ -52,6 +52,14 @@ func OpenAPI(resource string) json.RawMessage {
 			"/submit/move": map[string]any{
 				"post": submitOperation("submitMove"),
 			},
+			"/forms/sign-in": map[string]any{
+				"get": public(operation("signInForm", kindForm,
+					ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))),
+			},
+			LoginPath: map[string]any{
+				"post": public(operation("submitSignIn", kindSubmit,
+					ref("kompot-core.schema.json#/$defs/KompotAction"))),
+			},
 			"/graph": map[string]any{
 				"get": operation("navigationGraph", kindGraph,
 					ref("kompot-navigation.schema.json#/$defs/NavigationGraph")),
@@ -117,6 +125,24 @@ func submitOperation(id string) map[string]any {
 	responses["400"] = map[string]any{"description": "no idempotency key"}
 	responses["409"] = map[string]any{"description": "the key was used for a different request"}
 	responses["422"] = map[string]any{"description": "refused on its merits"}
+	return op
+}
+
+// public marks the two routes a person with no session must be able to reach.
+//
+// The empty security list is how OpenAPI says "this one needs nothing", overriding the document's
+// default — and it matters beyond documentation: a conformance run reads it to decide which
+// endpoints to try anonymously, and a sign-in form declared as protected would be tested for a 401
+// it must never give.
+//
+// The 401 stays on the submit, and that is not a contradiction. §16.8: the absence of authorisation
+// and the code 401 are independent, and a sign-in answering a wrong pair is the example it gives.
+func public(op map[string]any) map[string]any {
+	op["security"] = []any{}
+	responses, _ := op["responses"].(map[string]any)
+	if op["x-kompot-endpoint-kind"] == kindForm {
+		delete(responses, "401")
+	}
 	return op
 }
 

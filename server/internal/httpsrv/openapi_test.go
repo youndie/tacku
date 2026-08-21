@@ -39,9 +39,9 @@ func TestTheDescriptionOnlyPromisesRoutesThatExist(t *testing.T) {
 
 	var document struct {
 		Paths map[string]map[string]struct {
-			Kind      string          `json:"x-kompot-endpoint-kind"`
-			Responses map[string]any  `json:"responses"`
-			Operation json.RawMessage `json:"-"`
+			Kind      string         `json:"x-kompot-endpoint-kind"`
+			Responses map[string]any `json:"responses"`
+			Security  *[]any         `json:"security"`
 		} `json:"paths"`
 	}
 	if err := json.Unmarshal(httpsrv.OpenAPI(r.url), &document); err != nil {
@@ -57,29 +57,46 @@ func TestTheDescriptionOnlyPromisesRoutesThatExist(t *testing.T) {
 			if !kinds[operation.Kind] {
 				t.Errorf("%s %s declares kind %q, which the protocol does not define", method, path, operation.Kind)
 			}
-			if _, ok := operation.Responses["401"]; !ok {
-				t.Errorf("%s %s is behind the bearer check and does not declare 401", method, path)
+			// `security: []` marks the two routes a person with no session must reach. The test
+			// reads the declaration rather than assuming, which is the point of having one: an
+			// endpoint documented as protected and answering 200 anonymously is the defect this
+			// check exists for, in either direction.
+			public := operation.Security != nil && len(*operation.Security) == 0
+
+			if !public {
+				if _, ok := operation.Responses["401"]; !ok {
+					t.Errorf("%s %s is behind a token check and does not declare 401", method, path)
+				}
 			}
 
-			// A submit is asked with the method it declares and without the idempotency key, so
-			// what is checked is the refusal §16.5 requires rather than the operation itself —
-			// which would create a task on every run of this test.
-			if method == "post" {
+			// A submit is asked with the method it declares and without the idempotency key, so what
+			// is checked is the refusal §16.5 requires rather than the operation itself, which would
+			// create a task on every run.
+			switch {
+			case method == "post" && !public:
 				refused := r.post(t, path, token, "", `{"formId":"x","fieldId":"","values":{}}`)
 				if refused.StatusCode != 400 {
 					t.Errorf("%s %s without an idempotency key answered %d, want 400",
 						method, path, refused.StatusCode)
 				}
-			} else {
+			case method == "get":
 				response, _ := r.get(t, path, token, "")
 				if response.StatusCode != 200 {
 					t.Errorf("the description promises %s %s, which answered %d", method, path, response.StatusCode)
 				}
 			}
 
-			anonymous := r.request(t, methodOf(method), path, "", "")
-			if anonymous.StatusCode != 401 {
-				t.Errorf("%s %s answered %d to an anonymous caller while declaring 401", method, path, anonymous.StatusCode)
+			if !public {
+				anonymous := r.request(t, methodOf(method), path, "", "")
+				if anonymous.StatusCode != 401 {
+					t.Errorf("%s %s answered %d to an anonymous caller while declaring 401",
+						method, path, anonymous.StatusCode)
+				}
+			} else if method == "get" {
+				open, _ := r.get(t, path, "", "")
+				if open.StatusCode != 200 {
+					t.Errorf("%s %s is declared public and answered %d without a token", method, path, open.StatusCode)
+				}
 			}
 		}
 	}

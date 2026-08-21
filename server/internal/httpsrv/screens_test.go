@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/youndie/tacku/server/internal/auth"
 	"github.com/youndie/tacku/server/internal/domain"
+	"github.com/youndie/tacku/server/internal/httpsrv"
 )
 
 func (r *resource) get(t *testing.T, path, token, ifNoneMatch string) (*http.Response, []byte) {
@@ -35,13 +35,40 @@ func (r *resource) get(t *testing.T, path, token, ifNoneMatch string) (*http.Res
 	return response, body
 }
 
+// reader signs in the way a person does.
+//
+// The KOMPOT surface takes the pair this server issues through the sign-in form, not a token from
+// the authorization server: two protocols, two token systems, and neither accepts the other's — see
+// auth.Sessions.
 func (r *resource) reader(t *testing.T) string {
 	t.Helper()
-	return r.as.token(t, claims{
-		subject: "anna-agent", audience: r.audience(),
-		scopes:  auth.ScopeString(auth.ScopeRead, auth.ScopeWrite),
-		version: "0.1.0", onBehalfOf: "anna",
-	})
+
+	const password = "a-good-password"
+	if _, err := r.store.AddMember(context.Background(), "anna", "anna@tacku.team", "Anna", password); err != nil {
+		t.Fatal(err)
+	}
+
+	response := r.request(t, http.MethodPost, httpsrv.LoginPath, "",
+		`{"formId":"sign_in","fieldId":"","values":{`+
+			`"email":{"type":"text_value","text":"anna@tacku.team"},`+
+			`"password":{"type":"text_value","text":"`+password+`"}}}`)
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("signing in answered %d", response.StatusCode)
+	}
+
+	var session struct {
+		Type        string `json:"type"`
+		AccessToken string `json:"accessToken"`
+	}
+	if err := json.NewDecoder(response.Body).Decode(&session); err != nil {
+		t.Fatal(err)
+	}
+	// The answer to a submit is an action the client runs through the same chain as any other
+	// intent — §16.4 — and for a sign-in that action is update_session.
+	if session.Type != "update_session" {
+		t.Fatalf("signing in answered %q", session.Type)
+	}
+	return session.AccessToken
 }
 
 func (r *resource) seed(t *testing.T) {

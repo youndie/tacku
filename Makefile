@@ -76,9 +76,9 @@ tck:
 	@cd server && go run ./cmd/devauth -addr :8478 > /tmp/tacku-tck.token 2>/dev/null & sleep 4
 	@cd server && TACKU_RESOURCE=http://localhost:8477 \
 		TACKU_ISSUER=http://localhost:8478 TACKU_JWKS_URL=http://localhost:8478/jwks \
+		TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
 		go run ./cmd/tacku serve -db /tmp/tacku-tck.db -addr :8477 >/dev/null 2>&1 & sleep 5
-	@cd client && TACKU_TCK_TOKEN=$$(cat /tmp/tacku-tck.token) \
-		./gradlew --quiet :tck:tck -Ptarget=http://localhost:8477 --console=plain; \
+	@cd client && ./gradlew --quiet :tck:tck -Ptarget=http://localhost:8477 --console=plain; \
 		status=$$?; \
 		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
 		rm -f /tmp/tacku-tck.token; exit $$status

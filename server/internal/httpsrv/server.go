@@ -16,6 +16,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/oauthex"
 
 	"github.com/youndie/tacku/server/internal/auth"
+	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
 )
 
@@ -29,6 +30,11 @@ const MCPPath = "/mcp"
 type Config struct {
 	Deps     mcpsrv.Deps
 	Verifier auth.VerifierConfig
+
+	// Members and SessionKey belong to the KOMPOT surface, whose tokens this server issues itself
+	// through the sign-in form. See auth.Sessions for why there are two token systems here.
+	Members    domain.Members
+	SessionKey []byte
 }
 
 // New assembles the mux.
@@ -40,6 +46,14 @@ func New(config Config) (http.Handler, error) {
 	verifier, err := auth.NewVerifier(config.Verifier)
 	if err != nil {
 		return nil, err
+	}
+
+	sessions, err := auth.NewSessions(config.SessionKey)
+	if err != nil {
+		return nil, err
+	}
+	if config.Members == nil {
+		return nil, fmt.Errorf("httpsrv: no member directory, so nobody could ever sign in")
 	}
 
 	readWrite, err := mcpsrv.New(config.Deps)
@@ -69,11 +83,6 @@ func New(config Config) (http.Handler, error) {
 
 	metadataURL := strings.TrimSuffix(config.Verifier.Resource, MCPPath) + MetadataPath
 
-	protect := sdkauth.RequireBearerToken(verifier, &sdkauth.RequireBearerTokenOptions{
-		ResourceMetadataURL: metadataURL,
-		Scopes:              []string{auth.ScopeRead},
-	})
-
 	guarded := sdkauth.RequireBearerToken(verifier, &sdkauth.RequireBearerTokenOptions{
 		ResourceMetadataURL: metadataURL,
 		// Only the read scope is required to reach the endpoint. Demanding the write scope here
@@ -89,9 +98,15 @@ func New(config Config) (http.Handler, error) {
 		BearerMethodsSupported: []string{"header"},
 	})
 
-	// The human surface. Behind the same bearer check as the agent one: two token systems on one
-	// server would be two places to get authorisation wrong, and SPEC.md §16.7 asks only that the
-	// client send a bearer token — not where it came from.
+	// The human surface, behind its own tokens.
+	//
+	// An earlier version guarded it with the OAuth check as well, on the argument that two token
+	// systems are two places to get authorisation wrong. That simplification lasted until the
+	// sign-in form had to exist: KOMPOT issues its pair through `update_session` (§12.4), and
+	// OAuth 2.1 has no grant by which a form could exchange a password for a token. Each surface
+	// now carries what its own specification asks for, and an MCP token is not accepted here —
+	// spending a credential bound by audience to somewhere else is the confused deputy arriving
+	// through the front door.
 	screens := http.NewServeMux()
 	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store))
 	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
@@ -104,11 +119,16 @@ func New(config Config) (http.Handler, error) {
 	mux := http.NewServeMux()
 	mux.Handle(MetadataPath, metadata)
 	mux.Handle(MCPPath, guarded)
-	mux.Handle("/screens/", protect(screens))
-	mux.Handle("/pages/", protect(screens))
-	mux.Handle("/forms/", protect(screens))
-	mux.Handle("/submit/", protect(screens))
-	mux.Handle("/graph", protect(screens))
+	mux.Handle("/screens/", requireSession(sessions, screens))
+	mux.Handle("/pages/", requireSession(sessions, screens))
+	mux.Handle("/forms/", requireSession(sessions, screens))
+	mux.Handle("/submit/", requireSession(sessions, screens))
+	mux.Handle("/graph", requireSession(sessions, screens))
+
+	// Public, and the only route of this surface that is: a person with no session has to be able
+	// to reach the form that starts one.
+	mux.Handle("GET /forms/sign-in", loginForm())
+	mux.Handle("POST "+LoginPath, submitLogin(config.Members, sessions))
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
