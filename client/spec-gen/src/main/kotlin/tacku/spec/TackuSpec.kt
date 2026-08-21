@@ -17,7 +17,6 @@ import kotlinx.serialization.json.JsonObject
  * produce it, because the generator reads the SerialDescriptors of the wire types themselves.
  */
 object TackuSpec {
-
     val modules: List<KompotSpecModule> = KompotToolkitSpec.modules + formStandard()
 
     fun generate(): List<GeneratedSchema> = KompotSpec.generateAll(modules)
@@ -63,13 +62,16 @@ object TackuSpec {
  * generator, so the drift is what the test watches.
  */
 object SpecOutput {
-
     const val RECORD_ENV: String = "TACKU_SPEC_RECORD"
     private const val DIR_ENV = "TACKU_SPEC_DIR"
 
     // Two spaces and a trailing newline: the same shape a schema file has in kompot, so a diff
     // between the two is about content rather than formatting.
-    private val json = Json { prettyPrint = true; prettyPrintIndent = "  " }
+    private val json =
+        Json {
+            prettyPrint = true
+            prettyPrintIndent = "  "
+        }
 
     val directory: java.io.File
         get() = java.io.File(System.getenv(DIR_ENV) ?: "../../spec")

@@ -38,6 +38,11 @@ tasks.test {
         .files(fileTree(rootProject.layout.projectDirectory.dir("../spec")))
         .withPropertyName("specFiles")
         .withPathSensitivity(PathSensitivity.RELATIVE)
-    environment("TACKU_SPEC_DIR", rootProject.layout.projectDirectory.dir("../spec").asFile.absolutePath)
+    environment(
+        "TACKU_SPEC_DIR",
+        rootProject.layout.projectDirectory
+            .dir("../spec")
+            .asFile.absolutePath,
+    )
     System.getenv("TACKU_SPEC_RECORD")?.let { environment("TACKU_SPEC_RECORD", it) }
 }

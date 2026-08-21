@@ -18,11 +18,12 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: check gate docs server client spec report probes fix help
+.PHONY: check gate docs server client spec format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
 	@echo "make spec    - regenerate the committed KOMPOT spec of this build"
+	@echo "make format  - apply ktlint and gofmt in place"
 	@echo "make probes  - re-run the research probes; a probe that stops building is a changed fact"
 	@echo "make report  - non-blocking reports: BDD coverage, code anchors"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
@@ -40,8 +41,11 @@ docs:
 
 # Guards the committed spec against the generator: a kompot upgrade that changes the wire must not
 # leave the Go server validating against a contract that no longer exists.
+# ktlintCheck alongside the test for the same reason gofmt sits next to go test on the other half:
+# a formatter enforced on one language of a two-language repository is a rule that gets argued about
+# in the other.
 client:
-	cd client && ./gradlew --quiet :spec-gen:test
+	cd client && ./gradlew --quiet :spec-gen:ktlintCheck :spec-gen:test
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
@@ -66,6 +70,10 @@ probes:
 report:
 	$(PY) scripts/bdd_report.py --docs $(DOCS) --repos $(REPOS)
 	$(PY) scripts/code_anchors.py --docs $(DOCS) --repos $(REPOS)
+
+format:
+	cd client && ./gradlew --quiet :spec-gen:ktlintFormat
+	cd server && gofmt -w .
 
 fix:
 	$(PY) scripts/backlog_index.py --docs $(DOCS) --backlog $(BACKLOG)

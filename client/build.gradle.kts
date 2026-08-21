@@ -5,4 +5,11 @@
 plugins {
     kotlin("jvm") version "2.4.10" apply false
     kotlin("plugin.serialization") version "2.4.10" apply false
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0" apply false
+}
+
+// The formatter is a gate, not a convenience: the Go half has gofmt in `make check`, and a rule
+// enforced on one half of a two-language repository is a rule that gets argued about on the other.
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
 }
