@@ -43,18 +43,16 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (27)
+## Open (25)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[ ]` | Экраны доски и карточки задачи с условной отдачей по ETag | P0 | M | B-06, B-07, B-35 |
 | [B-09](docs/backlog/B-09-task-form-and-submit.md) `[ ]` | Форма задачи: схема, дерево, сабмит и патч | P0 | L | B-08 |
 | [B-10](docs/backlog/B-10-paginated-task-list.md) `[ ]` | Список задач: пагинация и перезагрузка первой страницы фильтром | P0 | M | B-08 |
 | [B-11](docs/backlog/B-11-idempotency-middleware.md) `[ ]` | Идемпотентность: один механизм на обе поверхности | P0 | M | B-09 |
 | [B-14](docs/backlog/B-14-tck-harness-and-run.md) `[ ]` | Харнесс TCK и первый прогон против Go-сервера | P0 | M | B-06, B-13 |
 | [B-18](docs/backlog/B-18-compose-desktop-client.md) `[ ]` | Клиент на Compose Desktop поверх опубликованных модулей kompot | P0 | L | B-08 |
 | [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[ ]` | Набор токенов как публикуемый артефакт клиента | P0 | S | B-18 |
-| [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[ ]` | Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap` | P0 | M | B-06 |
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
 | [B-13](docs/backlog/B-13-navigation-graph.md) `[ ]` | Граф навигации: простые экраны и формат deeplink | P1 | S | B-08 |
 | [B-19](docs/backlog/B-19-provenance-in-ui.md) `[ ]` | Провенанс виден в интерфейсе: кто сделал и от чьего имени | P1 | M | B-07, B-18 |
@@ -75,7 +73,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (9)
+## Closed (11)
 
 **Чем меряем**
 
@@ -89,6 +87,8 @@
 **Сервер по спеке**
 
 - [B-07](docs/backlog/B-07-domain-core-and-change-log.md) `[x]` - Доменное ядро: доски, задачи, журнал изменений, произносимые идентификаторы
+- [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[x]` - Экраны доски и карточки задачи с условной отдачей по ETag
+- [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[x]` - Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap`
 
 **Агентская поверхность**
 

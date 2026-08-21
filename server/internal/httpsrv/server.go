@@ -69,6 +69,11 @@ func New(config Config) (http.Handler, error) {
 
 	metadataURL := strings.TrimSuffix(config.Verifier.Resource, MCPPath) + MetadataPath
 
+	protect := sdkauth.RequireBearerToken(verifier, &sdkauth.RequireBearerTokenOptions{
+		ResourceMetadataURL: metadataURL,
+		Scopes:              []string{auth.ScopeRead},
+	})
+
 	guarded := sdkauth.RequireBearerToken(verifier, &sdkauth.RequireBearerTokenOptions{
 		ResourceMetadataURL: metadataURL,
 		// Only the read scope is required to reach the endpoint. Demanding the write scope here
@@ -84,9 +89,20 @@ func New(config Config) (http.Handler, error) {
 		BearerMethodsSupported: []string{"header"},
 	})
 
+	// The human surface. Behind the same bearer check as the agent one: two token systems on one
+	// server would be two places to get authorisation wrong, and SPEC.md §16.7 asks only that the
+	// client send a bearer token — not where it came from.
+	screens := http.NewServeMux()
+	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store))
+	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
+	screens.Handle("GET /graph", navigationGraph())
+
 	mux := http.NewServeMux()
 	mux.Handle(MetadataPath, metadata)
 	mux.Handle(MCPPath, guarded)
+	mux.Handle("/screens/", protect(screens))
+	mux.Handle("/pages/", protect(screens))
+	mux.Handle("/graph", protect(screens))
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})

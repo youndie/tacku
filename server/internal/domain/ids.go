@@ -45,6 +45,9 @@ func (id TaskID) Number() (int64, error) {
 	return strconv.ParseInt(strings.TrimPrefix(string(id), taskPrefix), 10, 64)
 }
 
+// String is the identifier as a person says it.
+func (id TaskID) String() string { return string(id) }
+
 // Valid reports whether the identifier has the shape this workspace mints.
 //
 // Checked rather than assumed because this string arrives from an agent, and a model that has been

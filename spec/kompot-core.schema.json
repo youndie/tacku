@@ -197,6 +197,18 @@
               "type": "null"
             }
           ]
+        },
+        "widthDp": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "heightDp": {
+          "type": [
+            "integer",
+            "null"
+          ]
         }
       },
       "required": [
