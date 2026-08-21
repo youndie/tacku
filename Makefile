@@ -47,8 +47,19 @@ docs:
 # ktlintCheck alongside the test for the same reason gofmt sits next to go test on the other half:
 # a formatter enforced on one language of a two-language repository is a rule that gets argued about
 # in the other.
+#
+# Pixel comparison runs only where the goldens were recorded, which is why viddikVerify is absent
+# under CI. The harness claims its goldens are portable across operating systems; recorded on macOS
+# they failed on Linux, and the claim was one this project said out loud it would test by running
+# rather than by reading. Deciding to compare pixels on one machine is the answer the backlog item
+# named in advance: not "configure it", but pick where the goldens live.
+#
+# What still runs everywhere is the half that catches the real traps — that the harness ran at all,
+# and that it drew something. Neither depends on which machine drew it.
+VIDDIK_VERIFY := $(if $(CI),,:app:viddikVerify)
+
 client:
-	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test :app:viddikVerify
+	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test $(VIDDIK_VERIFY)
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
