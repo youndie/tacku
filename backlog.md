@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (29)
+## Open (30)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -76,6 +76,7 @@
 | [B-23](docs/backlog/B-23-bulk-status-change.md) `[ ]` | Массовая смена статуса вместо перетаскивания | P2 | M | B-09 |
 | [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[ ]` | Полоса `agent` — цветовой сигнал; проверить на людях | P2 | XS | B-19 |
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
+| [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
 ## Closed (0)
 
