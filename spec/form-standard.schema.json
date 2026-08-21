@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kompot.workinprogress.ru/schema/form-standard.schema.json",
   "title": "form-standard",
-  "description": "The standard form fields, rules, values and conditions",
+  "description": "The standard form fields, rules, values and conditions over form-core",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
   "x-kompot-contributes": {
     "FieldValue": {

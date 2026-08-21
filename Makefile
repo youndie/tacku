@@ -51,7 +51,9 @@ client:
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
 	cd server && go vet ./...
-	cd server && go test ./...
+	@# -count=1 rather than the cache. The spec tests read files outside their package, and Go's
+	@# test cache keys on package inputs: a regenerated schema leaves them green without rerunning.
+	cd server && go test -count=1 ./...
 
 # Not in the gate, because it needs a listening server rather than a working tree — and because a
 # red conformance run is a finding about the server, which somebody reads, rather than a broken

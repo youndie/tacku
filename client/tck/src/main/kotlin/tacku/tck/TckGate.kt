@@ -30,6 +30,10 @@ object TckGate {
             "pagination",
             "navigation",
             "idempotency",
+            // Ninth, arriving with kompot 0.11 and the action that acts on one item of a list. The
+            // guard below found it rather than a changelog: the run reported a check this list did
+            // not hold, which is the whole reason the list is checked in both directions.
+            "perform",
         )
 
     /**

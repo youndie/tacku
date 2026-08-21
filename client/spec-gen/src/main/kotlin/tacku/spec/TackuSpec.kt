@@ -1,6 +1,5 @@
 package tacku.spec
 
-import io.github.youndie.kompot.form.standard.formStandardSerializersModule
 import io.github.youndie.kompot.spec.GeneratedSchema
 import io.github.youndie.kompot.spec.KompotProtocol
 import io.github.youndie.kompot.spec.KompotSpec
@@ -17,41 +16,19 @@ import kotlinx.serialization.json.JsonObject
  * produce it, because the generator reads the SerialDescriptors of the wire types themselves.
  */
 object TackuSpec {
-    val modules: List<KompotSpecModule> = KompotToolkitSpec.modules + formStandard()
+    // The toolkit's own list, and nothing added.
+    //
+    // It used to be `KompotToolkitSpec.modules + formStandard()`, because kompot published
+    // form-standard as a library and described it nowhere, so every consumer redeclared it — the
+    // finding this project reported as kompot#2. The toolkit now describes it, and the declaration
+    // that used to live here is gone rather than kept as a harmless duplicate: the generator
+    // refuses a wire type declared twice, which is how the duplication announced itself the moment
+    // the version moved.
+    val modules: List<KompotSpecModule> = KompotToolkitSpec.modules
 
     fun generate(): List<GeneratedSchema> = KompotSpec.generateAll(modules)
 
     fun profile(schemas: List<GeneratedSchema>): JsonObject = KompotSpec.profile(schemas)
-
-    /**
-     * form-standard is a module of the toolkit, but the toolkit's spec set does not describe it:
-     * kompot-spec depends on ten protocol modules and this is not one of them. So every application
-     * that uses standard form fields has to declare this module itself — including the annotations
-     * for the metadata keys the protocol reserves in SPEC.md §9.7.
-     *
-     * That duplication is the finding of docs/backlog/B-03: protocol knowledge repeated verbatim by
-     * every consumer lives in the wrong place. Kept visible here rather than tidied away, so that
-     * the day it moves into kompot this function disappears instead of quietly diverging.
-     */
-    private fun formStandard() =
-        KompotSpecModule(
-            name = "form-standard",
-            description = "The standard form fields, rules, values and conditions",
-            serializersModule = formStandardSerializersModule,
-            annotations =
-                mapOf(
-                    "FieldValueEntityValue" to mapOf("rawMetadata" to KompotSpec.reservedMetadata()),
-                    "ValidationRuleMaxAmountFromField" to
-                        mapOf(
-                            "balanceMetadataKey" to
-                                KompotSpec.constrained(
-                                    null,
-                                    "The key in the chosen entity_value's rawMetadata the remaining amount is read " +
-                                        "from. Defaults to \"${KompotProtocol.METADATA_KEY_BALANCE}\"",
-                                ),
-                        ),
-                ),
-        )
 }
 
 /**

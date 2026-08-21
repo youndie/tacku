@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-theme.schema.json",
+  "title": "kompot-theme",
+  "description": "A server-driven theme: what a client resolves its design-system tokens into",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "$defs": {
+    "KompotPalette": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "colors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "ColorToken key -> colour. The value is a hex string (#RGB, #RRGGBB or #AARRGGBB, with or without the hash); alpha defaults to opaque. A malformed value is treated as an absent one — the client keeps its built-in colour"
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "KompotTextStyle": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "fontSizeSp": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "lineHeightSp": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "fontWeight": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "letterSpacingSp": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "KompotTheme": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "light": {
+          "$ref": "#/$defs/KompotPalette"
+        },
+        "dark": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KompotPalette"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Absent means the brand described no dark theme. A client MUST then stay entirely on its built-in dark palette rather than substituting the light one"
+        },
+        "typography": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/KompotTextStyle"
+          },
+          "description": "TypographyToken key -> style. One set for both themes. Every property of a style is optional: what is absent keeps the client's built-in value"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

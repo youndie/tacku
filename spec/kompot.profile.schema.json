@@ -7,6 +7,7 @@
   "x-kompot-modules": [
     "kompot-core",
     "form-core",
+    "form-standard",
     "wizard-core",
     "kompot-standard",
     "kompot-forms",
@@ -15,7 +16,8 @@
     "kompot-wizard",
     "kompot-navigation",
     "kompot-auth",
-    "form-standard"
+    "kompot-commands",
+    "kompot-theme"
   ],
   "$defs": {
     "FieldValue": {
@@ -112,6 +114,9 @@
           "$ref": "kompot-standard.schema.json#/$defs/KompotActionNavigate"
         },
         {
+          "$ref": "kompot-commands.schema.json#/$defs/KompotActionPerform"
+        },
+        {
           "$ref": "kompot-forms.schema.json#/$defs/KompotActionSubmitForm"
         },
         {
@@ -137,6 +142,7 @@
           "copy_text": "kompot-standard.schema.json#/$defs/KompotActionCopyText",
           "load_page": "kompot-standard.schema.json#/$defs/KompotActionLoadPage",
           "navigate": "kompot-standard.schema.json#/$defs/KompotActionNavigate",
+          "perform": "kompot-commands.schema.json#/$defs/KompotActionPerform",
           "submit_form": "kompot-forms.schema.json#/$defs/KompotActionSubmitForm",
           "update_session": "kompot-auth.schema.json#/$defs/KompotActionUpdateSession",
           "wizard_back": "kompot-wizard.schema.json#/$defs/KompotActionWizardBack",

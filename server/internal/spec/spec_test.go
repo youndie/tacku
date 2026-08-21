@@ -40,11 +40,16 @@ func load(t *testing.T) *spec.Spec {
 func TestLoadReadsEveryModuleTheProfileNames(t *testing.T) {
 	s := load(t)
 
-	if len(s.Modules) != 11 {
-		t.Fatalf("profile names %d modules, want 11 (ten of the toolkit plus form-standard)", len(s.Modules))
+	// Thirteen since kompot 0.11: the toolkit now describes form-standard and kompot-theme itself,
+	// and kompot-commands arrived with the action that acts on one item of a list. Both were gaps
+	// this project reported, so the number moving is the report landing rather than a surprise.
+	if len(s.Modules) != 13 {
+		t.Fatalf("profile names %d modules, want 13", len(s.Modules))
 	}
-	if !slices.Contains(s.Modules, "form-standard") {
-		t.Error("form-standard missing: it is the module the toolkit's own spec set leaves out, so it is the one that has to be here")
+	for _, module := range []string{"form-standard", "kompot-commands"} {
+		if !slices.Contains(s.Modules, module) {
+			t.Errorf("%s is missing from the profile", module)
+		}
 	}
 	// One file per module, plus the profile itself.
 	if len(s.Schemas) != len(s.Modules)+1 {
@@ -57,7 +62,7 @@ func TestProfileCarriesEveryHierarchy(t *testing.T) {
 
 	want := map[string]int{
 		"KompotComponent":     15,
-		"KompotAction":        10,
+		"KompotAction":        11,
 		"FormFieldDefinition": 5,
 		"ValidationRule":      4,
 		"FieldValue":          4,

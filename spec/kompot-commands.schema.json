@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kompot.workinprogress.ru/schema/kompot-commands.schema.json",
+  "title": "kompot-commands",
+  "description": "The action that performs an operation on one item of a list, with no form around it",
+  "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
+  "x-kompot-contributes": {
+    "KompotAction": {
+      "perform": "#/$defs/KompotActionPerform"
+    }
+  },
+  "$defs": {
+    "KompotActionPerform": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "perform",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "perform"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^/[^\\s#]*$",
+          "description": "The relative address of an endpoint of kind `submit`: it answers a KompotAction, which the client runs through the same handler chain as any other intent. Being state-changing, it requires an Idempotency-Key (§16.5)"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "form-core.schema.json#/$defs/FieldValue"
+          },
+          "description": "What the operation acts on and with: the identity of the item, plus any parameters. The keys are the application's, the values are the same FieldValue vocabulary a form submit sends. Two buttons on two items of one list differ in this and nothing else"
+        }
+      },
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": true
+    }
+  }
+}
