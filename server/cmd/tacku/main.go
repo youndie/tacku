@@ -33,10 +33,12 @@ func main() {
 func usage() error {
 	return fmt.Errorf("usage: tacku mcp [-db path]\n" +
 		"       tacku serve [-db path] [-addr :8080]\n\n" +
-		"       tacku openapi [-resource URL]\n\n" +
+		"       tacku openapi [-resource URL]\n" +
+		"       tacku seed [-db path]\n\n" +
 		"  mcp       serve the Model Context Protocol on stdin and stdout\n" +
 		"  serve     serve it over HTTP as an OAuth 2.1 resource server\n" +
-		"  openapi   print the description of the HTTP layer\n\n" +
+		"  openapi   print the description of the HTTP layer\n" +
+		"  seed      fill a fresh database with a demo board, for local work\n\n" +
 		"stdio takes identity from the environment, which is what MCP asks of it:\n" +
 		"  TACKU_AGENT_ID        the agent's own member identifier\n" +
 		"  TACKU_AGENT_VERSION   the build acting, recorded on every change\n" +
@@ -59,6 +61,8 @@ func run(args []string) error {
 		return runServe(args[1:])
 	case "openapi":
 		return runOpenAPI(args[1:])
+	case "seed":
+		return runSeed(args[1:])
 	default:
 		return usage()
 	}
@@ -162,4 +166,65 @@ func runOpenAPI(args []string) error {
 	}
 	_, err := os.Stdout.Write(httpsrv.OpenAPI(*resource))
 	return err
+}
+
+// runSeed fills a fresh database so that a local run has something on screen.
+//
+// Also what a conformance walk needs: several of its checks reach their interesting paths only once
+// an operation can succeed. Against an empty workspace the idempotency check saw a create fail for
+// want of a board, and a failed attempt is deliberately not recorded — so the conflict it was
+// looking for could never happen, and it reported a 404 where it wanted a 409.
+func runSeed(args []string) error {
+	flags := flag.NewFlagSet("seed", flag.ContinueOnError)
+	path := flags.String("db", "tacku.db", "path to the database file")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+
+	store, err := sqlite.Open(*path)
+	if err != nil {
+		return err
+	}
+	defer store.Close()
+
+	ctx := context.Background()
+	board, err := store.CreateBoard(ctx, "Sprint 24")
+	if err != nil {
+		return err
+	}
+
+	anna := domain.Human("anna")
+	agent := domain.Agent("anna-agent", "dev", "anna")
+
+	seeds := []struct {
+		title    string
+		status   domain.Status
+		assignee domain.MemberID
+		due      string
+		by       domain.Provenance
+	}{
+		{"Fix login redirect loop", domain.StatusInReview, "anna", "2026-08-28", agent},
+		{"Add rate limit to the auth endpoint", domain.StatusTodo, "ivan", "2026-08-29", anna},
+		{"Audit the session cookie flags", domain.StatusTodo, "", "", anna},
+		{"Ship the settings redesign", domain.StatusInProgress, "maria", "2026-08-28", anna},
+		{"Update the onboarding copy", domain.StatusDone, "maria", "", agent},
+	}
+
+	for _, seed := range seeds {
+		task, err := store.CreateTask(ctx, domain.Task{
+			Board: board.ID, Title: seed.title, Status: seed.status,
+			Assignee: seed.assignee, Due: seed.due,
+		}, seed.by)
+		if err != nil {
+			return err
+		}
+		if seed.status == domain.StatusInReview {
+			if _, err := store.Comment(ctx, task.ID, "Reproduced on staging.", agent); err != nil {
+				return err
+			}
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "tacku: seeded %s with %d tasks on %q\n", *path, len(seeds), board.Title)
+	return nil
 }

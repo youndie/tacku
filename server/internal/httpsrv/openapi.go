@@ -37,6 +37,21 @@ func OpenAPI(resource string) json.RawMessage {
 				"get": operation("changesPage", kindPage,
 					ref("kompot-standard.schema.json#/$defs/KompotPageResponse")),
 			},
+			"/screens/board": map[string]any{
+				"get": operation("board", kindScreen,
+					ref("kompot-core.schema.json#/$defs/KompotComponent"),
+					withNotModified),
+			},
+			"/forms/new-task": map[string]any{
+				"get": operation("newTaskForm", kindForm,
+					ref("kompot-forms.schema.json#/$defs/KompotFormResponse")),
+			},
+			"/submit/new-task": map[string]any{
+				"post": submitOperation("submitNewTask"),
+			},
+			"/submit/move": map[string]any{
+				"post": submitOperation("submitMove"),
+			},
 			"/graph": map[string]any{
 				"get": operation("navigationGraph", kindGraph,
 					ref("kompot-navigation.schema.json#/$defs/NavigationGraph")),
@@ -83,6 +98,26 @@ func operation(id, kind string, response any, options ...operationOption) map[st
 		"security":  []any{map[string]any{"bearer": []any{}}},
 		"responses": responses,
 	}
+}
+
+// submitOperation declares a state-changing submit.
+//
+// The 400 is not decoration: §16.5 requires the idempotency key and requires the refusal without it,
+// and a conformance run tests exactly that. Declaring the key as a header is what tells it where to
+// look.
+func submitOperation(id string) map[string]any {
+	op := operation(id, kindSubmit, ref("kompot-core.schema.json#/$defs/KompotAction"))
+	op["parameters"] = []any{map[string]any{
+		"name":     "Idempotency-Key",
+		"in":       "header",
+		"required": true,
+		"schema":   map[string]any{"type": "string"},
+	}}
+	responses, _ := op["responses"].(map[string]any)
+	responses["400"] = map[string]any{"description": "no idempotency key"}
+	responses["409"] = map[string]any{"description": "the key was used for a different request"}
+	responses["422"] = map[string]any{"description": "refused on its merits"}
+	return op
 }
 
 func ref(target string) map[string]any { return map[string]any{"$ref": target} }

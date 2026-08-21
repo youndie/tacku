@@ -57,6 +57,12 @@ fun main() {
                     // anonymous. That is a real limitation and not a configuration choice — it is
                     // why several checks below will have nothing to look at.
                     loginPath = null,
+                    // The idempotency check performs a real operation — there is no way to reach
+                    // 400 and 409 otherwise, the handler refusing on the merits long before it
+                    // looks at the header — so it only runs when a payload is given. This walk is
+                    // against a throwaway database, which is where the kit's own README says to
+                    // run it.
+                    submitPayloads = mapOf("/submit/new-task" to newTaskPayload()),
                 ),
             ).run()
         }
@@ -102,3 +108,29 @@ private fun readSpec(dir: File): Spec {
 
     return Spec(schemas, read("kompot.openapi.json"))
 }
+
+/**
+ * A body the submit endpoint accepts.
+ *
+ * The shape is `FormPatchRequest`: on a submit the `fieldId` is not significant — it names the field
+ * that changed, and on a submit nothing did.
+ */
+private fun newTaskPayload() =
+    kotlinx.serialization.json.buildJsonObject {
+        put("formId", kotlinx.serialization.json.JsonPrimitive("task_create"))
+        put("fieldId", kotlinx.serialization.json.JsonPrimitive(""))
+        put(
+            "values",
+            kotlinx.serialization.json.buildJsonObject {
+                put("title", textValue("Filed by a conformance walk"))
+                put("board", textValue("Sprint 24"))
+                put("status", textValue("todo"))
+            },
+        )
+    }
+
+private fun textValue(text: String) =
+    kotlinx.serialization.json.buildJsonObject {
+        put("type", kotlinx.serialization.json.JsonPrimitive("text_value"))
+        put("text", kotlinx.serialization.json.JsonPrimitive(text))
+    }

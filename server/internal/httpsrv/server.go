@@ -95,6 +95,10 @@ func New(config Config) (http.Handler, error) {
 	screens := http.NewServeMux()
 	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store))
 	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
+	screens.Handle("GET /screens/board", board(config.Deps.Store))
+	screens.Handle("GET /forms/new-task", newTaskForm(config.Deps.Store))
+	screens.Handle("POST /submit/new-task", submitNewTask(config.Deps.Store, config.Deps.Attempts))
+	screens.Handle("POST /submit/move", submitMove(config.Deps.Store, config.Deps.Attempts))
 	screens.Handle("GET /graph", navigationGraph())
 
 	mux := http.NewServeMux()
@@ -102,6 +106,8 @@ func New(config Config) (http.Handler, error) {
 	mux.Handle(MCPPath, guarded)
 	mux.Handle("/screens/", protect(screens))
 	mux.Handle("/pages/", protect(screens))
+	mux.Handle("/forms/", protect(screens))
+	mux.Handle("/submit/", protect(screens))
 	mux.Handle("/graph", protect(screens))
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -14,6 +14,32 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/forms/new-task": {
+      "get": {
+        "operationId": "newTaskForm",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-forms.schema.json#/$defs/KompotFormResponse"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "form"
+      }
+    },
     "/graph": {
       "get": {
         "operationId": "navigationGraph",
@@ -66,6 +92,35 @@
         "x-kompot-endpoint-kind": "page"
       }
     },
+    "/screens/board": {
+      "get": {
+        "operationId": "board",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "304": {
+            "description": "the client already holds this body"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "screen"
+      }
+    },
     "/screens/catch-up": {
       "get": {
         "operationId": "catchUp",
@@ -93,6 +148,96 @@
           }
         ],
         "x-kompot-endpoint-kind": "screen"
+      }
+    },
+    "/submit/move": {
+      "post": {
+        "operationId": "submitMove",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "400": {
+            "description": "no idempotency key"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          },
+          "409": {
+            "description": "the key was used for a different request"
+          },
+          "422": {
+            "description": "refused on its merits"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "submit"
+      }
+    },
+    "/submit/new-task": {
+      "post": {
+        "operationId": "submitNewTask",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "400": {
+            "description": "no idempotency key"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          },
+          "409": {
+            "description": "the key was used for a different request"
+          },
+          "422": {
+            "description": "refused on its merits"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "submit"
       }
     }
   },

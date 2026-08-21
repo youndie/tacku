@@ -69,6 +69,10 @@ tck:
 	@# signs anything, which arrives as an unexplained 401 on every request.
 	@lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true
 	@rm -f /tmp/tacku-tck.db /tmp/tacku-tck.token
+	@# Seeded, because several checks reach their interesting paths only once an operation can
+	@# succeed: against an empty workspace the idempotency check watched a create fail for want of
+	@# a board, and a failed attempt is not recorded, so the conflict it wanted could never happen.
+	@cd server && go run ./cmd/tacku seed -db /tmp/tacku-tck.db
 	@cd server && go run ./cmd/devauth -addr :8478 > /tmp/tacku-tck.token 2>/dev/null & sleep 4
 	@cd server && TACKU_RESOURCE=http://localhost:8477 \
 		TACKU_ISSUER=http://localhost:8478 TACKU_JWKS_URL=http://localhost:8478/jwks \

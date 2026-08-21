@@ -2,6 +2,7 @@ package httpsrv_test
 
 import (
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -60,15 +61,33 @@ func TestTheDescriptionOnlyPromisesRoutesThatExist(t *testing.T) {
 				t.Errorf("%s %s is behind the bearer check and does not declare 401", method, path)
 			}
 
-			response, _ := r.get(t, path, token, "")
-			if response.StatusCode != 200 {
-				t.Errorf("the description promises %s %s, which answered %d", method, path, response.StatusCode)
+			// A submit is asked with the method it declares and without the idempotency key, so
+			// what is checked is the refusal §16.5 requires rather than the operation itself —
+			// which would create a task on every run of this test.
+			if method == "post" {
+				refused := r.post(t, path, token, "", `{"formId":"x","fieldId":"","values":{}}`)
+				if refused.StatusCode != 400 {
+					t.Errorf("%s %s without an idempotency key answered %d, want 400",
+						method, path, refused.StatusCode)
+				}
+			} else {
+				response, _ := r.get(t, path, token, "")
+				if response.StatusCode != 200 {
+					t.Errorf("the description promises %s %s, which answered %d", method, path, response.StatusCode)
+				}
 			}
 
-			anonymous, _ := r.get(t, path, "", "")
+			anonymous := r.request(t, methodOf(method), path, "", "")
 			if anonymous.StatusCode != 401 {
 				t.Errorf("%s %s answered %d to an anonymous caller while declaring 401", method, path, anonymous.StatusCode)
 			}
 		}
 	}
+}
+
+func methodOf(declared string) string {
+	if declared == "post" {
+		return http.MethodPost
+	}
+	return http.MethodGet
 }

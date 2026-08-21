@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/youndie/tacku/server/internal/auth"
@@ -241,4 +242,36 @@ func TestTheGraphOnlyPromisesScreensThatWork(t *testing.T) {
 				route.Deeplink, route.Endpoint, response.StatusCode)
 		}
 	}
+}
+
+func (r *resource) post(t *testing.T, path, token, key, body string) *http.Response {
+	t.Helper()
+	return r.request(t, http.MethodPost, path, token, body, key)
+}
+
+func (r *resource) request(t *testing.T, method, path, token, body string, key ...string) *http.Response {
+	t.Helper()
+
+	var reader io.Reader
+	if body != "" {
+		reader = strings.NewReader(body)
+	}
+	request, err := http.NewRequest(method, r.url+path, reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if token != "" {
+		request.Header.Set("Authorization", "Bearer "+token)
+	}
+	if len(key) > 0 && key[0] != "" {
+		request.Header.Set("Idempotency-Key", key[0])
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = response.Body.Close() })
+	return response
 }

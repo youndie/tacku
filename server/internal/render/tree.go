@@ -202,3 +202,93 @@ func nonNil(items []Component) []Component {
 	}
 	return items
 }
+
+type textInput struct {
+	Type        string     `json:"type"`
+	ID          string     `json:"id"`
+	Modifiers   []Modifier `json:"modifiers,omitempty"`
+	FieldID     string     `json:"fieldId"`
+	Label       string     `json:"label"`
+	Placeholder string     `json:"placeholder,omitempty"`
+	Mask        string     `json:"mask,omitempty"`
+	Secret      bool       `json:"secret,omitempty"`
+}
+
+type selectInput struct {
+	Type        string         `json:"type"`
+	ID          string         `json:"id"`
+	Modifiers   []Modifier     `json:"modifiers,omitempty"`
+	FieldID     string         `json:"fieldId"`
+	Label       string         `json:"label"`
+	Options     []SelectOption `json:"options"`
+	Placeholder string         `json:"placeholder,omitempty"`
+}
+
+type checkboxInput struct {
+	Type      string     `json:"type"`
+	ID        string     `json:"id"`
+	Modifiers []Modifier `json:"modifiers,omitempty"`
+	FieldID   string     `json:"fieldId"`
+	Label     string     `json:"label"`
+}
+
+// SelectOption is a choice offered by a select or a radio group. It belongs to the component and
+// not to the schema: the same field may be drawn either way.
+type SelectOption struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+}
+
+// The input constructors are unexported from the point of view of a caller building a form: they are
+// reached through forms.Builder, which registers the field declaration in the same call. Placing an
+// input without declaring its field is then not something anybody has to remember not to do.
+func TextInput(id, fieldID, label, placeholder, mask string, secret bool) Component {
+	return textInput{
+		Type: "text_input", ID: id, FieldID: fieldID, Label: label,
+		Placeholder: placeholder, Mask: mask, Secret: secret,
+	}
+}
+
+func SelectInput(id, fieldID, label, placeholder string, options []SelectOption) Component {
+	if options == nil {
+		options = []SelectOption{}
+	}
+	return selectInput{
+		Type: "select_input", ID: id, FieldID: fieldID, Label: label,
+		Options: options, Placeholder: placeholder,
+	}
+}
+
+func CheckboxInput(id, fieldID, label string) Component {
+	return checkboxInput{Type: "checkbox_input", ID: id, FieldID: fieldID, Label: label}
+}
+
+type submitFormAction struct {
+	Type   string `json:"type"`
+	FormID string `json:"formId"`
+}
+
+// SubmitForm hands the form over. Its answer is a KompotAction the client feeds through the same
+// chain as any other intent — never a redirect, never an empty 200 (§16.4).
+func SubmitForm(formID string) Action { return submitFormAction{Type: "submit_form", FormID: formID} }
+
+type performAction struct {
+	Type    string         `json:"type"`
+	URL     string         `json:"url"`
+	Payload map[string]any `json:"payload,omitempty"`
+}
+
+// Perform acts on one item of a list, which is what a button on a card needs and what the protocol
+// gained in 0.11 after this project reported it missing.
+//
+// The payload carries FieldValue values, so it is machine-checkable — and that is also its danger:
+// the value hierarchy does not degrade, so a type the client does not know fails the parse of the
+// whole screen rather than one button. The payloads built here stay to text values for that reason.
+func Perform(url string, payload map[string]any) Action {
+	return performAction{Type: "perform", URL: url, Payload: payload}
+}
+
+// FieldText is the only value shape this server sends.
+func FieldText(text string) map[string]any {
+	return map[string]any{"type": "text_value", "text": text}
+}

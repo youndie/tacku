@@ -34,7 +34,7 @@ func Sentence(change domain.Change) string {
 
 	case domain.ChangeStatusMoved:
 		return fmt.Sprintf("Moved %s from %s to %s",
-			quote(change.Task.String()), statusName(change.From), statusName(change.To))
+			quote(change.Task.String()), StatusName(change.From), StatusName(change.To))
 
 	case domain.ChangeAssigned:
 		if change.To == "" {
@@ -77,7 +77,7 @@ func HistoryLine(change domain.Change) string {
 		return "Created"
 
 	case domain.ChangeStatusMoved:
-		return fmt.Sprintf("Moved from %s to %s", statusName(change.From), statusName(change.To))
+		return fmt.Sprintf("Moved from %s to %s", StatusName(change.From), StatusName(change.To))
 
 	case domain.ChangeAssigned:
 		if change.To == "" {
@@ -108,9 +108,9 @@ func HistoryLine(change domain.Change) string {
 	return "Changed"
 }
 
-// statusName is the display name of a status, resolved here because the wire form is a key and the
+// StatusName is the display name of a status, resolved here because the wire form is a key and the
 // screen shows words.
-func statusName(status string) string {
+func StatusName(status string) string {
 	switch domain.Status(status) {
 	case domain.StatusTodo:
 		return "To do"
