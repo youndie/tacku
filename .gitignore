@@ -1,0 +1,15 @@
+.DS_Store
+
+# Go
+/server/bin/
+/probes/*/probe
+/probes/*/mcp-mux
+/probes/*/sqlite-nocgo
+
+# Gradle / JVM
+.gradle/
+build/
+local.properties
+
+# generated spec: produced by `make check`, never committed - the generator is the source of truth
+/client/spec/out/
