@@ -43,12 +43,11 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (28)
+## Open (27)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-05](docs/backlog/B-05-tck-target-counters-gate.md) `[ ]` | Гейт формулируется по счётчикам целей TCK, а не по отсутствию находок | P0 | S | B-01 |
-| [B-07](docs/backlog/B-07-domain-core-and-change-log.md) `[ ]` | Доменное ядро: доски, задачи, журнал изменений, произносимые идентификаторы | P0 | L | B-01 |
 | [B-08](docs/backlog/B-08-screen-endpoints-and-etag.md) `[ ]` | Экраны доски и карточки задачи с условной отдачей по ETag | P0 | M | B-06, B-07 |
 | [B-09](docs/backlog/B-09-task-form-and-submit.md) `[ ]` | Форма задачи: схема, дерево, сабмит и патч | P0 | L | B-08 |
 | [B-10](docs/backlog/B-10-paginated-task-list.md) `[ ]` | Список задач: пагинация и перезагрузка первой страницы фильтром | P0 | M | B-08 |
@@ -76,7 +75,7 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 
-## Closed (5)
+## Closed (6)
 
 **Чем меряем**
 
@@ -85,6 +84,10 @@
 - [B-03](docs/backlog/B-03-report-form-standard-spec-gap.md) `[x]` - Сообщить в kompot: у `form-standard` нет модуля спеки
 - [B-04](docs/backlog/B-04-conformance-levels-adopted.md) `[x]` - Зафиксировать, какие уровни соответствия tacku принимает, а какие нет
 - [B-06](docs/backlog/B-06-tacku-spec-profile.md) `[x]` - Спека сборки tacku: профиль и файлы схемы, генерируемые на JVM
+
+**Сервер по спеке**
+
+- [B-07](docs/backlog/B-07-domain-core-and-change-log.md) `[x]` - Доменное ядро: доски, задачи, журнал изменений, произносимые идентификаторы
 
 <!-- END INDEX -->
 
