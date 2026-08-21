@@ -18,7 +18,7 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: check gate docs server client spec tck probe shots format report probes fix help
+.PHONY: shots-image shots-verify check gate docs server client spec tck probe shots format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
@@ -48,18 +48,10 @@ docs:
 # a formatter enforced on one language of a two-language repository is a rule that gets argued about
 # in the other.
 #
-# Pixel comparison runs only where the goldens were recorded, which is why viddikVerify is absent
-# under CI. The harness claims its goldens are portable across operating systems; recorded on macOS
-# they failed on Linux, and the claim was one this project said out loud it would test by running
-# rather than by reading. Deciding to compare pixels on one machine is the answer the backlog item
-# named in advance: not "configure it", but pick where the goldens live.
-#
-# What still runs everywhere is the half that catches the real traps — that the harness ran at all,
-# and that it drew something. Neither depends on which machine drew it.
-VIDDIK_VERIFY := $(if $(CI),,:app:viddikVerify)
-
-client:
-	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test $(VIDDIK_VERIFY)
+# The pixel comparison is not here: it runs in a container, for reasons written down beside the
+# image. It is still part of the gate, on every machine.
+client: shots-verify
+	cd client && ./gradlew --quiet ktlintCheck :spec-gen:test :tck:test :app:test
 
 server:
 	cd server && gofmt -l . | tee /dev/stderr | (! read)
@@ -96,8 +88,30 @@ tck:
 		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
 		rm -f /tmp/tacku-tck.token; exit $$status
 
-shots:
-	cd client && ./gradlew --quiet :app:viddikRecord
+# Screenshots are recorded and compared in one pinned environment rather than on whatever machine
+# is running — see client/shots.Dockerfile for the measurement that forced it. `make shots` rewrites
+# the goldens; the gate calls `shots-verify`, which does not.
+#
+# The container keeps its build directories to itself, mounted over the host's. Sharing one would
+# have the two invalidating each other's up-to-date checks on every alternation; pointing the
+# container at a second directory instead does not work, because a generated-source directory is
+# registered by literal path and both copies then compile together as a redeclaration. Volumes,
+# unlike a build-directory property, cannot be bypassed by a hardcoded path.
+SHOTS_IMAGE := tacku-shots
+SHOTS_RUN = docker run --rm --platform linux/amd64 \
+	-v $(CURDIR):/w -v tacku-gradle:/gradle \
+	-v tacku-build-client:/w/client/build -v tacku-build-app:/w/client/app/build \
+	-w /w/client $(SHOTS_IMAGE) \
+	./gradlew --no-daemon --quiet --console=plain --project-cache-dir /tmp/pc
+
+shots-image:
+	@docker build -q --platform linux/amd64 -f client/shots.Dockerfile -t $(SHOTS_IMAGE) client >/dev/null
+
+shots: shots-image
+	$(SHOTS_RUN) :app:viddikRecord
+
+shots-verify: shots-image
+	$(SHOTS_RUN) :app:viddikVerify
 
 # The client as a measuring instrument: a response can satisfy the schema and still not decode, and
 # only the code that will actually draw the screen can say so.
