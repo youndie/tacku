@@ -26,11 +26,15 @@ class SpecGoldenTest {
         val directory = SpecOutput.directory
         assertTrue(directory.isDirectory, "no spec directory at ${directory.absolutePath}")
 
+        // The OpenAPI description shares this directory and is produced by the Go half, which
+        // cannot run this generator. Each half guards its own artefact — that one by a test beside
+        // the code that emits it — so this check owns the schema files and not the directory.
         val onDisk =
             directory
                 .listFiles { f -> f.name.endsWith(".json") }
                 .orEmpty()
                 .map { it.name }
+                .filterNot { it == "kompot.openapi.json" }
                 .toSet()
         assertEquals(expected.keys, onDisk, "the set of spec files on disk differs from the generated set")
 
