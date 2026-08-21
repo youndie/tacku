@@ -288,3 +288,36 @@ func (h harness) board(t *testing.T) string {
 	}
 	return string(b.ID)
 }
+
+// The message a model receives when it names a board that does not exist.
+//
+// Found by running the real binary rather than by a test: every test above creates its board first,
+// so the path was never taken, and the caller received "FOREIGN KEY constraint failed (787)" — true
+// and useless. The specification asks a tool error to be something a model can self-correct from.
+func TestAnUnknownBoardIsRefusedInWords(t *testing.T) {
+	h := start(t)
+
+	message := h.callExpectingFailure(t, "create_task",
+		map[string]any{"board": "Sprint 99", "title": "x", "idempotency_key": "k"})
+
+	if !strings.Contains(message, "Sprint 99") {
+		t.Errorf("the refusal reads %q; it must name the board that is missing", message)
+	}
+	if !strings.Contains(message, "list_boards") {
+		t.Errorf("the refusal reads %q; it must point at the call that answers the question", message)
+	}
+	if strings.Contains(message, "FOREIGN KEY") || strings.Contains(message, "787") {
+		t.Errorf("a storage error reached the agent: %q", message)
+	}
+}
+
+func TestAnUnknownTaskIsRefusedInWords(t *testing.T) {
+	h := start(t)
+
+	message := h.callExpectingFailure(t, "move_task",
+		map[string]any{"task": "TAC-9999", "status": "done", "idempotency_key": "k"})
+
+	if !strings.Contains(message, "TAC-9999") {
+		t.Errorf("the refusal reads %q; it must name the task", message)
+	}
+}

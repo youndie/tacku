@@ -11,7 +11,10 @@ package mcpsrv
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -64,7 +67,14 @@ func RunStdio(ctx context.Context, deps Deps) error {
 	if err != nil {
 		return err
 	}
-	return session.Wait()
+
+	// A host closing the pipe is how an MCP session ends, not how it fails. Returning the EOF makes
+	// the process exit non-zero, and under a supervisor an ordinary disconnect then looks like a
+	// crash — with a restart loop to match.
+	if err := session.Wait(); err != nil && !errors.Is(err, io.EOF) && !strings.Contains(err.Error(), "EOF") {
+		return err
+	}
+	return nil
 }
 
 func registerReads(server *mcp.Server, deps Deps) {

@@ -30,7 +30,14 @@ func Open(path string) (*Store, error) {
 	// WAL so a reader never blocks the writer, and a busy timeout so a concurrent write waits
 	// instead of failing outright — SQLITE_BUSY surfaces as a request that failed for no reason a
 	// user can act on.
-	dsn := path + "?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragma=foreign_keys(ON)"
+	//
+	// _txlock=immediate is the one that is not obvious and was paid for. A transaction that begins
+	// deferred takes a read lock and asks for the write lock later; if another writer got there in
+	// between, SQLite answers "database is locked" straight away, because waiting could not resolve
+	// it — the busy timeout does not apply to that upgrade. Every transaction here writes, and
+	// several read first to refuse an unknown board or task by name, so they all take the write
+	// lock up front instead.
+	dsn := path + "?_txlock=immediate&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragma=foreign_keys(ON)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("sqlite: open: %w", err)
@@ -111,7 +118,7 @@ func (s *Store) CreateBoard(ctx context.Context, title string) (domain.Board, er
 }
 
 func (s *Store) Task(ctx context.Context, id domain.TaskID) (domain.Task, error) {
-	return scanTask(s.db.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)))
+	return scanTaskFor(s.db.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)), id)
 }
 
 func (s *Store) Tasks(ctx context.Context, board domain.BoardID) ([]domain.Task, error) {
@@ -137,8 +144,17 @@ const taskColumns = `select id, board, title, body, status, assignee, due, creat
 type scanner interface{ Scan(dest ...any) error }
 
 func scanTask(row scanner) (domain.Task, error) {
+	return scanTaskFor(row, "")
+}
+
+// scanTaskFor names the identifier in the refusal. An agent that mistyped one can act on "no task
+// TAC-9999"; it cannot act on "not found".
+func scanTaskFor(row scanner, id domain.TaskID) (domain.Task, error) {
 	task, err := scanTaskRow(row)
 	if errors.Is(err, sql.ErrNoRows) {
+		if id != "" {
+			return domain.Task{}, fmt.Errorf("%w: no task %q", domain.ErrNotFound, string(id))
+		}
 		return domain.Task{}, fmt.Errorf("%w: task", domain.ErrNotFound)
 	}
 	return task, err

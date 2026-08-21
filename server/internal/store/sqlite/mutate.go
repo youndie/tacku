@@ -32,6 +32,19 @@ func (s *Store) CreateTask(ctx context.Context, draft domain.Task, by domain.Pro
 
 	var created domain.Task
 	err := s.write(ctx, func(tx *sql.Tx) error {
+		// Checked before the insert so the refusal names the board. Left to the foreign key, the
+		// caller receives "FOREIGN KEY constraint failed (787)" — true, and useless to the agent
+		// reading it, which the specification asks a tool error to avoid.
+		var exists int
+		if err := tx.QueryRowContext(ctx,
+			`select count(*) from boards where id = ?`, string(draft.Board)).Scan(&exists); err != nil {
+			return err
+		}
+		if exists == 0 {
+			return fmt.Errorf("%w: no board %q — call list_boards to see which boards exist",
+				domain.ErrNotFound, string(draft.Board))
+		}
+
 		number, err := nextTaskNumber(ctx, tx)
 		if err != nil {
 			return err
@@ -115,7 +128,7 @@ func (s *Store) edit(
 
 	var result domain.Task
 	err := s.write(ctx, func(tx *sql.Tx) error {
-		task, err := scanTask(tx.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)))
+		task, err := scanTaskFor(tx.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)), id)
 		if err != nil {
 			return err
 		}
@@ -189,7 +202,7 @@ func (s *Store) Comment(ctx context.Context, id domain.TaskID, text string, by d
 
 	var comment domain.Comment
 	err := s.write(ctx, func(tx *sql.Tx) error {
-		task, err := scanTask(tx.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)))
+		task, err := scanTaskFor(tx.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)), id)
 		if err != nil {
 			return err
 		}
