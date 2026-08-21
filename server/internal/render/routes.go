@@ -27,39 +27,39 @@ const (
 )
 
 // Route is one entry of the navigation graph.
+//
+// Kind says what stands behind the endpoint, in the vocabulary of x-kompot-endpoint-kind, and it
+// must equal the kind the HTTP description declares for that path. Absent means "screen", so a
+// route written before the field keeps its meaning.
 type Route struct {
 	Deeplink string `json:"deeplink"`
 	Endpoint string `json:"endpoint"`
+	Kind     string `json:"kind,omitempty"`
 	Title    string `json:"title,omitempty"`
 }
 
 // Graph is what the client fetches to learn which screens it can reach without a release of its own.
 //
-// Only endpoints of kind `screen`, and this is narrower than it first looks. A route promises that
-// fetching the endpoint yields a tree (§12.1), and `ScreenRoute` carries `deeplink`, `endpoint` and
-// `title` — no kind. So a client has no way to know whether to parse what comes back as a component
-// or as a form envelope, and the conformance kit is right to assume the former: three form routes
-// put here answered "no discriminator property type", because a form response is an envelope with a
-// tree inside rather than a tree.
+// It carries forms again. It could not until kompot 0.13: a route promised a tree, a form answers an
+// envelope, and `ScreenRoute` had no way to say which — so a screen taking input needed a client
+// release, which for a tracker is most of them. The answer upstream added `kind`, an open string
+// rather than an enum, precisely so that a client can skip a route it does not understand instead of
+// failing to parse the graph around it.
 //
-// The consequence is worth stating rather than working around: **a form screen cannot be added
-// without a client release.** For a product whose screens are mostly forms — a tracker being one —
-// that is a real limit, and it is reported upstream rather than absorbed quietly.
+// The rollout caveat that comes with it does not bite here: a client shipped before the field would
+// decode a form as a tree, and this product has no shipped client at all.
 //
-// A per-task screen is absent for a second reason: `endpoint` is a literal path and the graph has no
-// parameters, so a screen addressed by an identifier is always one the client builds itself.
+// A per-task screen is still absent, and for a different reason: `endpoint` is a literal path and the
+// graph has no parameters, so a screen addressed by an identifier is always one the client builds.
 var Graph = []Route{
-	{Deeplink: LinkCatchUp, Endpoint: "/screens/catch-up", Title: "Catch-up"},
-	{Deeplink: LinkBoard, Endpoint: "/screens/board", Title: "Board"},
+	{Deeplink: LinkCatchUp, Endpoint: "/screens/catch-up", Kind: "screen", Title: "Catch-up"},
+	{Deeplink: LinkBoard, Endpoint: "/screens/board", Kind: "screen", Title: "Board"},
+	{Deeplink: LinkMyTasks, Endpoint: "/forms/my-tasks", Kind: "form", Title: "My tasks"},
+	{Deeplink: LinkNewTask, Endpoint: "/forms/new-task", Kind: "form", Title: "New task"},
+	{Deeplink: LinkNewBoard, Endpoint: "/forms/new-board", Kind: "form", Title: "New board"},
 }
 
 // ClientNative are the destinations a client resolves without the graph. Listed rather than left
 // implicit, so that the test which demands every emitted deeplink resolve has something to check
 // them against — an unlisted one is a dead button and not a special case.
-var ClientNative = []string{
-	LinkSignIn, LinkSignOut,
-
-	// Form screens, which the graph cannot carry: see Graph above. Every one of these needs the
-	// client to know it, which is the cost the protocol charges for a screen that takes input.
-	LinkMyTasks, LinkNewTask, LinkNewBoard,
-}
+var ClientNative = []string{LinkSignIn, LinkSignOut}

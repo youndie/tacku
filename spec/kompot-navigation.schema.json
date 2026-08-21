@@ -36,13 +36,17 @@
         "endpoint": {
           "type": "string",
           "pattern": "^/[^\\s#]*$",
-          "description": "The relative address the screen tree is fetched from"
+          "description": "The relative address the screen is fetched from. Its endpoint kind MUST equal this route's kind"
         },
         "title": {
           "type": [
             "string",
             "null"
           ]
+        },
+        "kind": {
+          "type": "string",
+          "description": "What stands behind the endpoint, in the vocabulary of x-kompot-endpoint-kind: \"screen\" yields a KompotComponent, \"form\" a KompotFormResponse. Absent means \"screen\". An open string rather than an enum on purpose: a client MUST ignore a route whose kind it does not recognise, and an unknown enum constant would fail the parse of the whole graph before one route could be skipped"
         }
       },
       "required": [
