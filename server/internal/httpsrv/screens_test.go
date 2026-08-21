@@ -10,6 +10,7 @@ import (
 
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/httpsrv"
+	"github.com/youndie/tacku/server/internal/render"
 )
 
 func (r *resource) get(t *testing.T, path, token, ifNoneMatch string) (*http.Response, []byte) {
@@ -301,4 +302,156 @@ func (r *resource) request(t *testing.T, method, path, token, body string, key .
 	}
 	t.Cleanup(func() { _ = response.Body.Close() })
 	return response
+}
+
+// The headline is a measurement, so it has to measure.
+//
+// "14 changes across 3 boards" is the first sentence of the product's main screen, and both numbers
+// used to come from whatever was already in hand: the length of the page being rendered, and the
+// number of boards in the workspace. Both agree with the screen beside them and neither answers the
+// question asked, which is the shape of a wrong number nobody catches.
+func TestTheCatchUpHeadlineCountsEverythingWaitingAndOnlyTheBoardsTouched(t *testing.T) {
+	r := newResource(t)
+	ctx := context.Background()
+
+	touched, err := r.store.CreateBoard(ctx, "Sprint 24")
+	if err != nil {
+		t.Fatal(err)
+	}
+	alsoTouched, err := r.store.CreateBoard(ctx, "Platform")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A board nobody has touched, so that counting boards and counting boards-with-changes give
+	// different answers. Without it this check passes either way.
+	if _, err := r.store.CreateBoard(ctx, "Someday"); err != nil {
+		t.Fatal(err)
+	}
+
+	// More than one page, so that counting the page and counting the journal differ too.
+	const total = 25
+	for i := range total {
+		board := touched.ID
+		if i%5 == 0 {
+			board = alsoTouched.ID
+		}
+		if _, err := r.store.CreateTask(ctx,
+			domain.Task{Board: board, Title: "task", Assignee: "anna"},
+			domain.Human("anna")); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	_, body := r.get(t, "/screens/catch-up", r.reader(t), "")
+	want := "25 changes across 2 boards"
+	if !strings.Contains(string(body), want) {
+		t.Errorf("the catch-up headline does not say %q; it says %q", want, headline(t, body))
+	}
+}
+
+// headline digs out the summary line so a failure names what was actually rendered.
+func headline(t *testing.T, body []byte) string {
+	t.Helper()
+
+	var tree any
+	if err := json.Unmarshal(body, &tree); err != nil {
+		t.Fatal(err)
+	}
+	found := ""
+	var walk func(node any)
+	walk = func(node any) {
+		value, ok := node.(map[string]any)
+		if !ok {
+			return
+		}
+		if value["id"] == "feed-count" {
+			found, _ = value["text"].(string)
+		}
+		for _, field := range []string{"children", "initialItems"} {
+			if children, ok := value[field].([]any); ok {
+				for _, child := range children {
+					walk(child)
+				}
+			}
+		}
+		if child, ok := value["screen"].(map[string]any); ok {
+			walk(child)
+		}
+	}
+	walk(tree)
+	return found
+}
+
+// A catch-up screen you cannot leave is a report, not a screen.
+//
+// The AC of the item is that a person moves from the feed into the task, and the protocol makes
+// this less obvious than it sounds: no modifier makes a node tappable and a table row is a list of
+// strings, so the only component carrying an action is a button. The way out is therefore a button
+// on every row, and this checks that every row has one pointing at its own task.
+func TestEveryFeedRowLeadsToItsOwnTask(t *testing.T) {
+	r := newResource(t)
+	r.fill(t, 3)
+
+	_, body := r.get(t, "/screens/catch-up", r.reader(t), "")
+
+	var tree any
+	if err := json.Unmarshal(body, &tree); err != nil {
+		t.Fatal(err)
+	}
+
+	rows := 0
+	var walk func(node any)
+	walk = func(node any) {
+		value, ok := node.(map[string]any)
+		if !ok {
+			return
+		}
+		id, _ := value["id"].(string)
+		if strings.HasPrefix(id, "change-") && strings.HasSuffix(id, "-body") {
+			rows++
+			task := taskOfRow(t, value)
+			if task == "" {
+				t.Errorf("row %q offers no way into a task", id)
+			} else if !strings.HasPrefix(task, render.LinkTask) {
+				t.Errorf("row %q navigates to %q, which is not a task", id, task)
+			}
+		}
+		for _, field := range []string{"children", "initialItems"} {
+			if children, ok := value[field].([]any); ok {
+				for _, child := range children {
+					walk(child)
+				}
+			}
+		}
+	}
+	walk(tree)
+
+	if rows == 0 {
+		t.Fatal("the feed had no rows, so this check had nothing to look at")
+	}
+}
+
+func taskOfRow(t *testing.T, row map[string]any) string {
+	t.Helper()
+
+	found := ""
+	var walk func(node any)
+	walk = func(node any) {
+		value, ok := node.(map[string]any)
+		if !ok {
+			return
+		}
+		if action, ok := value["action"].(map[string]any); ok {
+			if deeplink, ok := action["deeplink"].(string); ok && strings.HasPrefix(deeplink, render.LinkTask) {
+				found = deeplink
+			}
+		}
+		if children, ok := value["children"].([]any); ok {
+			for _, child := range children {
+				walk(child)
+			}
+		}
+	}
+	walk(row)
+	return found
 }

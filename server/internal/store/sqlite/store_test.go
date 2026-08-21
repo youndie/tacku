@@ -372,3 +372,73 @@ func TestTheLastActorIsFoundBeyondAnyPage(t *testing.T) {
 		t.Error("the noisy task reports an agent, and nothing an agent did touched it")
 	}
 }
+
+// "Read up to here" has to outlive the process.
+//
+// The item asks for a boundary that survives a restart of the application, and the whole point of
+// the catch-up screen rests on it: a boundary kept in memory would reset to the beginning of time
+// every deploy, and the screen would greet everyone with the entire history of the workspace and
+// call it news.
+func TestTheReadBoundarySurvivesAReopen(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "tacku.db")
+
+	first, err := sqlite.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+
+	b := board(t, first, ctx)
+	for range 3 {
+		if _, err := first.CreateTask(ctx, domain.Task{Board: b.ID, Title: "task"}, domain.Human(anna)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	latest, err := first.Latest(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if latest == domain.Start {
+		t.Fatal("nothing was written, so a boundary at the end proves nothing")
+	}
+	if err := first.MarkSeen(ctx, anna, latest); err != nil {
+		t.Fatal(err)
+	}
+	if err := first.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	second, err := sqlite.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = second.Close() })
+
+	after, err := second.SeenAt(ctx, anna)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after != latest {
+		t.Fatalf("the boundary came back as %q, not %q", after, latest)
+	}
+
+	// And it means what it says: nothing stands after it until something new happens, and then
+	// exactly that one thing does.
+	changes, _, err := second.Changes(ctx, after, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(changes) != 0 {
+		t.Fatalf("%d changes stand after a boundary that was set at the end", len(changes))
+	}
+	if _, err := second.CreateTask(ctx, domain.Task{Board: b.ID, Title: "filed later"}, domain.Human(ivan)); err != nil {
+		t.Fatal(err)
+	}
+	changes, _, err = second.Changes(ctx, after, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(changes) != 1 {
+		t.Fatalf("after one new task the feed would show %d changes, want 1", len(changes))
+	}
+}

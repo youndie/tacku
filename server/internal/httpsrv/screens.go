@@ -41,7 +41,9 @@ func catchUp(store domain.Store, seen domain.Seen) http.HandlerFunc {
 			fail(w, err)
 			return
 		}
-		boards, err := store.Boards(r.Context())
+		// Counted rather than taken from the page and the workspace, which is what the headline
+		// claims to be about.
+		total, boards, err := store.CountSince(r.Context(), from)
 		if err != nil {
 			fail(w, err)
 			return
@@ -56,7 +58,8 @@ func catchUp(store domain.Store, seen domain.Seen) http.HandlerFunc {
 			Person:   principal.Provenance.OnBehalfOf,
 			SeenURL:  seenURL,
 			Changes:  changes,
-			Boards:   len(boards),
+			Total:    total,
+			Boards:   boards,
 			NextPage: more,
 		}.Screen())
 	}

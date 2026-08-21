@@ -15,7 +15,15 @@ type Feed struct {
 	SeenURL  string
 	Changes  []domain.Change
 	NextPage string
-	Boards   int
+
+	// What the headline counts, and it is not what the list shows.
+	//
+	// Both used to be taken from what was at hand: the length of the first page, and the number of
+	// boards in the workspace. Read out loud that sentence said "20 changes across 4 boards" to
+	// somebody with two hundred waiting on one — every word of it wrong, and none of it visibly so,
+	// because a plausible number beside a list of twenty rows looks like a count of that list.
+	Total  int
+	Boards int
 }
 
 // Screen renders the tree.
@@ -73,14 +81,14 @@ func (f Feed) header() Component {
 // and the client never assembles text — so "1 change" and "14 changes" are decided here.
 func (f Feed) summary() string {
 	changes := "changes"
-	if len(f.Changes) == 1 {
+	if f.Total == 1 {
 		changes = "change"
 	}
 	boards := "boards"
 	if f.Boards == 1 {
 		boards = "board"
 	}
-	return fmt.Sprintf("%d %s across %d %s", len(f.Changes), changes, f.Boards, boards)
+	return fmt.Sprintf("%d %s across %d %s", f.Total, changes, f.Boards, boards)
 }
 
 func (f Feed) rows() []Component {
@@ -108,6 +116,15 @@ func ChangeRow(change domain.Change) Component {
 			[]Modifier{Weight(1), Padding(16), Background(ColorSurfaceBlock)},
 			Text(id+"-what", Sentence(change), TextBody),
 			Text(id+"-who", Author(change), authorStyle),
+			// The way out of the feed, and a button because the vocabulary has no other way to say
+			// it: no modifier makes a node tappable, a table row is a list of strings, and only a
+			// button carries an action. So "the row opens the task" is spelled as a button on the
+			// row, which is a design decision made by the protocol rather than for it (Q-22).
+			Row(id+"-actions", 0, nil,
+				Button(id+"-open", "Open "+string(change.Task), Navigate(LinkTask+string(change.Task)),
+					PaddingXY(8, 16)),
+				Spacer(id+"-actions-spacer"),
+			),
 		),
 	)
 }

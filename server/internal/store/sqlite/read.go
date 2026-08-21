@@ -76,6 +76,26 @@ func (s *Store) Changes(ctx context.Context, after domain.Cursor, limit int) ([]
 	return changes, domain.CursorAt(last), nil
 }
 
+// CountSince counts what stands after the cursor and how many boards it touches.
+//
+// Both numbers come from the database rather than from the page the screen happens to be showing,
+// which is the difference between "14 changes across 3 boards" and "the 20 that fit, across every
+// board you have".
+func (s *Store) CountSince(ctx context.Context, after domain.Cursor) (int, int, error) {
+	from, err := after.Seq()
+	if err != nil {
+		return 0, 0, err
+	}
+	var changes, boards int
+	err = s.db.QueryRowContext(ctx,
+		`select count(*), count(distinct board) from changes where seq > ?`, from).
+		Scan(&changes, &boards)
+	if err != nil {
+		return 0, 0, err
+	}
+	return changes, boards, nil
+}
+
 // LastActors answers "who touched this last" for every task at once.
 //
 // The join picks the newest sequence per task inside the database rather than by reading rows and

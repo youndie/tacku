@@ -33,6 +33,14 @@ type Store interface {
 	// returned, so a reader that stops early does not skip the remainder.
 	Changes(ctx context.Context, after Cursor, limit int) ([]Change, Cursor, error)
 
+	// CountSince is how much stands after a cursor, and across how many boards.
+	//
+	// Asked separately from Changes because the headline of the catch-up screen is about
+	// everything waiting, and Changes hands back one page. Counting the page and calling it the
+	// total is a number that looks measured, agrees with the list beside it, and is wrong by
+	// however much did not fit.
+	CountSince(ctx context.Context, after Cursor) (changes, boards int, err error)
+
 	// LastActors is who last touched each task, by task.
 	//
 	// A query and not a walk over the journal: the board used to read the first 500 entries and
