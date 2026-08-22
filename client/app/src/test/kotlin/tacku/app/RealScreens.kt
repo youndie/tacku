@@ -15,6 +15,10 @@ import java.io.File
  * every screen and on none of the fragments was invisible — which is exactly what happened: the
  * button drew as a Material pill in the running application for as long as the application had run.
  *
+ * Every screen is 1440×900, which is the window the mockup is drawn at. That is not decoration: a
+ * picture taken at a different size cannot be compared with the design at all, and comparing is what
+ * these are for.
+ *
  * The bodies are frozen rather than fetched. A golden compared against a live server would be
  * comparing two things at once and going red for either, and half of what it caught would be a
  * clock. `make screens` regenerates them from a seeded server when the server's own output changes;
@@ -30,26 +34,26 @@ internal fun screenOf(name: String): String {
     return (parsed["screen"] ?: parsed).toString()
 }
 
-@ViddikScreenshot(name = "Board", group = "Screens", width = 1200, height = 900)
+@ViddikScreenshot(name = "Board", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealBoard() = Shot(screenOf("board"))
 
-@ViddikScreenshot(name = "Catch up", group = "Screens", width = 900, height = 900)
+@ViddikScreenshot(name = "Catch up", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealCatchUp() = Shot(screenOf("catch-up"))
 
-@ViddikScreenshot(name = "Task", group = "Screens", width = 900, height = 800)
+@ViddikScreenshot(name = "Task", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealTask() = Shot(screenOf("task"))
 
-@ViddikScreenshot(name = "New task", group = "Screens", width = 1440, height = 800)
+@ViddikScreenshot(name = "New task", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealNewTask() = Shot(screenOf("new-task"))
 
-@ViddikScreenshot(name = "My tasks", group = "Screens", width = 900, height = 700)
+@ViddikScreenshot(name = "My tasks", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealMyTasks() = Shot(screenOf("my-tasks"))
 
-@ViddikScreenshot(name = "Sign in", group = "Screens", width = 1440, height = 800)
+@ViddikScreenshot(name = "Sign in", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealSignIn() = Shot(screenOf("sign-in"))

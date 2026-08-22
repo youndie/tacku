@@ -44,7 +44,7 @@ func newBoardForm() http.HandlerFunc {
 			name,
 			columns,
 			render.Row("new-board-actions", 12, nil,
-				render.Back(render.LinkBoard),
+				render.BackAction(render.LinkBoard),
 				render.PrimaryButton("new-board-submit", "Create board", render.SubmitForm(form.FormID()),
 					render.PaddingXY(12, 24)),
 				render.Spacer("new-board-actions-spacer"),

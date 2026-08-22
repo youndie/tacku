@@ -1,6 +1,10 @@
 package render
 
-import "github.com/youndie/tacku/server/internal/domain"
+import (
+	"strings"
+
+	"github.com/youndie/tacku/server/internal/domain"
+)
 
 // NavWidthDp is how wide the navigation is, and the board's empty placeholder was exactly this wide.
 const NavWidthDp = 240
@@ -16,9 +20,11 @@ const NavWidthDp = 240
 // captions come from the graph, because that is where a destination is named. Spelled out here as
 // well, they had already parted once — the graph said "Board" and the button beside it "Boards".
 func Navigation(person domain.MemberID, current string) Component {
-	return Column("nav", 4,
+	// Никакого интервала: в макете пункты стоят вплотную (68, 109, 150 — ровно по 41), и высоту
+	// строки задаёт её собственный отступ. Интервал в 4 сдвигал каждый следующий на 4 вниз.
+	return Column("nav", 0,
 		[]Modifier{WidthDp(NavWidthDp), FillHeight(), Background(ColorSurfaceBlock), PaddingXY(20, 0)},
-		Text("nav-brand", "tacku", TextTitle, PaddingXY(0, 20)),
+		Text("nav-brand", "tacku", TextTitle, PaddingXY(12, 20)),
 		navItem("nav-catchup", LinkCatchUp, current),
 		navItem("nav-boards", LinkBoard, current),
 		navItem("nav-mine", LinkMyTasks, current),
@@ -26,7 +32,7 @@ func Navigation(person domain.MemberID, current string) Component {
 		Text("nav-person", string(person), TextMeta, PaddingXY(0, 20)),
 		Opens(
 			Row("nav-signout", 0, []Modifier{FillWidth()},
-				Text("nav-signout-label", "Sign out", TextNav, PaddingXY(10, 16))),
+				Text("nav-signout-label", "Sign out", TextNav, PaddingXY(12, 20))),
 			Navigate(LinkSignOut),
 		),
 	)
@@ -55,7 +61,7 @@ func navItem(id, link, current string) Component {
 	// padding on the row insets the clickable area with everything else: the highlight covered the
 	// rail and the target covered the text. The same mistake the button had, one level up.
 	return Opens(
-		Row(id, 0, modifiers, Text(id+"-label", RouteTitle(link), style, PaddingXY(10, 16))),
+		Row(id, 0, modifiers, Text(id+"-label", RouteTitle(link), style, PaddingXY(12, 20))),
 		Navigate(link),
 	)
 }
@@ -74,17 +80,35 @@ func navItem(id, link, current string) Component {
 // The caption comes from the graph, like every other destination's. Spelled here as well it had
 // already parted once — the graph said "Board" and the button beside it "Boards" — and a way back
 // whose word is invented is a second name for the same place.
-func Back(to string) Component { return BackTo(to, RouteTitle(to)) }
+// BackAction is the way out standing in a row of actions, where the design pads it like the button
+// beside it: 12 by 18 against the action's 12 by 24, so the two read as one pair.
+func BackAction(to string) Component { return backTo(to, RouteTitle(to), PaddingXY(12, 18)) }
 
-// BackTo is the same, naming the destination itself rather than the route.
+// BackLink is the way out standing above a title, where the design gives it no padding at all: a
+// plain line at the content's left edge, 24 above the heading. Padding it there pushed the heading
+// 33 points down the screen and indented the arrow away from everything under it.
+func BackLink(to, destination string) Component { return backTo(to, destination, nil) }
+
+// The destination is named by itself rather than by the route where there may be several of it.
 //
 // The task screen says "← Sprint 24" and not "← Board", because what a person left was that board
 // and there may be several. The route's title is the right word everywhere the destination is the
 // only one of its kind.
-func BackTo(to, destination string) Component {
+// The identifier is derived from the destination's title rather than from its deeplink: `app://` in
+// the middle of a node name is a URL where a name should be, and node names travel in update frames
+// and in logs.
+func backTo(to, destination string, padding Modifier) Component {
+	id := "back-" + strings.ToLower(strings.ReplaceAll(RouteTitle(to), " ", "-"))
+	if RouteTitle(to) == "" {
+		id = "back"
+	}
+	label := []Modifier{}
+	if padding != nil {
+		label = append(label, padding)
+	}
 	return Opens(
-		Row(to+"-back", 0, nil,
-			Text(to+"-back-label", BackLabel(destination), TextButtonQuiet, PaddingXY(12, 18))),
+		Row(id, 0, nil,
+			Text(id+"-label", BackLabel(destination), TextButtonQuiet, label...)),
 		Navigate(to),
 	)
 }

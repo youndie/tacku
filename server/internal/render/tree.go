@@ -311,11 +311,18 @@ func Spaced(id string, child Component) Component {
 
 // Rule is a line of the given thickness, standing in for a border. The vocabulary has none.
 func Rule(id string, thicknessDp int, token string, horizontal bool) Component {
-	dimension := HeightDp(thicknessDp)
+	// Thick one way and filled the other. A rule is an empty column, and an empty column has no
+	// size of its own in either direction: giving it a width leaves it nothing tall, so it painted
+	// nothing at all — the same way the provenance stripe painted nothing, and just as invisible.
+	//
+	// One pixel is below the threshold at which a person notices an absence, so this one survived
+	// every look at the screen and was found by counting pixels along a row: after the navigation
+	// rail came the surface, with no line between them.
+	dimensions := []Modifier{HeightDp(thicknessDp), FillWidth()}
 	if !horizontal {
-		dimension = WidthDp(thicknessDp)
+		dimensions = []Modifier{WidthDp(thicknessDp), FillHeight()}
 	}
-	return Column(id, 0, []Modifier{dimension, Background(token)})
+	return Column(id, 0, append(dimensions, Background(token)))
 }
 
 type navigateAction struct {

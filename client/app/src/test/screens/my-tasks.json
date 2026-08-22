@@ -57,8 +57,8 @@
       "modifiers": [
        {
         "type": "padding",
-        "top": 0,
-        "bottom": 0,
+        "top": 12,
+        "bottom": 12,
         "start": 20,
         "end": 20
        }
@@ -82,10 +82,10 @@
         "modifiers": [
          {
           "type": "padding",
-          "top": 10,
-          "bottom": 10,
-          "start": 16,
-          "end": 16
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
          }
         ],
         "text": "Catch-up",
@@ -113,10 +113,10 @@
         "modifiers": [
          {
           "type": "padding",
-          "top": 10,
-          "bottom": 10,
-          "start": 16,
-          "end": 16
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
          }
         ],
         "text": "Board",
@@ -148,10 +148,10 @@
         "modifiers": [
          {
           "type": "padding",
-          "top": 10,
-          "bottom": 10,
-          "start": 16,
-          "end": 16
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
          }
         ],
         "text": "My tasks",
@@ -205,10 +205,10 @@
         "modifiers": [
          {
           "type": "padding",
-          "top": 10,
-          "bottom": 10,
-          "start": 16,
-          "end": 16
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
          }
         ],
         "text": "Sign out",
@@ -220,8 +220,7 @@
        "deeplink": "app://sign-out"
       }
      }
-    ],
-    "spacing": 4
+    ]
    },
    {
     "type": "column",
@@ -234,6 +233,10 @@
      {
       "type": "size",
       "widthDp": 1
+     },
+     {
+      "type": "size",
+      "height": "Fill"
      }
     ],
     "children": []

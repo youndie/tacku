@@ -41,7 +41,7 @@ func (t Task) Screen(comment, status Component) Component {
 		Rule("task-nav-rule", RuleDp, ColorDivider, false),
 		Column("screen-task-body", 24,
 			[]Modifier{Weight(1), FillHeight(), Padding(32), Background(ColorSurface)},
-			BackTo(LinkBoard, string(t.Task.Board)),
+			BackLink(LinkBoard, string(t.Task.Board)),
 			Column("task-heading", 6, nil,
 				Text("task-title", t.Task.Title, TextDisplay),
 				Text("task-meta", TaskMeta(t.Task), TextMeta),

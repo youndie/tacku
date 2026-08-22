@@ -154,11 +154,11 @@
     "children": [
      {
       "type": "row",
-      "id": "app://board-back",
+      "id": "back-board",
       "children": [
        {
         "type": "text",
-        "id": "app://board-back-label",
+        "id": "back-board-label",
         "modifiers": [
          {
           "type": "padding",
