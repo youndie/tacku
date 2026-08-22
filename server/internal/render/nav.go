@@ -59,3 +59,25 @@ func navItem(id, link, current string) Component {
 		Navigate(link),
 	)
 }
+
+// Back is the way out of a screen you can only have arrived at.
+//
+// A form is opened from somewhere and answers by navigating away, so it never needed one — until
+// somebody opened "New task" and decided not to create a task. There is no chrome around a screen
+// in this product: if the way back is not in the tree, there is no way back.
+//
+// It goes **beside the action and before it**: the design draws "Back" to the left of "Continue",
+// where a person is already looking when they decide which of the two they want. It was at the top
+// for one build, which is where a browser would put it and this is not one. The padding is the
+// mockup's — 12 by 18 against the action's 12 by 24 — so the two read as one pair.
+//
+// The caption comes from the graph, like every other destination's. Spelled here as well it had
+// already parted once — the graph said "Board" and the button beside it "Boards" — and a way back
+// whose word is invented is a second name for the same place.
+func Back(to string) Component {
+	return Opens(
+		Row(to+"-back", 0, nil,
+			Text(to+"-back-label", BackLabel(RouteTitle(to)), TextButtonQuiet, PaddingXY(12, 18))),
+		Navigate(to),
+	)
+}

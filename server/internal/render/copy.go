@@ -237,8 +237,8 @@ func MoveLabel(target domain.Status) string {
 	return fmt.Sprintf("Move to %s", StatusName(string(target)))
 }
 
-// BackLabel is the caption of the button that leaves a task for its board.
-func BackLabel(board domain.BoardID) string { return fmt.Sprintf("← %s", board) }
+// BackLabel is the caption of the link that leaves a screen for the one behind it.
+func BackLabel(destination string) string { return fmt.Sprintf("← %s", destination) }
 
 // CardMeta is the second line of a board card: which task, whose, by when — and, when an agent was
 // the last to touch it, that as well.

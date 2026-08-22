@@ -73,19 +73,21 @@
        {
         "type": "size",
         "width": "Fill"
-       },
-       {
-        "type": "padding",
-        "top": 10,
-        "bottom": 10,
-        "start": 16,
-        "end": 16
        }
       ],
       "children": [
        {
         "type": "text",
         "id": "nav-catchup-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 10,
+          "bottom": 10,
+          "start": 16,
+          "end": 16
+         }
+        ],
         "text": "Catch-up",
         "style": "nav"
        }
@@ -102,19 +104,21 @@
        {
         "type": "size",
         "width": "Fill"
-       },
-       {
-        "type": "padding",
-        "top": 10,
-        "bottom": 10,
-        "start": 16,
-        "end": 16
        }
       ],
       "children": [
        {
         "type": "text",
         "id": "nav-boards-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 10,
+          "bottom": 10,
+          "start": 16,
+          "end": 16
+         }
+        ],
         "text": "Board",
         "style": "nav"
        }
@@ -135,19 +139,21 @@
        {
         "type": "size",
         "width": "Fill"
-       },
-       {
-        "type": "padding",
-        "top": 10,
-        "bottom": 10,
-        "start": 16,
-        "end": 16
        }
       ],
       "children": [
        {
         "type": "text",
         "id": "nav-mine-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 10,
+          "bottom": 10,
+          "start": 16,
+          "end": 16
+         }
+        ],
         "text": "My tasks",
         "style": "nav_current"
        }
@@ -190,19 +196,21 @@
        {
         "type": "size",
         "width": "Fill"
-       },
-       {
-        "type": "padding",
-        "top": 10,
-        "bottom": 10,
-        "start": 16,
-        "end": 16
        }
       ],
       "children": [
        {
         "type": "text",
         "id": "nav-signout-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 10,
+          "bottom": 10,
+          "start": 16,
+          "end": 16
+         }
+        ],
         "text": "Sign out",
         "style": "nav"
        }

@@ -67,7 +67,7 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 		agent := form.Checkbox("agent_may_update", "Let my agent keep this task up to date")
 
 		screen := render.Column("form-new-task", 20,
-			[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
+			[]render.Modifier{render.FillWidth(), render.Padding(32), render.Background(render.ColorSurface)},
 			render.Text("form-new-task-title", "New task", render.TextDisplay),
 			title,
 			description,
@@ -78,9 +78,10 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 			render.Text("form-agent-hint",
 				"It may change the status and post comments on your behalf. Every action stays in the history.",
 				render.TextMeta),
-			render.Row("form-actions", 0, nil,
+			render.Row("form-actions", 12, nil,
+				render.Back(render.LinkBoard),
 				render.PrimaryButton("form-submit", "Create task", render.SubmitForm(form.FormID()),
-					render.PaddingXY(14, 24)),
+					render.PaddingXY(12, 24)),
 				render.Spacer("form-actions-spacer"),
 			),
 		)

@@ -42,11 +42,16 @@ class TackuDesignSystem(
      * What every style is built on top of.
      *
      * It exists because a `TextStyle` with no font family is drawn in whatever font the machine
-     * happens to have, and a screenshot of that is a picture of the machine. The screenshot harness
-     * passes a font it carries with it; the product leaves this alone and gets the system font,
-     * which is what a desktop application should look like.
+     * happens to have, and a screenshot of that is a picture of the machine — which is what this
+     * product was, for months, in both places at once. The design is set in IBM Plex Sans and the
+     * client drew in whatever the system offered, so the running product and the mockup were never
+     * the same picture and no screenshot could have said so.
+     *
+     * The default now carries the typeface the design was drawn in. The screenshot harness still
+     * passes its own, and that remains right for a different reason: a golden has to be a picture of
+     * the code rather than of the machine, and it needs a font it carries with it to be so.
      */
-    private val base: TextStyle = TextStyle.Default,
+    private val base: TextStyle = TextStyle(fontFamily = TackuFontFamily),
 ) : KompotDesignSystem {
     @Composable
     override fun resolveColor(token: ColorToken): Color =

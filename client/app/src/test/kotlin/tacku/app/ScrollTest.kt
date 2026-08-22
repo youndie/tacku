@@ -5,13 +5,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /**
  * A form taller than the window can be reached.
@@ -55,6 +55,9 @@ class ScrollTest {
         /** The last line of the new-task form, and the one a person has to reach to submit. */
         const val BOTTOM_OF_THE_FORM = "Every action stays in the history"
 
+        /** The line under the comment box, which is the bottom of the task screen. */
+        const val BOTTOM_OF_THE_TASK = "Posted as you"
+
         /** The sixth card of TO DO on the seeded board, well below a 420-point window. */
         const val LAST_CARD_IN_TODO = "Measure where people change status"
     }
@@ -78,11 +81,42 @@ class ScrollTest {
                 }
             }
 
-            // Counted before anything is scrolled, because "the scroll did not work" and "there is
-            // nothing here that scrolls" are different findings and only one of them is ours.
+            // Counted first, because "the scroll did not reach" and "there is nothing here that
+            // scrolls" are different findings and only one of them is ours. It was zero once.
             val scrollables = onAllNodes(hasScrollAction()).fetchSemanticsNodes().size
-            println("board: $scrollables scrollable nodes")
+            assertTrue(scrollables > 0, "no node on this board can be scrolled at all")
 
-            onNode(hasText(LAST_CARD_IN_TODO, substring = true)).assertIsNotDisplayed()
+            // To a matcher, not to a node: a lazy list has not composed what is below the fold, so
+            // asking for the node first is asking for something that does not exist yet.
+            onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(LAST_CARD_IN_TODO, substring = true))
+            onNode(hasText(LAST_CARD_IN_TODO, substring = true)).assertIsDisplayed()
+        }
+
+    /**
+     * The task screen, which is the one a person reads rather than scans.
+     *
+     * A description, a history and a comment box add up past the fold on any window worth using, and
+     * for a few hours this screen could not be scrolled at all: it had a row at its root, and only a
+     * column root gets the projection that scrolls. The comment box is at the bottom, so "cannot
+     * scroll" means "cannot comment".
+     */
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun `the bottom of a task can be reached`() =
+        runComposeUiTest {
+            setContent {
+                val design = TackuDesignSystem()
+                TackuTheme(design) {
+                    Box(Modifier.size(700.dp, 300.dp)) {
+                        Inner(screenOf("task"))
+                    }
+                }
+            }
+
+            val scrollables = onAllNodes(hasScrollAction()).fetchSemanticsNodes().size
+            assertTrue(scrollables > 0, "nothing on the task screen can be scrolled")
+
+            onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(BOTTOM_OF_THE_TASK, substring = true))
+            onNode(hasText(BOTTOM_OF_THE_TASK, substring = true)).assertIsDisplayed()
         }
 }

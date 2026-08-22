@@ -27,15 +27,59 @@
     "width": "Fill"
    },
    {
-    "type": "size",
-    "height": "Fill"
-   },
-   {
     "type": "padding",
     "all": 32
    }
   ],
   "children": [
+   {
+    "type": "row",
+    "id": "app://board-back-row",
+    "modifiers": [
+     {
+      "type": "size",
+      "width": "Fill"
+     }
+    ],
+    "children": [
+     {
+      "type": "row",
+      "id": "app://board-back",
+      "children": [
+       {
+        "type": "text",
+        "id": "app://board-back-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 6,
+          "bottom": 6,
+          "start": 0,
+          "end": 0
+         }
+        ],
+        "text": "← Board",
+        "style": "button_quiet"
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://board"
+      }
+     },
+     {
+      "type": "column",
+      "id": "app://board-back-spacer",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": []
+     }
+    ]
+   },
    {
     "type": "column",
     "id": "new-board-heading",

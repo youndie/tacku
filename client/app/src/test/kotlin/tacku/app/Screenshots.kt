@@ -16,7 +16,6 @@ import io.github.youndie.kompot.form.FormSchema
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import ru.workinprogress.viddik.annotations.ViddikScreenshot
-import ru.workinprogress.viddik.core.ViddikFontFamily
 import ru.workinprogress.viddik.core.ViddikPlatformTextStyle
 import ru.workinprogress.viddik.core.viddikTypography
 
@@ -40,10 +39,16 @@ private val registry = tackuRegistry()
  *
  * A [TextStyle] with no family is drawn in whatever the host has installed, and the same five
  * screens recorded on two operating systems then differ in glyphs — measured here at 2.5-8.6% of
- * pixels before the font was pinned. The harness ships a Roboto with normalised vertical metrics
- * for exactly this, so the golden is a property of the code rather than of the laptop.
+ * pixels before the font was pinned.
+ *
+ * It was the harness's own Roboto for a while, which met the requirement and photographed a near
+ * relative of the product: the design is set in IBM Plex Sans and the client drew in whatever the
+ * system offered. The product now carries that typeface itself, so the same file satisfies both —
+ * the golden travels, and it is of the product.
+ *
+ * The platform style stays: it is what keeps line metrics identical across machines.
  */
-private val viddikBase = TextStyle(fontFamily = ViddikFontFamily, platformStyle = ViddikPlatformTextStyle)
+private val viddikBase = TextStyle(fontFamily = TackuFontFamily, platformStyle = ViddikPlatformTextStyle)
 
 /**
  * One design system for the picture and for the product.

@@ -37,7 +37,7 @@ type BulkMove struct {
 func (b BulkMove) Screen(status Component) Component {
 	if len(b.Tasks) == 0 {
 		return Column("screen-bulk-move", 24,
-			[]Modifier{FillWidth(), FillHeight(), Padding(32), Background(ColorSurface)},
+			[]Modifier{FillWidth(), Padding(32), Background(ColorSurface)},
 			b.heading(),
 			emptySelection(),
 			Spacer("bulk-move-tail"),
@@ -53,7 +53,7 @@ func (b BulkMove) Screen(status Component) Component {
 	}
 
 	return Column("screen-bulk-move", 20,
-		[]Modifier{FillWidth(), FillHeight(), Padding(32), Background(ColorSurface)},
+		[]Modifier{FillWidth(), Padding(32), Background(ColorSurface)},
 		b.heading(),
 		status,
 		Column("bulk-move-list", 8, []Modifier{Weight(1)}, rows...),

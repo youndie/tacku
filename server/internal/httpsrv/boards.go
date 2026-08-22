@@ -34,7 +34,7 @@ func newBoardForm() http.HandlerFunc {
 			"Every board starts with these five. Renaming them comes later.")
 
 		screen := render.Column("screen-new-board", 24,
-			[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
+			[]render.Modifier{render.FillWidth(), render.Padding(32), render.Background(render.ColorSurface)},
 			render.Column("new-board-heading", 6, nil,
 				render.Text("new-board-title", "New board", render.TextDisplay),
 				render.Text("new-board-note",
@@ -43,9 +43,10 @@ func newBoardForm() http.HandlerFunc {
 			),
 			name,
 			columns,
-			render.Row("new-board-actions", 0, nil,
+			render.Row("new-board-actions", 12, nil,
+				render.Back(render.LinkBoard),
 				render.PrimaryButton("new-board-submit", "Create board", render.SubmitForm(form.FormID()),
-					render.PaddingXY(14, 24)),
+					render.PaddingXY(12, 24)),
 				render.Spacer("new-board-actions-spacer"),
 			),
 		)

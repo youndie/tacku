@@ -14,7 +14,7 @@
   ]
  },
  "screen": {
-  "type": "row",
+  "type": "column",
   "id": "screen-task",
   "modifiers": [
    {
@@ -26,90 +26,91 @@
     "width": "Fill"
    },
    {
-    "type": "size",
-    "height": "Fill"
+    "type": "padding",
+    "all": 32
    }
   ],
   "children": [
    {
-    "type": "column",
-    "id": "screen-task-body",
+    "type": "row",
+    "id": "app://board-back-row",
     "modifiers": [
      {
-      "type": "background",
-      "color": "surface"
-     },
-     {
-      "type": "weight",
-      "value": 1
-     },
-     {
       "type": "size",
-      "height": "Fill"
-     },
-     {
-      "type": "padding",
-      "all": 32
+      "width": "Fill"
      }
     ],
     "children": [
      {
       "type": "row",
-      "id": "task-back-row",
+      "id": "app://board-back",
       "children": [
        {
-        "type": "button",
-        "id": "task-back",
+        "type": "text",
+        "id": "app://board-back-label",
         "modifiers": [
          {
           "type": "padding",
-          "top": 12,
-          "bottom": 12,
-          "start": 20,
-          "end": 20
+          "top": 6,
+          "bottom": 6,
+          "start": 0,
+          "end": 0
          }
         ],
-        "text": "← Sprint 24",
-        "action": {
-         "type": "navigate",
-         "deeplink": "app://board"
-        }
-       },
-       {
-        "type": "column",
-        "id": "task-back-spacer",
-        "modifiers": [
-         {
-          "type": "weight",
-          "value": 1
-         }
-        ],
-        "children": []
+        "text": "← Board",
+        "style": "button_quiet"
        }
-      ]
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://board"
+      }
      },
      {
       "type": "column",
-      "id": "task-heading",
-      "children": [
+      "id": "app://board-back-spacer",
+      "modifiers": [
        {
-        "type": "text",
-        "id": "task-title",
-        "text": "Add rate limit to the auth endpoint",
-        "style": "display"
-       },
-       {
-        "type": "text",
-        "id": "task-meta",
-        "text": "TAC-2 · created 22 Aug",
-        "style": "meta"
+        "type": "weight",
+        "value": 1
        }
       ],
-      "spacing": 6
+      "children": []
+     }
+    ]
+   },
+   {
+    "type": "column",
+    "id": "task-heading",
+    "children": [
+     {
+      "type": "text",
+      "id": "task-title",
+      "text": "Add rate limit to the auth endpoint",
+      "style": "display"
      },
      {
-      "type": "row",
-      "id": "task-body",
+      "type": "text",
+      "id": "task-meta",
+      "text": "TAC-2 · created 22 Aug",
+      "style": "meta"
+     }
+    ],
+    "spacing": 6
+   },
+   {
+    "type": "row",
+    "id": "task-body",
+    "modifiers": [
+     {
+      "type": "size",
+      "width": "Fill"
+     }
+    ],
+    "children": [
+     {
+      "type": "column",
+      "id": "task-left",
       "modifiers": [
        {
         "type": "weight",
@@ -119,54 +120,62 @@
       "children": [
        {
         "type": "column",
-        "id": "task-left",
-        "modifiers": [
-         {
-          "type": "weight",
-          "value": 1
-         }
-        ],
+        "id": "task-description",
         "children": [
          {
-          "type": "column",
-          "id": "task-description",
-          "children": [
-           {
-            "type": "text",
-            "id": "task-description-label",
-            "text": "DESCRIPTION",
-            "style": "subtitle"
-           },
-           {
-            "type": "text",
-            "id": "task-description-body",
-            "text": "No description yet.",
-            "style": "body"
-           }
-          ],
-          "spacing": 8
+          "type": "text",
+          "id": "task-description-label",
+          "text": "DESCRIPTION",
+          "style": "subtitle"
+         },
+         {
+          "type": "text",
+          "id": "task-description-body",
+          "text": "No description yet.",
+          "style": "body"
+         }
+        ],
+        "spacing": 8
+       },
+       {
+        "type": "column",
+        "id": "task-activity",
+        "children": [
+         {
+          "type": "text",
+          "id": "task-activity-label",
+          "text": "ACTIVITY",
+          "style": "subtitle"
          },
          {
           "type": "column",
-          "id": "task-activity",
+          "id": "task-activity-list",
           "children": [
            {
-            "type": "text",
-            "id": "task-activity-label",
-            "text": "ACTIVITY",
-            "style": "subtitle"
-           },
-           {
             "type": "column",
-            "id": "task-activity-list",
+            "id": "history-3",
+            "modifiers": [
+             {
+              "type": "background",
+              "color": "divider"
+             },
+             {
+              "type": "size",
+              "width": "Fill"
+             },
+             {
+              "type": "padding",
+              "start": 3
+             }
+            ],
             "children": [
              {
               "type": "column",
-              "id": "history-3",
+              "id": "history-3-body",
               "modifiers": [
                {
                 "type": "background",
-                "color": "divider"
+                "color": "surface_block"
                },
                {
                 "type": "size",
@@ -174,245 +183,225 @@
                },
                {
                 "type": "padding",
-                "start": 3
+                "all": 14
                }
               ],
               "children": [
                {
-                "type": "column",
-                "id": "history-3-body",
-                "modifiers": [
-                 {
-                  "type": "background",
-                  "color": "surface_block"
-                 },
-                 {
-                  "type": "size",
-                  "width": "Fill"
-                 },
-                 {
-                  "type": "padding",
-                  "all": 14
-                 }
-                ],
-                "children": [
-                 {
-                  "type": "text",
-                  "id": "history-3-what",
-                  "text": "Created",
-                  "style": "body"
-                 },
-                 {
-                  "type": "text",
-                  "id": "history-3-who",
-                  "text": "anna · 20:55",
-                  "style": "meta"
-                 }
-                ],
-                "spacing": 6
-               }
-              ]
-             }
-            ],
-            "spacing": 8
-           }
-          ],
-          "spacing": 8
-         },
-         {
-          "type": "column",
-          "id": "task-comment-block",
-          "children": [
-           {
-            "type": "text_input",
-            "id": "field-comment",
-            "fieldId": "comment",
-            "label": "Comment",
-            "placeholder": "Write a comment…",
-            "multiline": true
-           },
-           {
-            "type": "row",
-            "id": "task-comment-actions",
-            "children": [
-             {
-              "type": "text",
-              "id": "task-comment-as",
-              "text": "Posted as you",
-              "style": "meta"
-             },
-             {
-              "type": "column",
-              "id": "task-comment-spacer",
-              "modifiers": [
+                "type": "text",
+                "id": "history-3-what",
+                "text": "Created",
+                "style": "body"
+               },
                {
-                "type": "weight",
-                "value": 1
+                "type": "text",
+                "id": "history-3-who",
+                "text": "anna · 21:19",
+                "style": "meta"
                }
               ],
-              "children": []
-             },
-             {
-              "type": "button",
-              "id": "task-comment-post",
-              "modifiers": [
-               {
-                "type": "padding",
-                "top": 10,
-                "bottom": 10,
-                "start": 18,
-                "end": 18
-               }
-              ],
-              "text": "Post",
-              "action": {
-               "type": "submit_form",
-               "formId": "task-view/TAC-2"
-              },
-              "variant": "primary"
+              "spacing": 6
              }
             ]
            }
           ],
           "spacing": 8
-         },
-         {
-          "type": "column",
-          "id": "task-left-tail",
-          "modifiers": [
-           {
-            "type": "weight",
-            "value": 1
-           }
-          ],
-          "children": []
          }
         ],
-        "spacing": 24
+        "spacing": 8
        },
        {
         "type": "column",
-        "id": "task-sidebar",
-        "modifiers": [
-         {
-          "type": "size",
-          "widthDp": 320
-         }
-        ],
+        "id": "task-comment-block",
         "children": [
          {
-          "type": "read_only_field",
-          "id": "task-status",
-          "modifiers": [
-           {
-            "type": "background",
-            "color": "surface_field"
-           },
-           {
-            "type": "padding",
-            "all": 12
-           }
-          ],
-          "label": "Status",
-          "value": "To do"
+          "type": "text_input",
+          "id": "field-comment",
+          "fieldId": "comment",
+          "label": "Comment",
+          "placeholder": "Write a comment…",
+          "multiline": true
          },
          {
-          "type": "read_only_field",
-          "id": "task-assignee",
-          "modifiers": [
+          "type": "row",
+          "id": "task-comment-actions",
+          "children": [
            {
-            "type": "background",
-            "color": "surface_field"
+            "type": "text",
+            "id": "task-comment-as",
+            "text": "Posted as you",
+            "style": "meta"
            },
            {
-            "type": "padding",
-            "all": 12
+            "type": "column",
+            "id": "task-comment-spacer",
+            "modifiers": [
+             {
+              "type": "weight",
+              "value": 1
+             }
+            ],
+            "children": []
+           },
+           {
+            "type": "button",
+            "id": "task-comment-post",
+            "modifiers": [
+             {
+              "type": "padding",
+              "top": 10,
+              "bottom": 10,
+              "start": 18,
+              "end": 18
+             }
+            ],
+            "text": "Post",
+            "action": {
+             "type": "submit_form",
+             "formId": "task-view/TAC-2"
+            },
+            "variant": "primary"
            }
-          ],
-          "label": "Assignee",
-          "value": "ivan"
-         },
-         {
-          "type": "read_only_field",
-          "id": "task-due",
-          "modifiers": [
-           {
-            "type": "background",
-            "color": "surface_field"
-           },
-           {
-            "type": "padding",
-            "all": 12
-           }
-          ],
-          "label": "Due",
-          "value": "29 Aug"
-         },
-         {
-          "type": "read_only_field",
-          "id": "task-board",
-          "modifiers": [
-           {
-            "type": "background",
-            "color": "surface_field"
-           },
-           {
-            "type": "padding",
-            "all": 12
-           }
-          ],
-          "label": "Board",
-          "value": "Sprint 24"
-         },
-         {
-          "type": "select_input",
-          "id": "field-status",
-          "fieldId": "status",
-          "label": "Move to",
-          "options": [
-           {
-            "id": "todo",
-            "label": "To do"
-           },
-           {
-            "id": "in_progress",
-            "label": "In progress"
-           },
-           {
-            "id": "in_review",
-            "label": "In review"
-           },
-           {
-            "id": "done",
-            "label": "Done"
-           },
-           {
-            "id": "blocked",
-            "label": "Blocked"
-           }
-          ],
-          "placeholder": "Choose a status…"
-         },
-         {
-          "type": "column",
-          "id": "task-sidebar-tail",
-          "modifiers": [
-           {
-            "type": "weight",
-            "value": 1
-           }
-          ],
-          "children": []
+          ]
          }
         ],
-        "spacing": 12
+        "spacing": 8
+       },
+       {
+        "type": "column",
+        "id": "task-left-tail",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         }
+        ],
+        "children": []
        }
       ],
-      "spacing": 32
+      "spacing": 24
+     },
+     {
+      "type": "column",
+      "id": "task-sidebar",
+      "modifiers": [
+       {
+        "type": "size",
+        "widthDp": 320
+       }
+      ],
+      "children": [
+       {
+        "type": "read_only_field",
+        "id": "task-status",
+        "modifiers": [
+         {
+          "type": "background",
+          "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
+         }
+        ],
+        "label": "Status",
+        "value": "To do"
+       },
+       {
+        "type": "read_only_field",
+        "id": "task-assignee",
+        "modifiers": [
+         {
+          "type": "background",
+          "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
+         }
+        ],
+        "label": "Assignee",
+        "value": "ivan"
+       },
+       {
+        "type": "read_only_field",
+        "id": "task-due",
+        "modifiers": [
+         {
+          "type": "background",
+          "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
+         }
+        ],
+        "label": "Due",
+        "value": "29 Aug"
+       },
+       {
+        "type": "read_only_field",
+        "id": "task-board",
+        "modifiers": [
+         {
+          "type": "background",
+          "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
+         }
+        ],
+        "label": "Board",
+        "value": "Sprint 24"
+       },
+       {
+        "type": "select_input",
+        "id": "field-status",
+        "fieldId": "status",
+        "label": "Move to",
+        "options": [
+         {
+          "id": "todo",
+          "label": "To do"
+         },
+         {
+          "id": "in_progress",
+          "label": "In progress"
+         },
+         {
+          "id": "in_review",
+          "label": "In review"
+         },
+         {
+          "id": "done",
+          "label": "Done"
+         },
+         {
+          "id": "blocked",
+          "label": "Blocked"
+         }
+        ],
+        "placeholder": "Choose a status…"
+       },
+       {
+        "type": "column",
+        "id": "task-sidebar-tail",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         }
+        ],
+        "children": []
+       }
+      ],
+      "spacing": 12
      }
     ],
-    "spacing": 24
+    "spacing": 32
    }
-  ]
+  ],
+  "spacing": 24
  }
 }
