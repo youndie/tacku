@@ -43,21 +43,16 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (9)
+## Open (4)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
-| [B-31](docs/backlog/B-31-wizard-submit-label.md) `[ ]` | Подпись кнопки завершения сценария — `submitLabel` у `wizard_screen` | P2 | S | B-26 |
-| [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[ ]` | Что показывать, когда массовое действие применилось частично | P2 | S | B-23 |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
-| [B-39](docs/backlog/B-39-wizard-endpoints.md) `[ ]` | Эндпоинты сценария: пакет wizard написан и никем не вызывается | P2 | M | B-33 |
-| [B-42](docs/backlog/B-42-agent-line-replaces-card-meta.md) `[ ]` | Подпись агента съедает метаданные карточки | P2 | S | B-19 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
 
-## Closed (33)
+## Closed (38)
 
 **Чем меряем**
 
@@ -79,6 +74,7 @@
 - [B-14](docs/backlog/B-14-tck-harness-and-run.md) `[x]` - Харнесс TCK и первый прогон против Go-сервера
 - [B-35](docs/backlog/B-35-layout-without-numeric-size.md) `[x]` - Вёрстка без числовых размеров: `size` — это только `Fill`/`Wrap`
 - [B-37](docs/backlog/B-37-task-screen.md) `[x]` - Экран задачи: описание, история и боковая колонка
+- [B-39](docs/backlog/B-39-wizard-endpoints.md) `[x]` - Эндпоинты сценария: пакет wizard написан и никем не вызывается
 
 **Агентская поверхность**
 
@@ -96,6 +92,7 @@
 - [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[x]` - Полоса `agent` — цветовой сигнал; проверить на людях
 - [B-34](docs/backlog/B-34-viddik-screenshots.md) `[x]` - Скриншот-тесты клиента на viddik
 - [B-40](docs/backlog/B-40-dead-controls.md) `[x]` - Две кнопки не ведут никуда: отправка комментария и фильтр списка
+- [B-42](docs/backlog/B-42-agent-line-replaces-card-meta.md) `[x]` - Подпись агента съедает метаданные карточки
 
 **Решения, отложенные намеренно**
 
@@ -105,6 +102,9 @@
 - [B-22](docs/backlog/B-22-icon-component.md) `[x]` - Элемент `icon`: иконка по имени из набора дизайн-системы
 - [B-23](docs/backlog/B-23-bulk-status-change.md) `[x]` - Массовая смена статуса вместо перетаскивания
 - [B-26](docs/backlog/B-26-client-capability-flag.md) `[x]` - Флаг возможностей клиента: может ли сервер узнать версию словаря
+- [B-29](docs/backlog/B-29-multiline-text-input.md) `[x]` - Многострочный ввод: описание задачи и комментарий
+- [B-31](docs/backlog/B-31-wizard-submit-label.md) `[x]` - Подпись кнопки завершения сценария — `submitLabel` у `wizard_screen`
+- [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[x]` - Что показывать, когда массовое действие применилось частично
 - [B-33](docs/backlog/B-33-wizard-scenario-state-lifetime.md) `[x]` - Срок жизни состояния сценария: отменить его нечем
 
 <!-- END INDEX -->

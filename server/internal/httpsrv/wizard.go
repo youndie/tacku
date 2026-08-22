@@ -65,7 +65,7 @@ func newTaskFlow() []wizardStep {
 	return []wizardStep{
 		{
 			id: "basics", formID: wizardBasicsFormID,
-			fields: []string{"title", "board"},
+			fields: []string{"title", "board", "description"},
 			build:  wizardBasics,
 		},
 		{
@@ -96,11 +96,18 @@ func wizardBasics(ctx context.Context, store domain.Store, _ map[string]json.Raw
 		[]forms.Rule{forms.Required("Give the task a title.")})
 	board := form.Select("board", "Board", "Choose a board", options,
 		[]forms.Rule{forms.Required("Every task belongs to a board.")})
+	// The same field the one-screen form offers, and the reason it is here is not symmetry for its
+	// own sake: two ways to create a task that take different facts make one of them the way that
+	// loses something, and nobody would find out from a failure — the task simply arrives without a
+	// description. A check below holds the two field sets together from now on.
+	description := form.MultilineInput("description", "Description",
+		"What does done look like?", "", render.DefaultLines, nil)
 
 	return form.Build(render.Column("wizard-basics-fields", 20,
 		[]render.Modifier{render.Padding(32), render.Background(render.ColorSurface)},
 		title,
 		board,
+		description,
 		render.Text("wizard-basics-next", "Status, deadline and what your agent may do come next.",
 			render.TextMeta),
 	)), nil
@@ -295,6 +302,7 @@ func wizardFinish(
 	task, err := store.CreateTask(r.Context(), domain.Task{
 		Board:  domain.BoardID(values.chosen("board")),
 		Title:  values.text("title"),
+		Body:   values.text("description"),
 		Status: domain.Status(values.chosen("status")),
 		Due:    values.text("due"),
 	}, by)
