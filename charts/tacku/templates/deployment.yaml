@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.server.replicas }}
+  # Recreate, not RollingUpdate: see the note beside the volume. A rolling update here waits for a
+  # volume the outgoing pod has not released, which reads as a deploy that hangs rather than as a
+  # database that cannot be shared.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+      annotations:
+        # So that a change to a secret restarts the pod. Without it the rendered spec is unchanged
+        # when only the secret moved, and the running process keeps the value it started with.
+        checksum/secrets: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      securityContext:
+        # The image runs as nonroot; the volume has to belong to that user or the first write to
+        # the database fails as a permission error that looks like a corrupt file.
+        fsGroup: 65532
+      containers:
+        - name: server
+          image: "{{ .Values.server.image }}:{{ include "tacku.require" (dict "name" "server.version" "because" "an image tag that moves leaves helm nothing to notice, and a green deploy then runs the previous binary" "value" .Values.server.version) }}"
+          args: ["serve", "-db", "/data/tacku.db", "-addr", ":8080"]
+          env:
+            - name: TACKU_SESSION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: session-key
+            - name: TACKU_ISSUER
+              value: {{ include "tacku.require" (dict "name" "auth.issuer" "because" "the server refuses to start without it, which arrives as a successful deploy and a service that is down" "value" .Values.auth.issuer) | quote }}
+            - name: TACKU_JWKS_URL
+              value: {{ include "tacku.require" (dict "name" "auth.jwksUrl" "because" "without it no agent token can be verified, and the path is not derivable from the issuer — this deployment's own identity provider serves it from /oauth2/jwks, not from the path a Keycloak-shaped guess would produce" "value" .Values.auth.jwksUrl) | quote }}
+            - name: TACKU_RESOURCE
+              value: {{ include "tacku.resource" . | quote }}
+            {{- if .Values.wizardTtl }}
+            - name: TACKU_WIZARD_TTL
+              value: {{ .Values.wizardTtl | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+          # /healthz answers without a token and without touching the database, which is what makes
+          # it usable here: a probe that authenticated would report the identity provider's health,
+          # and one that read the store would restart the pod for a slow query.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-data

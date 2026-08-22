@@ -1,0 +1,43 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Release.Name }}-redirect-to-https
+  namespace: {{ .Release.Namespace }}
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+{{/*
+No forward-auth in front of this service, and that is a decision rather than an omission.
+
+The neighbouring services put a browser-session proxy ahead of everything and open a bypass for the
+endpoints machines use. Here the whole product is what machines use: the client is a desktop
+application holding a bearer token, and the agent surface is MCP. A proxy expecting a browser
+session would reject both, so a bypass for "the machine endpoints" would have to be a bypass for
+every route — which is a proxy that refuses nothing while looking like protection.
+
+What guards this instead is the server's own check, and it is applied to every route rather than
+declared once. Four addresses answer without a session, each because it must: the sign-in form and
+its submit, `/healthz`, and the protected-resource metadata RFC 9728 requires an MCP server to
+publish unauthenticated. Everything else answers 401 without a token, and there is a conformance
+check that walks the described endpoints and demands exactly that.
+*/}}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+    - {{ .Values.traefik.entrypoint }}
+  routes:
+    - match: Host(`{{ include "tacku.require" (dict "name" "hostname" "because" "an empty one renders Host(``) — a rule that matches nothing while looking like a working ingress" "value" .Values.hostname) }}`)
+      kind: Rule
+      services:
+        - name: {{ .Release.Name }}
+          port: 80
+  tls:
+    {{- if .Values.traefik.certResolver }}
+    certResolver: {{ .Values.traefik.certResolver | quote }}
+    {{- end }}

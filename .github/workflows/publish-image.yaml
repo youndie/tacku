@@ -1,0 +1,61 @@
+name: Publish image
+
+# Manual on purpose. The tag is a fixed version rather than a moving `latest`, and the deploy that
+# consumes it lives in another repository — so publishing is a decision rather than a side effect
+# of merging.
+#
+# The version comes from the chart, which is the only place in this repository that carries one.
+# Reading it from there rather than from an input means the tag and the chart cannot disagree: a
+# published image nobody's values point at, or values pointing at an image nobody published, are
+# both silent.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    # Pushing to ghcr under the same owner needs no personal token: the job's own GITHUB_TOKEN is
+    # enough once it may write packages.
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Take the version from the chart
+        run: |
+          version="$(grep '^appVersion:' charts/tacku/Chart.yaml | cut -d'"' -f2)"
+          if [ -z "$version" ]; then
+            echo "charts/tacku/Chart.yaml carries no appVersion, so there is no tag to publish" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # Refused rather than overwritten. An image republished under one tag leaves helm nothing to
+      # notice — the rendered spec is unchanged, so no pod restarts — and the cluster keeps running
+      # the previous binary behind a green deploy.
+      - name: Refuse a tag that already exists
+        run: |
+          if docker manifest inspect "ghcr.io/youndie/tacku:${VERSION}" >/dev/null 2>&1; then
+            echo "ghcr.io/youndie/tacku:${VERSION} is already published — raise appVersion in the chart" >&2
+            exit 1
+          fi
+
+      # amd64 only: that is what the cluster runs, and a second platform is a second build rather
+      # than a second manifest entry.
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./server/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/youndie/tacku:${{ env.VERSION }}

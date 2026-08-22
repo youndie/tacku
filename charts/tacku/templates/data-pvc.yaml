@@ -1,0 +1,18 @@
+{{/*
+The database is a file, so the deployment is one pod with one volume.
+
+This is a property of the store rather than a stage of growth: SQLite on a ReadWriteOnce volume
+cannot be served by two pods, and saying so here — one replica, Recreate — is cheaper than
+discovering it as a rollout that never completes because the new pod waits for a volume the old one
+still holds.
+*/}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: {{ .Values.db.class }}
+  resources:
+    requests:
+      storage: {{ .Values.db.size }}

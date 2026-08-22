@@ -1,0 +1,50 @@
+# The chart carries no environment. Everything below is either a shape or a default that is safe
+# anywhere; the addresses of a particular cluster live with that cluster, not here.
+#
+# Four values have no default on purpose, and the templates stop the render when they are empty
+# rather than deploying something that starts and misbehaves. Each is listed with what its absence
+# would actually do.
+
+# Where this instance answers. Empty renders `Host(``)`, which matches nothing while looking like a
+# working ingress.
+hostname: ""
+
+server:
+  image: ghcr.io/youndie/tacku
+  # An immutable tag by agreement. Rebuilding under one number leaves helm nothing to notice — the
+  # rendered spec is unchanged, so no pod restarts — and a green deploy then runs the old binary.
+  version: ""
+  replicas: 1
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "48Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+
+# The signing key of a person's session. Absent, the server generates one at startup and says so on
+# stderr — which means every rollout silently signs everybody out, and the message is in a log
+# nobody reads. Comes from a secret through --set.
+sessionKey: ""
+
+# The issuer of the tokens agents arrive with. The server refuses to start without all three,
+# which is the correct behaviour and not a reason to leave them blank here: a pod that will not
+# start is a deploy that reports success and a service that is down.
+auth:
+  issuer: ""
+  jwksUrl: ""
+  # The audience an agent's token must be bound to (RFC 8707). Derived from the hostname when
+  # empty, because it is the address of this server's own MCP endpoint and nothing else.
+  resource: ""
+
+db:
+  size: 2Gi
+  class: local-path
+
+# How long an untouched multi-step scenario is kept. Empty leaves the server's own default.
+wizardTtl: ""
+
+traefik:
+  entrypoint: websecure
+  certResolver: ""
