@@ -121,6 +121,7 @@ spec:
 probes:
 	cd probes/mcp-mux && CGO_ENABLED=0 go run .
 	cd probes/sqlite-nocgo && CGO_ENABLED=0 go run .
+	cd probes/mcp-elicitation && CGO_ENABLED=0 go run .
 
 # Non-blocking, on purpose. Demanding a percentage of automated scenarios is meaningless while
 # acceptance is manual, and an anchor goes stale because of a refactor in somebody else's

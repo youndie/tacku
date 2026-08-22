@@ -12,6 +12,7 @@
 |---|---|---|
 | `mcp-mux/` | обе поверхности — KOMPOT и MCP — живут на одном `http.ServeMux`; SDK выводит `inputSchema`/`outputSchema` из Go-типов | `cd mcp-mux && CGO_ENABLED=0 go run .` |
 | `sqlite-nocgo/` | `modernc.org/sqlite` собирается и работает при `CGO_ENABLED=0` | `cd sqlite-nocgo && CGO_ENABLED=0 go run .` |
+| `mcp-elicitation/` | сервер может спросить человека через клиента, но только если тот заявил возможность; у url-режима нет обратного канала со стороны сервера | `cd mcp-elicitation && CGO_ENABLED=0 go run .` |
 
 Проба, переставшая собираться после обновления зависимости, — это не сломанная проба, а изменившийся
 факт: сверьтесь с ресёрчем и поправьте там, где расхождение.

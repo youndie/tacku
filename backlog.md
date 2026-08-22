@@ -49,7 +49,6 @@
 |---|---|---|---|---|
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
-| [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[?]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
 | [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[?]` | Полоса `agent` — цветовой сигнал; проверить на людях | P2 | XS | B-19 |
 | [B-31](docs/backlog/B-31-wizard-submit-label.md) `[ ]` | Подпись кнопки завершения сценария — `submitLabel` у `wizard_screen` | P2 | S | B-26 |
@@ -59,8 +58,9 @@
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
+| [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
 
-## Closed (28)
+## Closed (29)
 
 **Чем меряем**
 
@@ -101,6 +101,7 @@
 
 **Решения, отложенные намеренно**
 
+- [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[x]` - Разворачивать опасное действие агента в KOMPOT-форму подтверждения
 - [B-23](docs/backlog/B-23-bulk-status-change.md) `[x]` - Массовая смена статуса вместо перетаскивания
 - [B-26](docs/backlog/B-26-client-capability-flag.md) `[x]` - Флаг возможностей клиента: может ли сервер узнать версию словаря
 - [B-33](docs/backlog/B-33-wizard-scenario-state-lifetime.md) `[x]` - Срок жизни состояния сценария: отменить его нечем
