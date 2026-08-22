@@ -26,7 +26,7 @@ import (
 // declared OPEN in kompot-core and degrades to a placeholder, so an invented component costs no
 // error anywhere: the client draws a box, the rest of the screen renders, and the meaning that node
 // carried is simply absent. The profile is the only artefact that says which types this build may
-// send, and it is the artefact the conformance kit reads (see docs/research/questions.md, Q-29).
+// send, and it is the artefact the conformance kit reads (see docs/research/questions.md, Q-24).
 func TestEveryTypeThisPackageBuildsIsDeclared(t *testing.T) {
 	declared := declaredTypes(t)
 	built := builtTypes(t)
