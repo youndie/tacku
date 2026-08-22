@@ -102,6 +102,14 @@ func OpenAPI(resource string) json.RawMessage {
 				"get": operation("navigationGraph", kindGraph,
 					ref("kompot-navigation.schema.json#/$defs/NavigationGraph")),
 			},
+			// The one endpoint whose response is not a document. It is declared with the media type
+			// it actually answers, because a description claiming JSON here would be a description
+			// no reader could act on — and the walk reads this to know it must be handed a
+			// recording rather than fetched.
+			updatesPath: map[string]any{
+				"get": stream(operation("updates", kindUpdates,
+					ref("kompot-realtime.schema.json#/$defs/UpdateComponentMessage"))),
+			},
 		},
 	}
 
@@ -119,6 +127,22 @@ type operationOption func(map[string]any)
 // counter means.
 func withNotModified(responses map[string]any) {
 	responses["304"] = map[string]any{"description": "the client already holds this body"}
+}
+
+// stream restates the success of an operation as an event stream carrying the declared frame.
+//
+// The frame schema stays where it was: what changes is the wrapper it arrives in, and saying so in
+// the description is the difference between an endpoint a reader can implement and one they have to
+// guess at.
+func stream(op map[string]any) map[string]any {
+	responses, _ := op["responses"].(map[string]any)
+	success, _ := responses["200"].(map[string]any)
+	content, _ := success["content"].(map[string]any)
+	frame := content["application/json"]
+	delete(content, "application/json")
+	content["text/event-stream"] = frame
+	success["description"] = "a sequence of update_component frames, one JSON value per data: line"
+	return op
 }
 
 func operation(id, kind string, response any, options ...operationOption) map[string]any {

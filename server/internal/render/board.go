@@ -238,3 +238,29 @@ func EmptyMyTasks() Component {
 		),
 	)
 }
+
+// UpdateComponent is one frame of the live channel: which node is replaced, and by what.
+//
+// The wire shape belongs to `kompot-realtime`, and it is written out here rather than imported from
+// anywhere because this server has no Kotlin: the field names come from the module's schema file,
+// which is the same place a foreign implementer would read them.
+type UpdateComponent struct {
+	ComponentID string    `json:"componentId"`
+	Component   Component `json:"component"`
+}
+
+// CardUpdate is the frame that replaces one board card.
+//
+// It builds the card the same way the board does, through the same function, because a frame that
+// drew a card of its own would be a second rendering of one thing — and the two would agree until
+// the day somebody changed one of them.
+func CardUpdate(task domain.Task, by domain.Provenance, moveURL string) UpdateComponent {
+	// The address the card's button performs to travels with it. Left out, the pushed card looked
+	// right and its button posted to the empty string — a control that works on the screen it was
+	// drawn with and stops working on the one it was sent to.
+	board := Board{MoveURL: moveURL, LastBy: map[domain.TaskID]domain.Provenance{task.ID: by}}
+	return UpdateComponent{
+		ComponentID: "card-" + string(task.ID),
+		Component:   board.card(task),
+	}
+}

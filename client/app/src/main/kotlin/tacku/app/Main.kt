@@ -20,6 +20,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import io.github.youndie.kompot.KompotComponent
+import io.github.youndie.kompot.KompotRealtimeProvider
 import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.KompotScreen
 import io.github.youndie.kompot.LocalKompotDesignSystem
@@ -52,6 +53,7 @@ fun main() =
 private fun App(baseUrl: String) {
     val scope = rememberCoroutineScope()
     val transport = remember(baseUrl) { Transport(baseUrl) }
+    val updates = remember(baseUrl) { Updates(baseUrl) { transport.accessToken } }
 
     // Core, standard and the form plug-in. Nothing of ours: a renderer written here would be this
     // client disagreeing with the toolkit about what a component looks like.
@@ -83,12 +85,30 @@ private fun App(baseUrl: String) {
             // empty column said so.
             LocalKompotPageLoader provides remember(transport) { transport.pageLoader() },
         ) {
-            when (val current = screen) {
-                is Screen.Loading -> Message("Loading…")
-                is Screen.Failed -> Message(current.reason)
-                is Screen.Tree ->
-                    Rendered(current.component, current.schema, registry, navigator, scope)
-            }
+            // Everything drawn sits inside the live channel rather than the board alone: the
+            // provider holds the frames that have arrived and the toolkit replaces a node by its
+            // identifier when it draws, so a screen that never sees a frame takes exactly the same
+            // path as one that does.
+            //
+            // The topic is a name for the subscription, not a request. This client's source ignores
+            // it and asks for whatever the token it holds entitles it to, which is the server's
+            // topic rule seen from the other end.
+            //
+            // `content` is passed by name because it is not the last parameter: a trailing lambda
+            // here binds to the error handler that follows it, and the compiler says only that
+            // `content` is missing. The screen would have been drawn as an error callback.
+            KompotRealtimeProvider(
+                topic = "self",
+                source = updates,
+                content = {
+                    when (val current = screen) {
+                        is Screen.Loading -> Message("Loading…")
+                        is Screen.Failed -> Message(current.reason)
+                        is Screen.Tree ->
+                            Rendered(current.component, current.schema, registry, navigator, scope)
+                    }
+                },
+            )
         }
     }
 }

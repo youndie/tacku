@@ -39,6 +39,10 @@ dependencies {
     implementation("io.github.youndie:kompot-standard:$kompotVersion")
     implementation("io.github.youndie:kompot-forms:$kompotVersion")
     implementation("io.github.youndie:kompot-navigation:$kompotVersion")
+    // The live channel: the wire type of a frame, and the client-side provider that applies one to
+    // the tree. Both live here rather than in the toolkit's core because a build that does not open
+    // a channel should not carry either.
+    implementation("io.github.youndie:kompot-realtime:$kompotVersion")
     implementation("io.github.youndie:form-core:$kompotVersion")
     implementation("io.github.youndie:kompot-auth:$kompotVersion")
     implementation("io.github.youndie:kompot-commands:$kompotVersion")

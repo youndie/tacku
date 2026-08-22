@@ -155,6 +155,7 @@ func describedGets(t *testing.T, resource string) map[string]describedOperation 
 
 	var document struct {
 		Paths map[string]map[string]struct {
+			Kind      string `json:"x-kompot-endpoint-kind"`
 			Responses map[string]struct {
 				Content map[string]struct {
 					Schema struct {
@@ -176,6 +177,13 @@ func describedGets(t *testing.T, resource string) map[string]describedOperation 
 	for template, methods := range document.Paths {
 		operation, ok := methods["get"]
 		if !ok {
+			continue
+		}
+		// A live channel is described here like everything else and cannot be fetched like anything
+		// else: it answers frames until the reader goes away, so a walk that treats it as a document
+		// waits for an end that never comes. Excluded by KIND rather than by path — a second stream
+		// added later is then excluded by having been described, not by somebody remembering.
+		if operation.Kind == "updates_stream" {
 			continue
 		}
 		path := template

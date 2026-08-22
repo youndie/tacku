@@ -603,6 +603,32 @@
         "x-kompot-endpoint-kind": "submit"
       }
     },
+    "/updates": {
+      "get": {
+        "operationId": "updates",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "kompot-realtime.schema.json#/$defs/UpdateComponentMessage"
+                }
+              }
+            },
+            "description": "a sequence of update_component frames, one JSON value per data: line"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "updates_stream"
+      }
+    },
     "/wizard/new-task": {
       "get": {
         "operationId": "startNewTaskFlow",

@@ -92,6 +92,14 @@ func TestTheDescriptionOnlyPromisesRoutesThatExist(t *testing.T) {
 					t.Errorf("%s %s without an idempotency key answered %d, want 400",
 						method, path, refused.StatusCode)
 				}
+			// A live channel is asked for and let go of rather than read to the end: it answers
+			// frames until the reader leaves, so reading it like a document waits for an end that
+			// never arrives. What this check wants from it is the same as from every other route —
+			// that something is mounted there and answers 200 — and that is known from the headers.
+			case method == "get" && operation.Kind == "updates_stream":
+				if status := r.head(t, path, token); status != 200 {
+					t.Errorf("the description promises %s %s, which answered %d", method, path, status)
+				}
 			case method == "get":
 				response, _ := r.get(t, path, token, "")
 				if response.StatusCode != 200 {

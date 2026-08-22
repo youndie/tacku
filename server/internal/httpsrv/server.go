@@ -53,6 +53,12 @@ type Config struct {
 	Members    domain.Members
 	SessionKey []byte
 
+	// UpdateInterval is how often the live channel looks at the journal. Zero means one second.
+	//
+	// A bound on latency rather than a tuning knob: the channel is the journal delivered by push,
+	// so this is the distance between a change being written and being sent, and nothing else.
+	UpdateInterval time.Duration
+
 	// WizardTTL is how long an untouched multi-step scenario is kept. Zero means wizard.DefaultTTL.
 	//
 	// Configuration rather than a constant because the protocol leaves the server no other way to
@@ -163,6 +169,9 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("GET /forms/new-board", newBoardForm())
 	screens.Handle("POST /submit/new-board", submitNewBoard(config.Deps.Store))
 	screens.Handle("POST /submit/seen", submitSeen(config.Seen, config.Deps.Store, now))
+	// The live channel is mounted beside the screens and behind the same session guard, which is
+	// what makes its topic the token's member rather than anything the caller names.
+	screens.Handle("GET "+updatesPath, updates(config.Deps.Store, config.Seen, config.UpdateInterval))
 	screens.Handle("GET /graph", navigationGraph())
 
 	mux := http.NewServeMux()
@@ -186,6 +195,7 @@ func New(config Config) (http.Handler, error) {
 	mux.Handle("/forms/", guardedScreens)
 	mux.Handle("/submit/", guardedScreens)
 	mux.Handle("/graph", guardedScreens)
+	mux.Handle(updatesPath, guardedScreens)
 
 	// Public, and the only route of this surface that is: a person with no session has to be able
 	// to reach the form that starts one.

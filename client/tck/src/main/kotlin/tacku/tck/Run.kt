@@ -5,7 +5,17 @@ import io.github.youndie.kompot.tck.TckConfig
 import io.github.youndie.kompot.tck.TckRunner
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.prepareGet
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -59,6 +69,13 @@ fun main() {
                     // that the gap was in the kit rather than in this server. The screen of one
                     // task is the most complicated tree this product emits and no check had ever
                     // looked at it.
+                    // The live channel, recorded from the running server rather than written here.
+                    //
+                    // A recording composed by hand would check this harness: it would say the frames
+                    // this file can produce satisfy the profile, which nobody doubted. What the walk
+                    // is being asked is whether the SERVER's frames do, so the stream is captured
+                    // from the endpoint, over the wire, after making something happen on it.
+                    recordedUpdateStreams = mapOf("/updates" to recordUpdates(target, client)),
                     pathParameters =
                         mapOf(
                             "/forms/task/{task}" to mapOf("task" to "TAC-1"),
@@ -182,6 +199,56 @@ private fun submission(
             values.forEach { (name, value) -> put(name, value) }
         },
     )
+}
+
+/**
+ * Holds the live channel open long enough to catch what the seeded database already has waiting.
+ *
+ * Signing in here rather than reusing the kit's session is deliberate: the kit holds its credential
+ * and decides which requests carry it, and reaching into that would be the harness lying about the
+ * server again — the mistake this file already made once, when it injected a header on every request
+ * and turned one check into five findings about itself.
+ */
+private fun recordUpdates(
+    target: String,
+    client: HttpClient,
+): String =
+    runBlocking {
+        val token = signIn(target, client)
+        val recorded = StringBuilder()
+        withTimeoutOrNull(4_000) {
+            client
+                .prepareGet("$target/updates") {
+                    header("Authorization", "Bearer $token")
+                }.execute { response ->
+                    val channel = response.bodyAsChannel()
+                    while (!channel.isClosedForRead && recorded.length < 64_000) {
+                        val line = channel.readUTF8Line() ?: break
+                        recorded.append(line).append('\n')
+                    }
+                }
+        }
+        recorded.toString()
+    }
+
+private suspend fun signIn(
+    target: String,
+    client: HttpClient,
+): String {
+    val body =
+        client
+            .post("$target/submit/sign-in") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    submission(
+                        "sign-in",
+                        "email" to textValue("anna@tacku.team"),
+                        "password" to textValue("conformance-stand"),
+                    ).toString(),
+                )
+            }.bodyAsText()
+    return Regex("\"accessToken\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
+        ?: error("the stand could not sign in to record the update channel: $body")
 }
 
 private fun booleanValue(value: Boolean) =

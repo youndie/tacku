@@ -37,6 +37,12 @@ object TckGate {
             // guard below found it rather than a changelog: the run reported a check this list did
             // not hold, which is the whole reason the list is checked in both directions.
             "perform",
+            // Tenth, arriving with kompot 0.19 and a portable check for the live channel. Found the
+            // same way as the ninth — by this list being checked in both directions rather than by
+            // reading a changelog — and it is in here only because there is now a channel for it to
+            // look at: a check with no target proves nothing, so adding the name was a decision to
+            // build the thing, not a line of configuration.
+            "updates",
         )
 
     /**

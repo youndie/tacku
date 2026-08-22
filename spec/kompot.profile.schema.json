@@ -23,6 +23,7 @@
     "FieldValue": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-degrades": false,
       "oneOf": [
         {
           "$ref": "form-standard.schema.json#/$defs/FieldValueAmountValue"
@@ -50,6 +51,7 @@
     "FormCondition": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-degrades": false,
       "oneOf": [
         {
           "$ref": "form-standard.schema.json#/$defs/FormConditionEquals"
@@ -69,6 +71,7 @@
     "FormFieldDefinition": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-degrades": false,
       "x-kompot-extensions": [
         "date_field"
       ],
@@ -106,7 +109,7 @@
     },
     "FormFieldDefinitionExtension": {
       "x-kompot-kind": "extension",
-      "description": "A wire type this deployment adds on top of its modules. Its NAME is declared, its shape is not: there is no schema for it here, and that is safe only because an unfamiliar type degrades by protocol (see x-kompot-degrades). A type in neither the mapping above nor this list is a violation",
+      "description": "A wire type this deployment adds on top of its modules. Its NAME is declared, its shape is not: there is no schema for it here. A type in neither the mapping above nor this list is a violation. This hierarchy does NOT degrade (x-kompot-degrades: false above): an implementation that meets the type without knowing it loses the WHOLE response, not one node. Roll out the readers before the writer starts sending it — the same rule SPEC.md §15 states for a type without degradation",
       "type": "object",
       "properties": {
         "type": {
@@ -122,6 +125,7 @@
     "KompotAction": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-degrades": true,
       "oneOf": [
         {
           "$ref": "kompot-standard.schema.json#/$defs/KompotActionClose"
@@ -177,6 +181,7 @@
     "KompotComponent": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-degrades": true,
       "x-kompot-extensions": [
         "date_input",
         "multiline_input"
@@ -256,7 +261,7 @@
     },
     "KompotComponentExtension": {
       "x-kompot-kind": "extension",
-      "description": "A wire type this deployment adds on top of its modules. Its NAME is declared, its shape is not: there is no schema for it here, and that is safe only because an unfamiliar type degrades by protocol (see x-kompot-degrades). A type in neither the mapping above nor this list is a violation",
+      "description": "A wire type this deployment adds on top of its modules. Its NAME is declared, its shape is not: there is no schema for it here. A type in neither the mapping above nor this list is a violation. Omitting the shape is safe here because this hierarchy degrades (x-kompot-degrades: true above): an implementation that knows nothing of the type draws a placeholder and keeps the screen",
       "type": "object",
       "properties": {
         "type": {
@@ -273,6 +278,7 @@
     "ValidationRule": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-degrades": false,
       "oneOf": [
         {
           "$ref": "form-standard.schema.json#/$defs/ValidationRuleMaxAmountFromField"
