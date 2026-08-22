@@ -281,6 +281,46 @@ func HiddenFromSelection(hidden int) string {
 		hidden, plural(hidden, "task is", "tasks are"))
 }
 
+// MissingFromSelection is the refusal a bulk move answers when part of what was ticked is gone.
+//
+// The one message of this operation that a person actually reads. A bulk move either applies whole
+// or refuses whole, which leaves exactly one outcome worth a sentence — and a refusal is also the
+// only answer the protocol carries text in at all: the actions of the profile carry none, and the
+// body of §16.8 hangs off a refusal (Q-35).
+//
+// So the sentence has work to do. It names every task that stopped the move rather than counting
+// them, because a count cannot be acted on; it says that nothing moved, because the person is about
+// to look at a board and has to know whether to look for changes; and it says what to do next,
+// because the screen they came from is out of date by exactly this much.
+//
+// Here rather than beside the handler for the ordinary reason: the number of names chooses the verb,
+// and a phrase chosen by data is a grammar the next handler would otherwise instantiate in its own
+// words.
+func MissingFromSelection(tasks []domain.TaskID) string {
+	names := make([]string, 0, len(tasks))
+	for _, id := range tasks {
+		names = append(names, string(id))
+	}
+	return fmt.Sprintf("%s %s no longer there, so nothing moved. Open the screen again and choose from what is left.",
+		series(names), plural(len(names), "is", "are"))
+}
+
+// series is a list of names the way a person writes one: one name alone, two joined by a word,
+// more with commas before the last.
+//
+// A helper of its own rather than a strings.Join, because the join is not the same at every length,
+// and a sentence reading “TAC-2, TAC-7 are no longer there” is the kind of thing a reader notices
+// and a test never does.
+func series(names []string) string {
+	switch len(names) {
+	case 0:
+		return ""
+	case 1:
+		return names[0]
+	}
+	return strings.Join(names[:len(names)-1], ", ") + " and " + names[len(names)-1]
+}
+
 // TaskMeta is the line under a task's title.
 func TaskMeta(task domain.Task) string {
 	return fmt.Sprintf("%s · created %s", task.ID, task.CreatedAt.Format(dayLayout))

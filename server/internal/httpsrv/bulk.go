@@ -2,6 +2,7 @@ package httpsrv
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"sort"
 	"strings"
@@ -129,14 +130,15 @@ func submitBulkMove(store domain.Store) http.HandlerFunc {
 			// endpoint was found; it is one item of the payload that was not, and the person can
 			// act on that — the screen was drawn before somebody else deleted the task.
 			//
-			// The refusal does not name which task, and that is a real loss rather than an
-			// oversight: the store says so in a sentence written for a log, and passing it through
-			// would put "domain: not found" in front of a person (§14). Naming it properly needs an
-			// error that carries the identifier, which is worth doing when something reads it —
-			// B-32 is where that becomes true.
-			if errorIs(err, domain.ErrNotFound) {
-				refuse(w, "One of the selected tasks is no longer there, so nothing moved. "+
-					"Open the screen again and choose from what is left.")
+			// And the refusal names them, which is the deliverable half of B-32. It is also the
+			// only half the wire can carry: an action carries no text, so a bulk move that applied
+			// has nothing to say with, while a bulk move that did not applies §16.8 and says it in
+			// finished words (Q-35). No `fieldId` beside it, though the checkboxes are fields: the
+			// answer carries one address and the refusal is about a set, and pointing at the first
+			// of two reads as "the other one is fine" (Q-48).
+			var missing *domain.MissingTasks
+			if errors.As(err, &missing) {
+				refuse(w, render.MissingFromSelection(missing.Tasks))
 				return
 			}
 			fail(w, err)
