@@ -139,8 +139,12 @@ report:
 	$(PY) scripts/bdd_report.py --docs $(DOCS) --repos $(REPOS)
 	$(PY) scripts/code_anchors.py --docs $(DOCS) --repos $(REPOS)
 
+# Every module the gate checks, and that list is the point: `make check` runs `ktlintCheck` across
+# the client, while this used to format one module of it. The other two were formatted by hand or
+# not at all, and the difference showed up as a red gate after a change that had just been
+# "formatted".
 format:
-	cd client && ./gradlew --quiet :spec-gen:ktlintFormat
+	cd client && ./gradlew --quiet ktlintFormat
 	cd server && gofmt -w .
 
 fix:

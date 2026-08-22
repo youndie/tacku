@@ -6,22 +6,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.KompotScreen
 import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
-import io.github.youndie.kompot.generated.generatedFormsClientRenderers
-import io.github.youndie.kompot.kompotCoreRenderers
-import io.github.youndie.kompot.kompotStandardRenderers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import ru.workinprogress.viddik.annotations.ViddikScreenshot
@@ -42,8 +37,7 @@ import ru.workinprogress.viddik.core.viddikTypography
  */
 private val transport = Transport("http://localhost:0")
 
-private val registry =
-    KompotRegistry(kompotCoreRenderers + kompotStandardRenderers + generatedFormsClientRenderers)
+private val registry = tackuRegistry()
 
 /**
  * The font is carried in, not found on the machine.
@@ -55,9 +49,23 @@ private val registry =
  */
 private val viddikBase = TextStyle(fontFamily = ViddikFontFamily, platformStyle = ViddikPlatformTextStyle)
 
+/**
+ * One design system for the picture and for the product.
+ *
+ * The harness used to wrap the screens in the baseline Material scheme, so a golden agreed with the
+ * application about colours neither of them had taken from the design system — both were simply
+ * Material's defaults. That is the failure mode a screenshot test exists to catch, and it could not:
+ * a picture of the wrong palette is stable, and a stable picture passes.
+ */
+private val design = TackuDesignSystem(base = viddikBase)
+
 @Composable
 private fun Shot(body: String) {
-    MaterialTheme(colorScheme = darkColorScheme(), typography = viddikTypography(Typography())) {
+    MaterialTheme(
+        colorScheme = design.materialColors(),
+        shapes = design.materialShapes(),
+        typography = viddikTypography(Typography()),
+    ) {
         Inner(body)
     }
 }
@@ -65,7 +73,7 @@ private fun Shot(body: String) {
 @Composable
 private fun Inner(body: String) {
     CompositionLocalProvider(
-        LocalKompotDesignSystem provides TackuDesignSystem(base = viddikBase),
+        LocalKompotDesignSystem provides design,
         LocalKompotPageLoader provides transport.pageLoader(),
     ) {
         Box(Modifier.fillMaxSize().background(Color(0xFF101114)).padding(16.dp)) {
@@ -157,7 +165,7 @@ fun Refusal() =
             {"type":"text","id":"reft","text":"This task was closed by Ivan Sokolov 4 minutes ago, so your change was not applied.","style":"body"},
             {"type":"text","id":"refa","text":"Your agent tried the same change at 04:12 and was refused too.","style":"meta_agent"},
             {"type":"row","id":"refr","children":[
-              {"type":"button","id":"refbtn","text":"Reload the task","modifiers":[{"type":"padding","top":10,"bottom":10,"start":18,"end":18},{"type":"background","color":"accent"}],"action":{"type":"navigate","deeplink":"app://board"}},
+              {"type":"button","id":"refbtn","text":"Reload the task","action":{"type":"navigate","deeplink":"app://board"}},
               {"type":"column","id":"refsp","modifiers":[{"type":"weight","value":1}],"children":[]}]}]}]}
         """.trimIndent(),
     )
@@ -179,5 +187,37 @@ fun TokenColour() =
           {"type":"text","id":"b","text":"error — should be red","style":"error"},
           {"type":"text","id":"c","text":"meta_agent — should be purple","style":"meta_agent"},
           {"type":"text","id":"d","text":"no style at all","style":null}]}
+        """.trimIndent(),
+    )
+
+/**
+ * Two accents that have to be the same accent.
+ *
+ * The left block is painted by the server: a `background` modifier naming `accent`, resolved through
+ * the design system. The button beside it is painted by nobody here — the toolkit draws it, and it
+ * takes its colour from `MaterialTheme`. Those are two different routes to a colour, and for most of
+ * this project's life they led to two different colours: the running application showed this
+ * deployment's blue behind a Material-default lavender button, and every test agreed, because the
+ * harness had the same baseline theme the application did.
+ *
+ * So this is a comparison, not a picture of a button. If the theme is ever built from something
+ * other than the tokens, the two halves stop matching and the picture says so. The corners are the
+ * second half of the same question: the vocabulary has no radius modifier, so a control that rounds
+ * itself is the client answering a question the protocol does not let anybody ask.
+ *
+ * The third button is here because emphasis has nowhere else to live. `button` carries no variant,
+ * so a fill is the only thing separating the action from the way out, and if the two ever draw
+ * alike the screen has one button twice.
+ */
+@ViddikScreenshot(name = "Does a control take the product accent", group = "Diagnostics", width = 520, height = 140)
+@Composable
+fun ControlAccent() =
+    Shot(
+        """
+        {"type":"row","id":"ca","spacing":16,"modifiers":[{"type":"padding","all":16},{"type":"background","color":"surface_block"}],"children":[
+          {"type":"column","id":"painted","modifiers":[{"type":"size","widthDp":120,"heightDp":40},{"type":"background","color":"accent"}],"children":[]},
+          {"type":"button","id":"drawn","text":"Sign in","modifiers":[{"type":"padding","top":14,"bottom":14,"start":24,"end":24},{"type":"background","color":"accent"}],"action":{"type":"navigate","deeplink":"app://board"}},
+          {"type":"button","id":"quiet","text":"Cancel","modifiers":[{"type":"padding","top":14,"bottom":14,"start":24,"end":24}],"action":{"type":"navigate","deeplink":"app://board"}},
+          {"type":"column","id":"casp","modifiers":[{"type":"weight","value":1}],"children":[]}]}
         """.trimIndent(),
     )

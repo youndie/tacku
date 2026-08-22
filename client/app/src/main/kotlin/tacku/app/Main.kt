@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -27,9 +26,6 @@ import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
-import io.github.youndie.kompot.generated.generatedFormsClientRenderers
-import io.github.youndie.kompot.kompotCoreRenderers
-import io.github.youndie.kompot.kompotStandardRenderers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -55,15 +51,9 @@ private fun App(baseUrl: String) {
     val transport = remember(baseUrl) { Transport(baseUrl) }
     val updates = remember(baseUrl) { Updates(baseUrl) { transport.accessToken } }
 
-    // Core, standard and the form plug-in. Nothing of ours: a renderer written here would be this
-    // client disagreeing with the toolkit about what a component looks like.
-    val registry =
-        remember {
-            KompotRegistry(
-                kompotCoreRenderers + kompotStandardRenderers + generatedFormsClientRenderers +
-                    tackuRenderers(),
-            )
-        }
+    // Core, standard, the form plug-in and this deployment's own — the same set the screenshots
+    // draw, which is the only way a golden is a picture of the product.
+    val registry = remember { tackuRegistry() }
 
     var screen by remember { mutableStateOf<Screen>(Screen.Loading) }
     val navigator = remember { Navigator(transport, scope) { screen = it } }
@@ -73,13 +63,18 @@ private fun App(baseUrl: String) {
     // The theme is Material 3 in the dark, and the token names the server sends resolve through the
     // design system rather than through anything here. A name it does not know costs a default and a
     // warning — never a broken screen (§6).
-    MaterialTheme(colorScheme = darkColorScheme()) {
+    // Material's own colours and shapes come from the same tokens the server names, and that is the
+    // point rather than a nicety: a control the toolkit draws for itself would otherwise use the
+    // baseline scheme, so the product would have two palettes and only one of them its own.
+    val design = remember { TackuDesignSystem() }
+
+    MaterialTheme(colorScheme = design.materialColors(), shapes = design.materialShapes()) {
         // Ours, not the toolkit's Material default. The token names on the wire are this product's
         // — surface_block, agent, meta_agent — and a design system that does not know them resolves
         // every one to a default with a warning: a screen that renders, in the wrong colours, and
         // says so only in a log nobody is reading.
         CompositionLocalProvider(
-            LocalKompotDesignSystem provides remember { TackuDesignSystem() },
+            LocalKompotDesignSystem provides design,
             // Required rather than optional: the list renderer reads it and throws when it is
             // absent, so a screen with a list dies at render. Missing here until a screenshot of an
             // empty column said so.

@@ -31,6 +31,19 @@ val kompotVersion: String = property("kompot.version").toString()
 dependencies {
     implementation(project(":fields"))
     implementation(compose.desktop.currentOs)
+
+    // What provides `Dispatchers.Main` on the desktop, and its absence is why the application had
+    // never actually run.
+    //
+    // Nothing here needed it until the window opened: the screenshot tests render composables in a
+    // harness of their own and the probe only decodes bodies, so `main()` had been called by
+    // nobody. The first launch put a dialog on top of a correctly rendered sign-in screen — the
+    // screen was right and the thing drawing it could not switch to the main thread.
+    //
+    // A test had already met this and it was read as a quirk of testing: FilterWireTest sets a main
+    // dispatcher because "a plain JVM test has none". That was the application saying so a week
+    // early.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.11.0")
     implementation(compose.material3)
 
     // The wire types are declared even though the client modules depend on them: they arrive as

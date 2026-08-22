@@ -30,6 +30,14 @@ for path in list(root.glob("docs/**/*.md")) + list(root.glob("server/**/*.go")) 
         if number not in known:
             problems.append(f"{path.relative_to(root)} ссылается на {number}, которого в журнале нет")
 
+# Итог внизу журнала — второе место, где живёт то же число, и оно уже разошлось: таблица говорила
+# 51 при 53 записях. Расхождение не видно ниоткуда, а читают чаще итог, чем заголовки.
+tally = re.search(r"^\| всего записей \| (\d+) \|$", journal.read_text(), re.M)
+if tally is None:
+    problems.append("в журнале не нашлось строки «всего записей» — считать не с чем")
+elif int(tally.group(1)) != len(numbers):
+    problems.append(f"итог внизу журнала говорит {tally.group(1)}, а записей {len(numbers)}")
+
 if not numbers:
     problems.append("в журнале не нашлось ни одной записи — проверка смотрела не туда")
 if referenced == 0:

@@ -1,10 +1,16 @@
 package tacku.app
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.kompot.ColorToken
 import io.github.youndie.kompot.KompotDesignSystem
@@ -46,6 +52,64 @@ class TackuDesignSystem(
     @Composable
     override fun resolveTypography(token: TypographyToken): TextStyle =
         typography[token.key] ?: MaterialTheme.typography.bodyMedium.also { warn("typography", token.key) }
+
+    /**
+     * The same tokens, in the shape Material asks for.
+     *
+     * Without this the product has two palettes and only one of them is its own. A design system
+     * answers the names the SERVER sends — a background, a typography token — and every control the
+     * toolkit draws for itself takes its colour from `MaterialTheme`, which was left at the baseline
+     * scheme. The sign-in button showed both at once: this deployment's accent painted as a square
+     * behind, and Material's default lavender pill drawn on top of it. Measured from a screenshot of
+     * the running application: #5069D6 at the corner, a baseline purple in the middle.
+     *
+     * Nothing else would have caught it. The screenshot tests build their own harness with the same
+     * baseline theme, so they agreed with the application about a colour neither of them had; the
+     * conformance walk reads bodies, and the body was correct. Only launching it showed two colours
+     * where the design has one.
+     */
+    fun materialColors(): ColorScheme {
+        val base = if (dark) darkColorScheme() else lightColorScheme()
+        return base.copy(
+            primary = color("accent"),
+            onPrimary = Color(0xFFFFFFFF),
+            secondary = color("agent"),
+            background = color("surface"),
+            onBackground = resolved("body"),
+            surface = color("surface_block"),
+            onSurface = resolved("body"),
+            surfaceVariant = color("surface_field"),
+            onSurfaceVariant = resolved("meta"),
+            outline = color("divider"),
+            error = resolved("error"),
+        )
+    }
+
+    /**
+     * Rectangles, because the vocabulary has no corners.
+     *
+     * The modifier list is closed at background, gradient, padding, size and weight — there is no
+     * radius, no border and no shadow, so a server cannot ask for a rounded anything and the design
+     * was written around that: "скруглений, рамок и теней нет". A Material control rounds itself by
+     * default, which is the client quietly answering a question the protocol does not let anybody
+     * ask.
+     */
+    fun materialShapes(): Shapes =
+        Shapes(
+            extraSmall = square,
+            small = square,
+            medium = square,
+            large = square,
+            extraLarge = square,
+        )
+
+    // Zero rather than RectangleShape, because Material's shape slots are typed to corner-based
+    // shapes: the type says a corner exists and the value says it has no radius.
+    private val square = RoundedCornerShape(0.dp)
+
+    private fun color(key: String): Color = colors[key] ?: Color.Magenta
+
+    private fun resolved(key: String): Color = typography[key]?.color ?: Color.Unspecified
 
     private val colors: Map<String, Color> =
         if (dark) {
