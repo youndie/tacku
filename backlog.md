@@ -45,12 +45,15 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (6)
+## Open (9)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-46](docs/backlog/B-46-edit-a-task.md) `[ ]` | Изменить задачу: после создания заголовок и описание менять нечем | P1 | M | - |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
+| [B-47](docs/backlog/B-47-mark-as-done.md) `[ ]` | «Отметить сделанной» одним нажатием вместо цепочки статусов | P2 | S | - |
+| [B-48](docs/backlog/B-48-sidebar-says-what-happened.md) `[ ]` | Панель задачи говорит, что есть, и молчит о том, что произошло | P2 | S | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
