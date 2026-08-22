@@ -23,7 +23,7 @@ import java.io.File
  */
 private val json = Json { ignoreUnknownKeys = true }
 
-private fun screenOf(name: String): String {
+internal fun screenOf(name: String): String {
     val file = File(System.getenv("TACKU_SCREEN_DIR") ?: "src/test/screens", "$name.json")
     val parsed = json.parseToJsonElement(file.readText()).jsonObject
     // A form endpoint answers a schema beside its tree; a screen endpoint answers the tree alone.
@@ -42,7 +42,7 @@ fun RealCatchUp() = Shot(screenOf("catch-up"))
 @Composable
 fun RealTask() = Shot(screenOf("task"))
 
-@ViddikScreenshot(name = "New task", group = "Screens", width = 900, height = 780)
+@ViddikScreenshot(name = "New task", group = "Screens", width = 1440, height = 800)
 @Composable
 fun RealNewTask() = Shot(screenOf("new-task"))
 
@@ -50,6 +50,6 @@ fun RealNewTask() = Shot(screenOf("new-task"))
 @Composable
 fun RealMyTasks() = Shot(screenOf("my-tasks"))
 
-@ViddikScreenshot(name = "Sign in", group = "Screens", width = 900, height = 600)
+@ViddikScreenshot(name = "Sign in", group = "Screens", width = 1440, height = 800)
 @Composable
 fun RealSignIn() = Shot(screenOf("sign-in"))

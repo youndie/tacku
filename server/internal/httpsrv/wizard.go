@@ -108,7 +108,7 @@ func wizardBasics(ctx context.Context, store domain.Store, _ map[string]json.Raw
 		"What does done look like?", "", render.DefaultLines, nil)
 
 	return form.Build(render.Column("wizard-basics-fields", 20,
-		[]render.Modifier{render.Padding(32), render.Background(render.ColorSurface)},
+		[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
 		title,
 		board,
 		description,
@@ -127,7 +127,7 @@ func wizardDetails(_ context.Context, _ domain.Store, _ map[string]json.RawMessa
 	agent := form.Checkbox("agent_may_update", "Let my agent keep this task up to date")
 
 	return form.Build(render.Column("wizard-details-fields", 20,
-		[]render.Modifier{render.Padding(32), render.Background(render.ColorSurface)},
+		[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
 		status,
 		due,
 		agent,

@@ -19,9 +19,9 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import io.github.youndie.kompot.KompotComponent
+import io.github.youndie.kompot.KompotLazyScreen
 import io.github.youndie.kompot.KompotRealtimeProvider
 import io.github.youndie.kompot.KompotRegistry
-import io.github.youndie.kompot.KompotScreen
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
@@ -121,7 +121,7 @@ private fun Rendered(
             )
         }
 
-    KompotScreen(
+    KompotLazyScreen(
         rootComponent = component,
         registry = registry,
         formController = controller,

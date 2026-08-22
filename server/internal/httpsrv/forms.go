@@ -67,7 +67,7 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 		agent := form.Checkbox("agent_may_update", "Let my agent keep this task up to date")
 
 		screen := render.Column("form-new-task", 20,
-			[]render.Modifier{render.Padding(32), render.Background(render.ColorSurface)},
+			[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
 			render.Text("form-new-task-title", "New task", render.TextDisplay),
 			title,
 			description,
@@ -201,10 +201,12 @@ func writeJSON(w http.ResponseWriter, status int, body any) {
 // board serves the task board. No input on it, so it is a screen and it caches.
 func board(store domain.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, err := principalOf(r); err != nil {
+		principal, err := principalOf(r)
+		if err != nil {
 			unauthenticated(w)
 			return
 		}
+		person := principal.Provenance.OnBehalfOf
 
 		boards, err := store.Boards(r.Context())
 		if err != nil {
@@ -216,7 +218,7 @@ func board(store domain.Store) http.HandlerFunc {
 		// database that found it: every unit test seeds a board first, so the branch was never
 		// taken.
 		if len(boards) == 0 {
-			respond(w, r, render.EmptyWorkspace())
+			respond(w, r, render.EmptyWorkspace(person))
 			return
 		}
 
@@ -238,6 +240,7 @@ func board(store domain.Store) http.HandlerFunc {
 		respond(w, r, render.Board{
 			Title:   boards[0].Title,
 			MoveURL: moveURL,
+			Person:  person,
 			Tasks:   tasks,
 			LastBy:  lastBy,
 		}.Screen())

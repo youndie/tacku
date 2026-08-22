@@ -3,15 +3,13 @@ package tacku.app
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
-import io.github.youndie.kompot.KompotScreen
+import io.github.youndie.kompot.KompotLazyScreen
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
@@ -65,12 +63,19 @@ internal fun Shot(body: String) {
 }
 
 @Composable
-private fun Inner(body: String) {
+internal fun Inner(body: String) {
     CompositionLocalProvider(
         LocalKompotPageLoader provides transport.pageLoader(),
     ) {
-        Box(Modifier.fillMaxSize().background(Color(0xFF101114)).padding(16.dp)) {
-            KompotScreen(
+        // White, exactly like the window of the running application, and not the product's surface.
+        //
+        // This used to paint `#101114` — the surface token, written out by hand — behind every
+        // screen, so a screen that did not cover the window looked identical to one that did. Two
+        // forms did not: their root put `padding` before `background`, so the fill stopped 32dp
+        // short on every side and the application showed a white frame. The harness had been
+        // hiding it since the first golden.
+        Box(Modifier.fillMaxSize().background(Color.White)) {
+            KompotLazyScreen(
                 rootComponent = transport.decodeScreen(body),
                 registry = registry,
                 formController =
@@ -89,6 +94,12 @@ private fun Inner(body: String) {
  *
  * If the two rows ever stop being distinguishable, the promise the tracker makes stops being kept —
  * and it would stop quietly, which is why this one is a picture rather than an assertion.
+ *
+ * It was not enough. For the whole life of this project the stripe painted nothing — an empty column
+ * has no height — and this picture passed anyway, because the two rows stayed distinguishable by the
+ * colour of their meta line. "Distinguishable" was the wrong thing to check: the question is whether
+ * the *device the design chose* is there, and a picture where it is missing and something else
+ * happens to differ answers yes.
  */
 @ViddikScreenshot(name = "Provenance — agent beside a person", group = "States", width = 520, height = 200)
 @Composable
@@ -97,12 +108,12 @@ fun ProvenancePair() =
         """
         {"type":"column","id":"pair","spacing":8,"children":[
           {"type":"row","id":"r1","children":[
-            {"type":"column","id":"r1s","modifiers":[{"type":"size","widthDp":3},{"type":"background","color":"agent"}],"children":[]},
+            {"type":"column","id":"r1s","modifiers":[{"type":"size","widthDp":3,"height":"Fill"},{"type":"background","color":"agent"}],"children":[]},
             {"type":"column","id":"r1b","spacing":6,"modifiers":[{"type":"weight","value":1},{"type":"padding","all":16},{"type":"background","color":"surface_block"}],"children":[
               {"type":"text","id":"r1t","text":"Moved “Fix login redirect loop” from In progress to In review","style":"body"},
               {"type":"text","id":"r1a","text":"Agent · on behalf of Anna Petrova · 04:12","style":"meta_agent"}]}]},
           {"type":"row","id":"r2","children":[
-            {"type":"column","id":"r2s","modifiers":[{"type":"size","widthDp":3},{"type":"background","color":"divider"}],"children":[]},
+            {"type":"column","id":"r2s","modifiers":[{"type":"size","widthDp":3,"height":"Fill"},{"type":"background","color":"divider"}],"children":[]},
             {"type":"column","id":"r2b","spacing":6,"modifiers":[{"type":"weight","value":1},{"type":"padding","all":16},{"type":"background","color":"surface_block"}],"children":[
               {"type":"text","id":"r2t","text":"Commented on “Fix login redirect loop”","style":"body"},
               {"type":"text","id":"r2a","text":"Ivan Sokolov · 09:31","style":"meta"}]}]}]}
@@ -153,7 +164,7 @@ fun Refusal() =
     Shot(
         """
         {"type":"row","id":"ref","children":[
-          {"type":"column","id":"refs","modifiers":[{"type":"size","widthDp":3},{"type":"background","color":"agent"}],"children":[]},
+          {"type":"column","id":"refs","modifiers":[{"type":"size","widthDp":3,"height":"Fill"},{"type":"background","color":"agent"}],"children":[]},
           {"type":"column","id":"refb","spacing":8,"modifiers":[{"type":"weight","value":1},{"type":"padding","all":16},{"type":"background","color":"danger"}],"children":[
             {"type":"text","id":"reft","text":"This task was closed by Ivan Sokolov 4 minutes ago, so your change was not applied.","style":"body"},
             {"type":"text","id":"refa","text":"Your agent tried the same change at 04:12 and was refused too.","style":"meta_agent"},
@@ -212,5 +223,35 @@ fun ControlAccent() =
           {"type":"button","id":"drawn","text":"Sign in","modifiers":[{"type":"padding","top":14,"bottom":14,"start":24,"end":24},{"type":"background","color":"accent"}],"action":{"type":"navigate","deeplink":"app://board"}},
           {"type":"button","id":"quiet","text":"Cancel","modifiers":[{"type":"padding","top":14,"bottom":14,"start":24,"end":24}],"action":{"type":"navigate","deeplink":"app://board"}},
           {"type":"column","id":"casp","modifiers":[{"type":"weight","value":1}],"children":[]}]}
+        """.trimIndent(),
+    )
+
+/**
+ * A three-point stripe that has to be exactly as tall as the card beside it.
+ *
+ * The stripe is how this product says an agent did something, and it is an empty column, because the
+ * vocabulary has no border. An empty column has no height, so it painted nothing — on every card of
+ * every screen, for the whole life of the project, while the picture guarding it passed because the
+ * two rows stayed distinguishable by their meta line.
+ *
+ * `height: Fill` does not fix it: `Fill` resolves against the constraint coming *into* the row, not
+ * against the height of the sibling, so the stripe takes the whole screen and drags the row with it;
+ * `Wrap` on the row does not change that, and an explicit `heightDp` would be a guess at how tall
+ * the text wrapped.
+ *
+ * The second card here is the way out, and it needs no new modifier: paint the *outer* node with the
+ * stripe colour, inset it three points from the start, and let the inner node paint everything else.
+ * The stripe is then whatever the card's height turns out to be, because it is the card.
+ */
+@ViddikScreenshot(name = "A stripe as tall as its card", group = "Diagnostics", width = 520, height = 340)
+@Composable
+fun AStripeAsTallAsItsCard() =
+    Shot(
+        """
+        {"type":"column","id":"sv","spacing":10,"modifiers":[{"type":"size","width":"Fill"},{"type":"padding","all":10},{"type":"background","color":"surface"}],"children":[
+          {"type":"text","id":"sv0-l","text":"sibling column, widthDp 3","style":"label"},
+          {"type":"row","id":"sa","modifiers":[{"type":"size","width":"Fill"}],"children":[{"type":"column","id":"sa-s","modifiers":[{"type":"size","widthDp":3},{"type":"background","color":"agent"}],"children":[]},{"type":"column","id":"sa-b","modifiers":[{"type":"background","color":"surface_field"},{"type":"size","width":"Fill"},{"type":"weight","value":1},{"type":"padding","all":10}],"children":[{"type":"text","id":"sa-t","text":"the stripe as a sibling: nothing is painted","style":"body"}]}]},
+          {"type":"text","id":"sv1-l","text":"outer background, padding start 3","style":"label"},
+          {"type":"column","id":"se","modifiers":[{"type":"background","color":"agent"},{"type":"size","width":"Fill"},{"type":"padding","start":3}],"children":[{"type":"column","id":"se-b","modifiers":[{"type":"background","color":"surface_field"},{"type":"size","width":"Fill"},{"type":"padding","all":10}],"children":[{"type":"text","id":"se-t","text":"two lines of text so the card has some height at all, and a little more so that it wraps onto a second line","style":"body"}]}]}]}
         """.trimIndent(),
     )

@@ -23,6 +23,7 @@ class SnapshotCoverageTest {
 
     private val expected =
         setOf(
+            "Diagnostics_A_stripe_as_tall_as_its_card.png",
             "Diagnostics_Does_a_control_take_the_product_accent.png",
             "Diagnostics_Does_a_token_carry_colour.png",
             "States_Empty_column.png",

@@ -16,13 +16,19 @@ import (
 // The client draws `button` itself (client/app/.../ButtonRenderer.kt) because the design needs a
 // square control whose whole painted area is clickable, and Material's button is neither. That
 // choice moves a cost here: the toolkit's renderer understood the whole modifier chain, and ours
-// understands two links of it. A third one added to a button on this side would be dropped on that
-// side — the button would still draw, still work, and simply be the wrong size or the wrong colour.
+// understands the links listed here. One added to a button on this side and not to that one is
+// dropped silently — the button still draws, still works, and is simply the wrong size or colour.
+// That has happened once already: the navigation asked its items to fill the rail, the renderer did
+// not know `size`, and every menu item stayed as wide as its own word. This check is what said so.
 var drawnByTheClient = map[string]bool{
 	"PaddingXY":  true,
 	"Padding":    true,
 	"PaddingAll": true,
 	"Background": true,
+	"FillWidth":  true,
+	"FillHeight": true,
+	"WidthDp":    true,
+	"HeightDp":   true,
 }
 
 // Every modifier this server puts on a button, against what the client's button renderer draws.

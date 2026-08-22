@@ -18,12 +18,20 @@
   "id": "screen-task",
   "modifiers": [
    {
-    "type": "padding",
-    "all": 32
-   },
-   {
     "type": "background",
     "color": "surface"
+   },
+   {
+    "type": "size",
+    "width": "Fill"
+   },
+   {
+    "type": "size",
+    "height": "Fill"
+   },
+   {
+    "type": "padding",
+    "all": 32
    }
   ],
   "children": [
@@ -135,39 +143,38 @@
           "id": "task-activity-list",
           "children": [
            {
-            "type": "row",
+            "type": "column",
             "id": "history-3",
-            "children": [
+            "modifiers": [
              {
-              "type": "column",
-              "id": "history-3-stripe",
-              "modifiers": [
-               {
-                "type": "size",
-                "widthDp": 3
-               },
-               {
-                "type": "background",
-                "color": "divider"
-               }
-              ],
-              "children": []
+              "type": "background",
+              "color": "divider"
              },
+             {
+              "type": "size",
+              "width": "Fill"
+             },
+             {
+              "type": "padding",
+              "start": 3
+             }
+            ],
+            "children": [
              {
               "type": "column",
               "id": "history-3-body",
               "modifiers": [
                {
-                "type": "weight",
-                "value": 1
+                "type": "background",
+                "color": "surface_block"
+               },
+               {
+                "type": "size",
+                "width": "Fill"
                },
                {
                 "type": "padding",
                 "all": 14
-               },
-               {
-                "type": "background",
-                "color": "surface_block"
                }
               ],
               "children": [
@@ -180,7 +187,7 @@
                {
                 "type": "text",
                 "id": "history-3-who",
-                "text": "anna · 16:38",
+                "text": "anna · 17:45",
                 "style": "meta"
                }
               ],
@@ -232,15 +239,15 @@
             "id": "task-comment-post",
             "modifiers": [
              {
+              "type": "background",
+              "color": "accent"
+             },
+             {
               "type": "padding",
               "top": 10,
               "bottom": 10,
               "start": 18,
               "end": 18
-             },
-             {
-              "type": "background",
-              "color": "accent"
              }
             ],
             "text": "Post",
@@ -283,12 +290,12 @@
         "id": "task-status",
         "modifiers": [
          {
-          "type": "padding",
-          "all": 12
-         },
-         {
           "type": "background",
           "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
          }
         ],
         "label": "Status",
@@ -299,12 +306,12 @@
         "id": "task-assignee",
         "modifiers": [
          {
-          "type": "padding",
-          "all": 12
-         },
-         {
           "type": "background",
           "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
          }
         ],
         "label": "Assignee",
@@ -315,12 +322,12 @@
         "id": "task-due",
         "modifiers": [
          {
-          "type": "padding",
-          "all": 12
-         },
-         {
           "type": "background",
           "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
          }
         ],
         "label": "Due",
@@ -331,12 +338,12 @@
         "id": "task-board",
         "modifiers": [
          {
-          "type": "padding",
-          "all": 12
-         },
-         {
           "type": "background",
           "color": "surface_field"
+         },
+         {
+          "type": "padding",
+          "all": 12
          }
         ],
         "label": "Board",

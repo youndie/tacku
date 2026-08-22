@@ -15,7 +15,12 @@ import (
 type Board struct {
 	Title   string
 	MoveURL string
-	Tasks   []domain.Task
+
+	// Who is looking. Needed only by the navigation rail, and the rail is the reason it is here:
+	// the board used to draw an empty placeholder where it belongs.
+	Person domain.MemberID
+
+	Tasks []domain.Task
 
 	// Who last touched each task, so that a card can carry provenance.
 	//
@@ -52,8 +57,8 @@ func (b Board) Screen() Component {
 	}
 
 	return Row("screen-board", 0,
-		[]Modifier{Background(ColorSurface)},
-		Column("board-nav-placeholder", 0, []Modifier{WidthDp(240), Background(ColorSurfaceBlock)}),
+		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
+		Navigation(b.Person, LinkBoard),
 		Rule("board-nav-rule", RuleDp, ColorDivider, false),
 		Column("board", 20,
 			[]Modifier{Weight(1), Padding(32)},
@@ -106,14 +111,14 @@ func (b Board) column(status domain.Status) Component {
 	}
 
 	return Column(id, 12,
-		[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceBlock)},
+		[]Modifier{Weight(1), FillWidth(), Padding(12), Background(ColorSurfaceBlock)},
 		Row(id+"-head", 0, nil,
 			Text(id+"-name", ColumnHeading(status), TextSubtitle),
 			Spacer(id+"-head-spacer"),
 			Text(id+"-count", fmt.Sprint(len(cards)), TextMeta),
 		),
 		PaginatedList(id+"-list", cards, "",
-			Text(id+"-empty", EmptyColumnLine(status), TextBodyMuted)),
+			Text(id+"-empty", EmptyColumnLine(status), TextBodyMuted), FillWidth()),
 		Spacer(id+"-tail"),
 	)
 }
@@ -146,12 +151,11 @@ func (b Board) card(task domain.Task) Component {
 			})))
 	}
 
-	return Row(id, 0, nil,
-		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
+	return Spaced(id, Marked(id, stripe,
 		Column(id+"-body", 8,
-			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
+			[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
 			body...),
-	)
+	))
 }
 
 // EmptyWorkspace is the board screen before there is a board.
@@ -159,10 +163,10 @@ func (b Board) card(task domain.Task) Component {
 // A full-screen emptiness earns a heading, an explanation and a way out — the same construction the
 // feed uses when nothing has happened. A column that is merely empty gets one line; the scale of
 // the emptiness decides the form.
-func EmptyWorkspace() Component {
+func EmptyWorkspace(person domain.MemberID) Component {
 	return Row("screen-board", 0,
-		[]Modifier{Background(ColorSurface)},
-		Column("board-nav-placeholder", 0, []Modifier{WidthDp(240), Background(ColorSurfaceBlock)}),
+		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
+		Navigation(person, LinkBoard),
 		Rule("board-nav-rule", RuleDp, ColorDivider, false),
 		Column("board", 24,
 			[]Modifier{Weight(1), Padding(32)},
@@ -208,18 +212,17 @@ func mark(by domain.Provenance) (stripe, style string) {
 func TaskRow(task domain.Task, by domain.Provenance) Component {
 	id := "row-" + string(task.ID)
 	stripe, metaStyle := mark(by)
-	return Opens(
-		Row(id, 0, nil,
-			Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
+	return Spaced(id, Opens(
+		Marked(id, stripe,
 			Column(id+"-body", 6,
-				[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
+				[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
 				Text(id+"-title", task.Title, TextBody),
 				// The status stays on the line either way: this list crosses columns.
 				Text(id+"-meta", RowMeta(task, by), metaStyle),
 			),
 		),
 		Navigate(LinkTask+string(task.ID)),
-	)
+	))
 }
 
 // EmptyMyTasks is a whole screen of emptiness, so it gets a heading and a way out — unlike an empty

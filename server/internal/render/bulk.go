@@ -37,7 +37,7 @@ type BulkMove struct {
 func (b BulkMove) Screen(status Component) Component {
 	if len(b.Tasks) == 0 {
 		return Column("screen-bulk-move", 24,
-			[]Modifier{Padding(32), Background(ColorSurface)},
+			[]Modifier{FillWidth(), FillHeight(), Padding(32), Background(ColorSurface)},
 			b.heading(),
 			emptySelection(),
 			Spacer("bulk-move-tail"),
@@ -53,7 +53,7 @@ func (b BulkMove) Screen(status Component) Component {
 	}
 
 	return Column("screen-bulk-move", 20,
-		[]Modifier{Padding(32), Background(ColorSurface)},
+		[]Modifier{FillWidth(), FillHeight(), Padding(32), Background(ColorSurface)},
 		b.heading(),
 		status,
 		Column("bulk-move-list", 8, []Modifier{Weight(1)}, rows...),
@@ -93,14 +93,13 @@ func (b BulkMove) row(task domain.Task) Component {
 	stripe, metaStyle := mark(b.LastBy[task.ID])
 	line := RowMeta(task, b.LastBy[task.ID])
 
-	return Row(id, 0, nil,
-		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
+	return Spaced(id, Marked(id, stripe,
 		Column(id+"-body", 4,
-			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
+			[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
 			b.Boxes[task.ID],
 			Text(id+"-meta", line, metaStyle),
 		),
-	)
+	))
 }
 
 // emptySelection is a whole screen of emptiness, so it gets a heading and a way out — the same rule

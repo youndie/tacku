@@ -4,7 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,6 +20,7 @@ import io.github.youndie.kompot.KompotActionHandler
 import io.github.youndie.kompot.KompotComponentRenderer
 import io.github.youndie.kompot.KompotModifierNode
 import io.github.youndie.kompot.LocalKompotDesignSystem
+import io.github.youndie.kompot.SizeType
 import io.github.youndie.kompot.TypographyToken
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.standard.ButtonComponent
@@ -50,13 +57,17 @@ class ButtonRenderer : KompotComponentRenderer<ButtonComponent> {
         val design = LocalKompotDesignSystem.current
         val fill = component.modifiers.filterIsInstance<KompotModifierNode.Background>().lastOrNull()
         val padding = component.modifiers.filterIsInstance<KompotModifierNode.Padding>().lastOrNull()
+        val sizing = component.modifiers.filterIsInstance<KompotModifierNode.Size>().lastOrNull()
 
         // Anything else the server puts on a button is dropped here rather than by the toolkit, so
         // it is said out loud. A guard on the server side keeps the list to what this draws
         // (TestEveryButtonModifierIsOneTheClientDraws); this line is what happens if it ever fails.
         component.modifiers
-            .filterNot { it is KompotModifierNode.Background || it is KompotModifierNode.Padding }
-            .forEach {
+            .filterNot {
+                it is KompotModifierNode.Background ||
+                    it is KompotModifierNode.Padding ||
+                    it is KompotModifierNode.Size
+            }.forEach {
                 System.err.println(
                     "tacku: button \"${component.id}\" carries $it, which this renderer does not draw",
                 )
@@ -66,6 +77,7 @@ class ButtonRenderer : KompotComponentRenderer<ButtonComponent> {
             text = component.text,
             fill = fill?.let { design.resolveColor(it.color) },
             padding = padding.toPaddingValues(),
+            sizing = sizing.toModifier(),
         ) { actionHandler.handle(component.action) }
     }
 }
@@ -83,13 +95,14 @@ fun SquareButton(
     text: String,
     fill: Color?,
     padding: PaddingValues,
+    sizing: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     val design = LocalKompotDesignSystem.current
     val style = if (fill != null) "button_primary" else "button_quiet"
 
     Box(
-        Modifier
+        sizing
             .background(fill ?: Color.Transparent)
             .clickable { onClick() }
             .padding(padding),
@@ -113,4 +126,28 @@ private fun KompotModifierNode.Padding?.toPaddingValues(): PaddingValues {
         end = (end ?: everywhere).dp,
         bottom = (bottom ?: everywhere).dp,
     )
+}
+
+/**
+ * A menu item is as wide as the rail, and that is a `size` rather than a guess.
+ *
+ * `size` carries `width`/`height` as `Fill` or `Wrap` beside the two dp numbers. This renderer drew
+ * neither for a while and said so in the log — which is how the navigation came to be a column of
+ * short grey tabs, each as wide as its own word.
+ */
+private fun KompotModifierNode.Size?.toModifier(): Modifier {
+    if (this == null) return Modifier
+
+    var modifier: Modifier = Modifier
+    when (width) {
+        SizeType.Fill -> modifier = modifier.fillMaxWidth()
+        SizeType.Wrap -> modifier = modifier.wrapContentWidth()
+        null -> widthDp?.let { modifier = modifier.width(it.dp) }
+    }
+    when (height) {
+        SizeType.Fill -> modifier = modifier.fillMaxHeight()
+        SizeType.Wrap -> modifier = modifier.wrapContentHeight()
+        null -> heightDp?.let { modifier = modifier.height(it.dp) }
+    }
+    return modifier
 }

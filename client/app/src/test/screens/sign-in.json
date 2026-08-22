@@ -113,15 +113,15 @@
           "id": "sign-in-submit",
           "modifiers": [
            {
+            "type": "background",
+            "color": "accent"
+           },
+           {
             "type": "padding",
             "top": 14,
             "bottom": 14,
             "start": 24,
             "end": 24
-           },
-           {
-            "type": "background",
-            "color": "accent"
            }
           ],
           "text": "Sign in",

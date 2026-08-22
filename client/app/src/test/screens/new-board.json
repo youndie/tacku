@@ -19,12 +19,20 @@
   "id": "screen-new-board",
   "modifiers": [
    {
-    "type": "padding",
-    "all": 32
-   },
-   {
     "type": "background",
     "color": "surface"
+   },
+   {
+    "type": "size",
+    "width": "Fill"
+   },
+   {
+    "type": "size",
+    "height": "Fill"
+   },
+   {
+    "type": "padding",
+    "all": 32
    }
   ],
   "children": [
@@ -70,15 +78,15 @@
       "id": "new-board-submit",
       "modifiers": [
        {
+        "type": "background",
+        "color": "accent"
+       },
+       {
         "type": "padding",
         "top": 14,
         "bottom": 14,
         "start": 24,
         "end": 24
-       },
-       {
-        "type": "background",
-        "color": "accent"
        }
       ],
       "text": "Create board",

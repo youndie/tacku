@@ -5,35 +5,201 @@
   {
    "type": "background",
    "color": "surface"
+  },
+  {
+   "type": "size",
+   "width": "Fill"
+  },
+  {
+   "type": "size",
+   "height": "Fill"
   }
  ],
  "children": [
   {
    "type": "column",
-   "id": "board-nav-placeholder",
+   "id": "nav",
    "modifiers": [
+    {
+     "type": "background",
+     "color": "surface_block"
+    },
     {
      "type": "size",
      "widthDp": 240
     },
     {
-     "type": "background",
-     "color": "surface_block"
+     "type": "size",
+     "height": "Fill"
+    },
+    {
+     "type": "padding",
+     "top": 20,
+     "bottom": 20,
+     "start": 0,
+     "end": 0
     }
    ],
-   "children": []
+   "children": [
+    {
+     "type": "text",
+     "id": "nav-brand",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 0,
+       "bottom": 0,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "tacku",
+     "style": "title"
+    },
+    {
+     "type": "button",
+     "id": "nav-catchup",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      },
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "Catch-up",
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://catch-up"
+     }
+    },
+    {
+     "type": "column",
+     "id": "nav-boards-current",
+     "modifiers": [
+      {
+       "type": "background",
+       "color": "surface_selected"
+      },
+      {
+       "type": "size",
+       "width": "Fill"
+      }
+     ],
+     "children": [
+      {
+       "type": "button",
+       "id": "nav-boards",
+       "modifiers": [
+        {
+         "type": "size",
+         "width": "Fill"
+        },
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Board",
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://board"
+       }
+      }
+     ]
+    },
+    {
+     "type": "button",
+     "id": "nav-mine",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      },
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "My tasks",
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://my-tasks"
+     }
+    },
+    {
+     "type": "column",
+     "id": "nav-spacer",
+     "modifiers": [
+      {
+       "type": "weight",
+       "value": 1
+      }
+     ],
+     "children": []
+    },
+    {
+     "type": "text",
+     "id": "nav-person",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 0,
+       "bottom": 0,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "anna",
+     "style": "meta"
+    },
+    {
+     "type": "button",
+     "id": "nav-signout",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      },
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "Sign out",
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://sign-out"
+     }
+    }
+   ],
+   "spacing": 4
   },
   {
    "type": "column",
    "id": "board-nav-rule",
    "modifiers": [
     {
-     "type": "size",
-     "widthDp": 1
-    },
-    {
      "type": "background",
      "color": "divider"
+    },
+    {
+     "type": "size",
+     "widthDp": 1
     }
    ],
    "children": []
@@ -109,15 +275,15 @@
        "id": "board-new",
        "modifiers": [
         {
+         "type": "background",
+         "color": "accent"
+        },
+        {
          "type": "padding",
          "top": 12,
          "bottom": 12,
          "start": 20,
          "end": 20
-        },
-        {
-         "type": "background",
-         "color": "accent"
         }
        ],
        "text": "New task",
@@ -144,16 +310,20 @@
        "id": "column-todo",
        "modifiers": [
         {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
          "type": "weight",
          "value": 1
         },
         {
-         "type": "padding",
-         "all": 12
+         "type": "size",
+         "width": "Fill"
         },
         {
-         "type": "background",
-         "color": "surface_block"
+         "type": "padding",
+         "all": 12
         }
        ],
        "children": [
@@ -189,508 +359,622 @@
         {
          "type": "paginated_list",
          "id": "column-todo-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
          "initialItems": [
           {
-           "type": "row",
-           "id": "card-TAC-2",
+           "type": "column",
+           "id": "card-TAC-2-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-2-stripe",
+             "id": "card-TAC-2",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-2-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-2-open",
-               "children": [
+               "id": "card-TAC-2-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-2-title",
-                 "text": "Add rate limit to the auth endpoint",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-2-meta",
-                 "text": "TAC-2 · ivan · due 29 Aug",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-2"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-2-move",
-               "text": "Move to In progress",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_progress",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-2",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-2-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-2-title",
+                   "text": "Add rate limit to the auth endpoint",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-2-meta",
+                   "text": "TAC-2 · ivan · due 29 Aug",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-2"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-2-move",
+                 "text": "Move to In progress",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_progress",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-2",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-3",
+           "type": "column",
+           "id": "card-TAC-3-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-3-stripe",
+             "id": "card-TAC-3",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-3-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-3-open",
-               "children": [
+               "id": "card-TAC-3-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-3-title",
-                 "text": "Audit the session cookie flags",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-3-meta",
-                 "text": "TAC-3 · Unassigned",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-3"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-3-move",
-               "text": "Move to In progress",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_progress",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-3",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-3-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-3-title",
+                   "text": "Audit the session cookie flags",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-3-meta",
+                   "text": "TAC-3 · Unassigned",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-3"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-3-move",
+                 "text": "Move to In progress",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_progress",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-3",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-6",
+           "type": "column",
+           "id": "card-TAC-6-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-6-stripe",
+             "id": "card-TAC-6",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "agent"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-6-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-6-open",
-               "children": [
+               "id": "card-TAC-6-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-6-title",
-                 "text": "Write the migration note for the auth change",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-6-meta",
-                 "text": "Agent · TAC-6 · anna",
-                 "style": "meta_agent"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-6"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-6-move",
-               "text": "Move to In progress",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_progress",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-6",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-6-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-6-title",
+                   "text": "Write the migration note for the auth change",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-6-meta",
+                   "text": "Agent · TAC-6 · anna",
+                   "style": "meta_agent"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-6"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-6-move",
+                 "text": "Move to In progress",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_progress",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-6",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-9",
+           "type": "column",
+           "id": "card-TAC-9-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-9-stripe",
+             "id": "card-TAC-9",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "agent"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-9-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-9-open",
-               "children": [
+               "id": "card-TAC-9-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-9-title",
-                 "text": "Check the staging redirect trace",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-9-meta",
-                 "text": "Agent · TAC-9 · anna · due 1 Sep",
-                 "style": "meta_agent"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-9"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-9-move",
-               "text": "Move to In progress",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_progress",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-9",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-9-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-9-title",
+                   "text": "Check the staging redirect trace",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-9-meta",
+                   "text": "Agent · TAC-9 · anna · due 1 Sep",
+                   "style": "meta_agent"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-9"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-9-move",
+                 "text": "Move to In progress",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_progress",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-9",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-10",
+           "type": "column",
+           "id": "card-TAC-10-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-10-stripe",
+             "id": "card-TAC-10",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-10-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-10-open",
-               "children": [
+               "id": "card-TAC-10-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-10-title",
-                 "text": "Rotate the SSO signing keys",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-10-meta",
-                 "text": "TAC-10 · anna",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-10"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-10-move",
-               "text": "Move to In progress",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_progress",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-10",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-10-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-10-title",
+                   "text": "Rotate the SSO signing keys",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-10-meta",
+                   "text": "TAC-10 · anna",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-10"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-10-move",
+                 "text": "Move to In progress",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_progress",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-10",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-12",
+           "type": "column",
+           "id": "card-TAC-12-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-12-stripe",
+             "id": "card-TAC-12",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-12-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-12-open",
-               "children": [
+               "id": "card-TAC-12-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-12-title",
-                 "text": "Measure where people change status",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-12-meta",
-                 "text": "TAC-12 · anna",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-12"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-12-move",
-               "text": "Move to In progress",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_progress",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-12",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-12-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-12-title",
+                   "text": "Measure where people change status",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-12-meta",
+                   "text": "TAC-12 · anna",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-12"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-12-move",
+                 "text": "Move to In progress",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_progress",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-12",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           }
@@ -721,16 +1005,20 @@
        "id": "column-in_progress",
        "modifiers": [
         {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
          "type": "weight",
          "value": 1
         },
         {
-         "type": "padding",
-         "all": 12
+         "type": "size",
+         "width": "Fill"
         },
         {
-         "type": "background",
-         "color": "surface_block"
+         "type": "padding",
+         "all": 12
         }
        ],
        "children": [
@@ -766,172 +1054,214 @@
         {
          "type": "paginated_list",
          "id": "column-in_progress-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
          "initialItems": [
           {
-           "type": "row",
-           "id": "card-TAC-4",
+           "type": "column",
+           "id": "card-TAC-4-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-4-stripe",
+             "id": "card-TAC-4",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-4-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-4-open",
-               "children": [
+               "id": "card-TAC-4-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-4-title",
-                 "text": "Ship the settings redesign",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-4-meta",
-                 "text": "TAC-4 · maria · due 28 Aug",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-4"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-4-move",
-               "text": "Move to In review",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_review",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-4",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-4-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-4-title",
+                   "text": "Ship the settings redesign",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-4-meta",
+                   "text": "TAC-4 · maria · due 28 Aug",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-4"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-4-move",
+                 "text": "Move to In review",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_review",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-4",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-7",
+           "type": "column",
+           "id": "card-TAC-7-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-7-stripe",
+             "id": "card-TAC-7",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-7-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-7-open",
-               "children": [
+               "id": "card-TAC-7-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-7-title",
-                 "text": "Replace the deploy script",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-7-meta",
-                 "text": "TAC-7 · ivan",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-7"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-7-move",
-               "text": "Move to In review",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "in_review",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-7",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-7-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-7-title",
+                   "text": "Replace the deploy script",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-7-meta",
+                   "text": "TAC-7 · ivan",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-7"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-7-move",
+                 "text": "Move to In review",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "in_review",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-7",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           }
@@ -962,16 +1292,20 @@
        "id": "column-in_review",
        "modifiers": [
         {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
          "type": "weight",
          "value": 1
         },
         {
-         "type": "padding",
-         "all": 12
+         "type": "size",
+         "width": "Fill"
         },
         {
-         "type": "background",
-         "color": "surface_block"
+         "type": "padding",
+         "all": 12
         }
        ],
        "children": [
@@ -1007,172 +1341,214 @@
         {
          "type": "paginated_list",
          "id": "column-in_review-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
          "initialItems": [
           {
-           "type": "row",
-           "id": "card-TAC-1",
+           "type": "column",
+           "id": "card-TAC-1-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-1-stripe",
+             "id": "card-TAC-1",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "agent"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-1-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-1-open",
-               "children": [
+               "id": "card-TAC-1-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-1-title",
-                 "text": "Fix login redirect loop",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-1-meta",
-                 "text": "Agent · TAC-1 · anna · due 28 Aug",
-                 "style": "meta_agent"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-1"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-1-move",
-               "text": "Move to Done",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "done",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-1",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-1-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-1-title",
+                   "text": "Fix login redirect loop",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-1-meta",
+                   "text": "Agent · TAC-1 · anna · due 28 Aug",
+                   "style": "meta_agent"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-1"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-1-move",
+                 "text": "Move to Done",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "done",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-1",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           },
           {
-           "type": "row",
-           "id": "card-TAC-8",
+           "type": "column",
+           "id": "card-TAC-8-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-8-stripe",
+             "id": "card-TAC-8",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "agent"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-8-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-8-open",
-               "children": [
+               "id": "card-TAC-8-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-8-title",
-                 "text": "Tighten the empty states copy",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-8-meta",
-                 "text": "Agent · TAC-8 · maria",
-                 "style": "meta_agent"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-8"
-               }
-              },
-              {
-               "type": "button",
-               "id": "card-TAC-8-move",
-               "text": "Move to Done",
-               "action": {
-                "type": "perform",
-                "url": "/submit/move",
-                "payload": {
-                 "status": {
-                  "text": "done",
-                  "type": "text_value"
-                 },
-                 "task": {
-                  "text": "TAC-8",
-                  "type": "text_value"
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-8-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-8-title",
+                   "text": "Tighten the empty states copy",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-8-meta",
+                   "text": "Agent · TAC-8 · maria",
+                   "style": "meta_agent"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-8"
+                 }
+                },
+                {
+                 "type": "button",
+                 "id": "card-TAC-8-move",
+                 "text": "Move to Done",
+                 "action": {
+                  "type": "perform",
+                  "url": "/submit/move",
+                  "payload": {
+                   "status": {
+                    "text": "done",
+                    "type": "text_value"
+                   },
+                   "task": {
+                    "text": "TAC-8",
+                    "type": "text_value"
+                   }
+                  }
                  }
                 }
-               }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           }
@@ -1203,16 +1579,20 @@
        "id": "column-done",
        "modifiers": [
         {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
          "type": "weight",
          "value": 1
         },
         {
-         "type": "padding",
-         "all": 12
+         "type": "size",
+         "width": "Fill"
         },
         {
-         "type": "background",
-         "color": "surface_block"
+         "type": "padding",
+         "all": 12
         }
        ],
        "children": [
@@ -1248,69 +1628,93 @@
         {
          "type": "paginated_list",
          "id": "column-done-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
          "initialItems": [
           {
-           "type": "row",
-           "id": "card-TAC-5",
+           "type": "column",
+           "id": "card-TAC-5-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-5-stripe",
+             "id": "card-TAC-5",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "agent"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-5-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-5-open",
-               "children": [
+               "id": "card-TAC-5-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-5-title",
-                 "text": "Update the onboarding copy",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-5-meta",
-                 "text": "Agent · TAC-5 · maria",
-                 "style": "meta_agent"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-5"
-               }
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-5-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-5-title",
+                   "text": "Update the onboarding copy",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-5-meta",
+                   "text": "Agent · TAC-5 · maria",
+                   "style": "meta_agent"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-5"
+                 }
+                }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           }
@@ -1341,16 +1745,20 @@
        "id": "column-blocked",
        "modifiers": [
         {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
          "type": "weight",
          "value": 1
         },
         {
-         "type": "padding",
-         "all": 12
+         "type": "size",
+         "width": "Fill"
         },
         {
-         "type": "background",
-         "color": "surface_block"
+         "type": "padding",
+         "all": 12
         }
        ],
        "children": [
@@ -1386,69 +1794,93 @@
         {
          "type": "paginated_list",
          "id": "column-blocked-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
          "initialItems": [
           {
-           "type": "row",
-           "id": "card-TAC-11",
+           "type": "column",
+           "id": "card-TAC-11-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
            "children": [
             {
              "type": "column",
-             "id": "card-TAC-11-stripe",
+             "id": "card-TAC-11",
              "modifiers": [
-              {
-               "type": "size",
-               "widthDp": 3
-              },
               {
                "type": "background",
                "color": "divider"
-              }
-             ],
-             "children": []
-            },
-            {
-             "type": "column",
-             "id": "card-TAC-11-body",
-             "modifiers": [
+              },
               {
-               "type": "weight",
-               "value": 1
+               "type": "size",
+               "width": "Fill"
               },
               {
                "type": "padding",
-               "all": 12
-              },
-              {
-               "type": "background",
-               "color": "surface_field"
+               "start": 3
               }
              ],
              "children": [
               {
                "type": "column",
-               "id": "card-TAC-11-open",
-               "children": [
+               "id": "card-TAC-11-body",
+               "modifiers": [
                 {
-                 "type": "text",
-                 "id": "card-TAC-11-title",
-                 "text": "Drop the unused feature flag",
-                 "style": "body"
+                 "type": "background",
+                 "color": "surface_field"
                 },
                 {
-                 "type": "text",
-                 "id": "card-TAC-11-meta",
-                 "text": "TAC-11 · ivan",
-                 "style": "meta"
+                 "type": "size",
+                 "width": "Fill"
+                },
+                {
+                 "type": "padding",
+                 "all": 12
                 }
                ],
-               "spacing": 6,
-               "action": {
-                "type": "navigate",
-                "deeplink": "app://task/TAC-11"
-               }
+               "children": [
+                {
+                 "type": "column",
+                 "id": "card-TAC-11-open",
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "card-TAC-11-title",
+                   "text": "Drop the unused feature flag",
+                   "style": "body"
+                  },
+                  {
+                   "type": "text",
+                   "id": "card-TAC-11-meta",
+                   "text": "TAC-11 · ivan",
+                   "style": "meta"
+                  }
+                 ],
+                 "spacing": 6,
+                 "action": {
+                  "type": "navigate",
+                  "deeplink": "app://task/TAC-11"
+                 }
+                }
+               ],
+               "spacing": 8
               }
-             ],
-             "spacing": 8
+             ]
             }
            ]
           }

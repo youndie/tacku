@@ -21,7 +21,7 @@ type Task struct {
 // Screen renders the tree; the caller supplies the schema half through the form builder.
 func (t Task) Screen(comment, status Component) Component {
 	return Column("screen-task", 24,
-		[]Modifier{Padding(32), Background(ColorSurface)},
+		[]Modifier{FillWidth(), FillHeight(), Padding(32), Background(ColorSurface)},
 		Row("task-back-row", 0, nil,
 			Button("task-back", BackLabel(t.Task.Board), Navigate(LinkBoard), PaddingXY(12, 20)),
 			Spacer("task-back-spacer"),
@@ -70,10 +70,9 @@ func (t Task) activity() []Component {
 			authorStyle = TextMetaAgent
 		}
 
-		entries = append(entries, Row(id, 0, nil,
-			Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
+		entries = append(entries, Marked(id, stripe,
 			Column(id+"-body", 6,
-				[]Modifier{Weight(1), Padding(14), Background(ColorSurfaceBlock)},
+				[]Modifier{FillWidth(), Padding(14), Background(ColorSurfaceBlock)},
 				Text(id+"-what", HistoryLine(change), TextBody),
 				Text(id+"-who", Author(change), authorStyle),
 			),

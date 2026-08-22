@@ -38,35 +38,20 @@ type Feed struct {
 // changed per request would make the ETag change per request, and a 304 would never happen.
 func (f Feed) Screen() Component {
 	return Row("screen-catchup", 0,
-		[]Modifier{Background(ColorSurface)},
+		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
 		f.navigation(),
 		Rule("nav-rule", RuleDp, ColorDivider, false),
 		f.body(),
 	)
 }
 
-func (f Feed) navigation() Component {
-	return Column("nav", 4,
-		[]Modifier{WidthDp(240), Background(ColorSurfaceBlock), PaddingXY(20, 0)},
-		Text("nav-brand", "tacku", TextTitle, PaddingXY(0, 20)),
-		// The captions come from the graph, which is where a destination is named. Spelled here as
-		// well, they had already parted: the graph said "Board" and the button beside it "Boards".
-		Column("nav-current", 0, []Modifier{Background(ColorSurfaceSelected)},
-			Button("nav-catchup", RouteTitle(LinkCatchUp), Navigate(LinkCatchUp), PaddingXY(12, 20)),
-		),
-		Button("nav-boards", RouteTitle(LinkBoard), Navigate(LinkBoard), PaddingXY(12, 20)),
-		Button("nav-mine", RouteTitle(LinkMyTasks), Navigate(LinkMyTasks), PaddingXY(12, 20)),
-		Spacer("nav-spacer"),
-		Text("nav-person", string(f.Person), TextMeta, PaddingXY(0, 20)),
-		Button("nav-signout", "Sign out", Navigate(LinkSignOut), PaddingXY(12, 20)),
-	)
-}
+func (f Feed) navigation() Component { return Navigation(f.Person, LinkCatchUp) }
 
 func (f Feed) body() Component {
 	return Column("feed", 24,
 		[]Modifier{Weight(1), Padding(32)},
 		f.header(),
-		PaginatedList("feed-list", f.rows(), f.NextPage, emptyFeed(), Weight(1)),
+		PaginatedList("feed-list", f.rows(), f.NextPage, emptyFeed(), FillWidth(), Weight(1)),
 	)
 }
 
@@ -103,17 +88,16 @@ func ChangeRow(change domain.Change) Component {
 	}
 
 	id := fmt.Sprintf("change-%d", change.Seq)
-	body := Row(id, 0, nil,
-		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
+	body := Marked(id, stripe,
 		Column(id+"-body", 6,
-			[]Modifier{Weight(1), Padding(16), Background(ColorSurfaceBlock)},
+			[]Modifier{FillWidth(), Padding(16), Background(ColorSurfaceBlock)},
 			Text(id+"-what", Sentence(change), TextBody),
 			Text(id+"-who", Author(change), authorStyle),
 		),
 	)
 	// The whole row opens the task, which is what the design drew and what the vocabulary could
 	// not say until kompot 0.15. It was a button per entry for exactly one release (Q-22).
-	return Opens(body, Navigate(LinkTask+string(change.Task)))
+	return Spaced(id, Opens(body, Navigate(LinkTask+string(change.Task))))
 }
 
 func emptyFeed() Component {

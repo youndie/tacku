@@ -12,9 +12,56 @@ type Component any
 // Action is what a button does.
 type Action any
 
-// Modifier is one link of the chain. Order is significant: padding then background fills the padded
-// box, background then padding paints the content and pads outside it.
+// Modifier is one link of the chain. Order is significant: padding then background paints inside the
+// padding and leaves the rest as a margin, background then padding paints the whole node and insets
+// the content.
 type Modifier any
+
+// canonical puts the paint before the padding, and it exists because every screen of this product
+// had it the other way round.
+//
+// The two orders both mean something, and this product wants one of them everywhere: a card is a
+// block of colour with its text inset, a screen is a surface that reaches the window's edge. What
+// was emitted instead was 52 nodes out of 53 with padding first — so each card's colour stopped
+// short of its own text, and each screen's surface stopped 32dp short of the window, showing the
+// bare white frame of the window behind it. One mistake, six symptoms, and every one of them looked
+// like a different bug about spacing.
+//
+// It is done here rather than at the call sites because a call site is a place to forget. Where a
+// margin really is wanted — a gap between the items of a `paginated_list`, which has no `spacing` of
+// its own — it is a node with padding and no background wrapped around one with both, and that
+// wrapper is unaffected by this.
+func canonical(modifiers []Modifier) []Modifier {
+	if len(modifiers) < 2 {
+		return modifiers
+	}
+
+	ordered := make([]Modifier, 0, len(modifiers))
+	for _, modifier := range modifiers {
+		if paints(modifier) {
+			ordered = append(ordered, modifier)
+		}
+	}
+	if len(ordered) == 0 || len(ordered) == len(modifiers) {
+		return modifiers
+	}
+	for _, modifier := range modifiers {
+		if !paints(modifier) {
+			ordered = append(ordered, modifier)
+		}
+	}
+	return ordered
+}
+
+func paints(modifier Modifier) bool {
+	switch modifier.(type) {
+	// The vocabulary also has `gradient`, and it would belong here; this server does not build one
+	// yet, and a case for a type that does not exist is a claim rather than a rule.
+	case background:
+		return true
+	}
+	return false
+}
 
 type padding struct {
 	Type   string `json:"type"`
@@ -66,7 +113,25 @@ func Background(token string) Modifier { return background{Type: "background", C
 // They arrived in kompot 0.9.0 after this project reported that SPEC.md promised integer dp while
 // the schema carried only Fill and Wrap. A number on an axis outranks a symbolic value on the same
 // axis, so the two are never set together here.
-func WidthDp(dp int) Modifier  { return size{Type: "size", WidthDp: intPtr(dp)} }
+func WidthDp(dp int) Modifier { return size{Type: "size", WidthDp: intPtr(dp)} }
+
+// FillWidth makes a node as wide as its parent allows.
+//
+// Found late and the hard way. `size` carries `width`/`height` of type `SizeType`, which is
+// `Fill | Wrap` — and this file declared the fields (`Width *string`) without ever setting one, so
+// every "make it span" was done with a number in dp or not at all. What it looked like on screen: a
+// card's colour ending where its longest line ended, a menu item highlighted only as wide as its
+// own word. What it looked like in the journal: a report filed upstream claiming the vocabulary had
+// no way to say this (Q-59, withdrawn).
+func FillWidth() Modifier { return size{Type: "size", Width: fill()} }
+
+// FillHeight makes a node as tall as its parent allows.
+func FillHeight() Modifier { return size{Type: "size", Height: fill()} }
+
+func fill() *string {
+	value := "Fill"
+	return &value
+}
 func HeightDp(dp int) Modifier { return size{Type: "size", HeightDp: intPtr(dp)} }
 
 // Weight claims a share of the free space of the parent row or column. Also the only way to push a
@@ -121,11 +186,11 @@ type paginatedList struct {
 
 // Column and Row take their children last so a call reads like the tree it builds.
 func Column(id string, spacing int, modifiers []Modifier, children ...Component) Component {
-	return column{Type: "column", ID: id, Modifiers: modifiers, Children: nonNil(children), Spacing: spacing}
+	return column{Type: "column", ID: id, Modifiers: canonical(modifiers), Children: nonNil(children), Spacing: spacing}
 }
 
 func Row(id string, spacing int, modifiers []Modifier, children ...Component) Component {
-	return row{Type: "row", ID: id, Modifiers: modifiers, Children: nonNil(children), Spacing: spacing}
+	return row{Type: "row", ID: id, Modifiers: canonical(modifiers), Children: nonNil(children), Spacing: spacing}
 }
 
 // Opens is a container the whole of which is one target.
@@ -153,16 +218,57 @@ func Opens(container Component, action Action) Component {
 }
 
 func Text(id, body, style string, modifiers ...Modifier) Component {
-	return text{Type: "text", ID: id, Modifiers: modifiers, Text: body, Style: style}
+	return text{Type: "text", ID: id, Modifiers: canonical(modifiers), Text: body, Style: style}
 }
 
 func Button(id, label string, action Action, modifiers ...Modifier) Component {
-	return button{Type: "button", ID: id, Modifiers: modifiers, Text: label, Action: action}
+	return button{Type: "button", ID: id, Modifiers: canonical(modifiers), Text: label, Action: action}
 }
 
 // Spacer is the idiom for pushing a sibling to the edge of a row: an empty column taking the free
 // space. There is no alignment modifier, so this is not a trick but the mechanism.
 func Spacer(id string) Component { return Column(id, 0, []Modifier{Weight(1)}) }
+
+// ItemGapDp is half the space between two cards of a list: each carries it above and below.
+const ItemGapDp = 6
+
+// PaddingStart pads one side, which is what makes a stripe possible.
+func PaddingStart(dp int) Modifier { return padding{Type: "padding", Start: intPtr(dp)} }
+
+// Marked wraps a card so that a stripe of `token` runs down its left edge, exactly as tall as the
+// card turns out to be.
+//
+// The obvious construction — a three-point-wide empty column beside the body — paints nothing, and
+// did so on every card of every screen for the life of this project. An empty column has no height,
+// and the signal this product exists to carry was therefore absent; absent looks exactly like "a
+// person did this". The picture guarding it passed all along, because it asked whether an agent's
+// row and a person's row stayed *distinguishable* and they did — by the colour of the meta line, not
+// by the device the design chose.
+//
+// Asking for the height does not work either, and that was worth measuring before giving up on it:
+// `height: Fill` resolves against the constraint coming into the row rather than the height of the
+// sibling, so the stripe takes the whole screen; `Wrap` on the row changes nothing; an explicit
+// `heightDp` is a guess at how many lines the title wrapped to.
+//
+// So the stripe is not a node at all. The outer node is painted with the mark and inset from the
+// start by three points; the inner node paints everything else over it. What is left showing is a
+// stripe the exact height of the card, because it *is* the card.
+func Marked(id, token string, body Component) Component {
+	return Column(id, 0, []Modifier{Background(token), FillWidth(), PaddingStart(StripeDp)}, body)
+}
+
+// Spaced puts a gap around a list item, and it is a whole extra node because there is nowhere else
+// to put one.
+//
+// `column` and `row` carry a `spacing`; `paginated_list` does not (checked in
+// `kompot-standard.schema.json`: `initialItems`, `loadMoreAction`, `reloadUrl`, `emptyState` and the
+// modifiers, no spacing). So the only space available between two items is a margin, and a margin is
+// padding on a node with nothing to paint. Putting that padding on the card itself is what this
+// server did until now, and then the card's colour stopped short of its own text: one node cannot be
+// both separated from its neighbour and padded inside. Reported upstream.
+func Spaced(id string, child Component) Component {
+	return Column(id+"-gap", 0, []Modifier{FillWidth(), PaddingXY(ItemGapDp, 0)}, child)
+}
 
 // Rule is a line of the given thickness, standing in for a border. The vocabulary has none.
 func Rule(id string, thicknessDp int, token string, horizontal bool) Component {
@@ -201,7 +307,7 @@ func LoadPageAt(url string) Action { return loadPageAction{Type: "load_page", UR
 // rubbish at best and a parse error at worst.
 func PaginatedList(id string, items []Component, nextURL string, empty Component, modifiers ...Modifier) Component {
 	list := paginatedList{
-		Type: "paginated_list", ID: id, Modifiers: modifiers,
+		Type: "paginated_list", ID: id, Modifiers: canonical(modifiers),
 		InitialItems: nonNil(items), EmptyState: empty,
 	}
 	if nextURL != "" {
@@ -369,7 +475,7 @@ type readOnlyField struct {
 // in a submit, which is why it is the one input-looking component the form builder does not own.
 func ReadOnlyField(id, label, value, helper string, modifiers ...Modifier) Component {
 	return readOnlyField{
-		Type: "read_only_field", ID: id, Modifiers: modifiers,
+		Type: "read_only_field", ID: id, Modifiers: canonical(modifiers),
 		Label: label, Value: value, HelperText: helper,
 	}
 }
@@ -391,7 +497,7 @@ type dateInput struct {
 // the client formatted itself would be the one place it did not.
 func DateInput(id, fieldID, label, hint string, modifiers ...Modifier) Component {
 	return dateInput{
-		Type: "date_input", ID: id, Modifiers: modifiers,
+		Type: "date_input", ID: id, Modifiers: canonical(modifiers),
 		FieldID: fieldID, Label: label, DisplayFormat: dayLayoutPattern, Hint: hint,
 	}
 }

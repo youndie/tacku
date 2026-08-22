@@ -16,8 +16,9 @@ import (
 //
 // `agent` means "a program did this" and nothing else. The moment it paints a decorative element the
 // signal stops meaning anything — and it would stop quietly, because a slightly purple box looks
-// like a design decision. So every use of it in every tree this server serves has to be a stripe:
-// a node three points wide, with a background and no children.
+// like a design decision. So every use of it in every tree this server serves has to be an edge and
+// never a fill: either a node exactly three points wide, or a card painted with the mark and inset
+// three points from the start so that its single child covers all of it but that edge.
 func TestTheAgentColourOnlyEverPaintsAStripe(t *testing.T) {
 	r := newResource(t)
 	r.fill(t, 4)
@@ -180,13 +181,34 @@ func checkStripes(t *testing.T, path string, node any) int {
 		found++
 		id, _ := value["id"].(string)
 
-		if width := sizeOf(value); width != render.StripeDp {
-			t.Errorf("%s: node %q is painted with the agent colour and is %v points wide, not %d — the provenance signal is being used as decoration",
-				path, id, width, render.StripeDp)
-		}
-		if children, ok := value["children"].([]any); ok && len(children) > 0 {
-			t.Errorf("%s: node %q is painted with the agent colour and holds %d children; a stripe holds none",
-				path, id, len(children))
+		// A stripe is now the card itself: the agent colour is painted on the outer node, which is
+		// inset from the start by exactly the stripe's width, and the single child repaints
+		// everything except that edge. What is left showing is a stripe as tall as the card.
+		//
+		// This check used to describe the other construction — a three-point-wide node with no
+		// children — and passed for the whole life of the project while that node painted nothing
+		// at all, because an empty column has no height. It was checking the shape of the answer
+		// rather than the promise: that the agent colour is never a decorative fill.
+		switch {
+		case sizeOf(value) == render.StripeDp:
+			if children, ok := value["children"].([]any); ok && len(children) > 0 {
+				t.Errorf("%s: node %q is a %d-point node in the agent colour and holds %d children; that shape is a stripe and a stripe holds none",
+					path, id, render.StripeDp, len(children))
+			}
+		case startPaddingOf(value) == render.StripeDp:
+			children, _ := value["children"].([]any)
+			if len(children) != 1 {
+				t.Errorf("%s: node %q is painted with the agent colour and inset by %d, which is the marked-card shape, but it holds %d children rather than the one that covers it",
+					path, id, render.StripeDp, len(children))
+				break
+			}
+			if cover, ok := children[0].(map[string]any); !ok || backgroundOf(cover) == "" {
+				t.Errorf("%s: node %q is painted with the agent colour and its only child paints no background, so the agent colour is the card's fill rather than its edge",
+					path, id)
+			}
+		default:
+			t.Errorf("%s: node %q is painted with the agent colour, is %v points wide and inset %v from the start — neither a stripe nor a marked card, so the provenance signal is being used as decoration",
+				path, id, sizeOf(value), startPaddingOf(value))
 		}
 	}
 
@@ -308,4 +330,40 @@ func TestProvenanceSurvivesIntoTheContinuationPage(t *testing.T) {
 	if found == 0 {
 		t.Error("an agent filed a task that only appears past the first page, and no row after the first page carries the agent colour")
 	}
+}
+
+// startPaddingOf is the inset that turns a painted node into a stripe down its own left edge.
+func startPaddingOf(node map[string]any) any {
+	modifiers, ok := node["modifiers"].([]any)
+	if !ok {
+		return nil
+	}
+	for _, modifier := range modifiers {
+		value, ok := modifier.(map[string]any)
+		if !ok || value["type"] != "padding" {
+			continue
+		}
+		if start, ok := value["start"].(float64); ok {
+			return int(start)
+		}
+	}
+	return nil
+}
+
+// backgroundOf is the token a node paints itself with, or "" when it paints nothing.
+func backgroundOf(node map[string]any) string {
+	modifiers, ok := node["modifiers"].([]any)
+	if !ok {
+		return ""
+	}
+	for _, modifier := range modifiers {
+		value, ok := modifier.(map[string]any)
+		if !ok || value["type"] != "background" {
+			continue
+		}
+		if token, ok := value["color"].(string); ok {
+			return token
+		}
+	}
+	return ""
 }
