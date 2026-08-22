@@ -1,11 +1,15 @@
 package tacku.app
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.TypographyToken
 
@@ -44,8 +48,18 @@ fun TackuTheme(
         CompositionLocalProvider(
             LocalKompotDesignSystem provides design,
             LocalContentColor provides design.resolveTypography(TypographyToken("body")).color,
-            content = content,
-        )
+        ) {
+            // The window is painted here rather than by whatever happens to be on it.
+            //
+            // Every screen paints `surface` over its whole area, so for a while nothing else needed
+            // to. Then the server went away: the failure message is a line of text and nothing else,
+            // and a line of text over an unpainted window is a white screen with a pale line on it.
+            // The states that are not screens — loading, failed — are exactly the ones nobody looks
+            // at until something is already wrong.
+            Box(Modifier.fillMaxSize().background(design.materialColors().background)) {
+                content()
+            }
+        }
     }
 }
 

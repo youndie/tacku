@@ -15,24 +15,41 @@ db=/tmp/tacku-screens.db
 port=8477
 authport=8478
 
+# Only what this script started.
+#
+# It used to kill whatever held the two ports, which is a script reaching outside its own work: it
+# took down a stand somebody was looking at, twice, and the symptom on their side was a white window
+# with no explanation. If a port is already busy the honest thing is to refuse, not to clear it.
+started=""
+
 cleanup() {
-  lsof -ti:$port -ti:$authport 2>/dev/null | xargs kill -9 2>/dev/null || true
+  for pid in $started; do
+    kill "$pid" 2>/dev/null || true
+  done
   rm -f "$db"
 }
 # On EXIT rather than at the end: a failure halfway through would otherwise leave a server holding
 # the port, and the next run would talk to it and record whatever that one happened to serve.
 trap cleanup EXIT
 
-cleanup
+for busy in $port $authport; do
+  if lsof -ti:"$busy" >/dev/null 2>&1; then
+    echo "port $busy is already in use — stop what is on it, or it will be recorded instead of a fresh server" >&2
+    exit 1
+  fi
+done
+rm -f "$db"
 cd "$root/server"
 go run ./cmd/tacku seed -db "$db" >/dev/null
 go run ./cmd/devauth -addr :$authport >/dev/null 2>&1 &
+started="$started $!"
 sleep 4
 TACKU_RESOURCE=http://localhost:$port \
   TACKU_ISSUER=http://localhost:$authport \
   TACKU_JWKS_URL=http://localhost:$authport/jwks \
   TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
   go run ./cmd/tacku serve -db "$db" -addr :$port >/dev/null 2>&1 &
+started="$started $!"
 sleep 6
 
 # The stand's own credentials, printed by `seed` — not anybody's.

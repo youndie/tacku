@@ -3,7 +3,6 @@ package tacku.app
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,7 +21,9 @@ import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.KompotLazyScreen
 import io.github.youndie.kompot.KompotRealtimeProvider
 import io.github.youndie.kompot.KompotRegistry
+import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.LocalKompotPageLoader
+import io.github.youndie.kompot.TypographyToken
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
 import kotlinx.coroutines.CoroutineScope
@@ -131,8 +132,12 @@ private fun Rendered(
 
 @Composable
 private fun Message(text: String) {
+    // The product's own body style, not Material's: a message drawn in a colour nobody chose is how
+    // "the server is unreachable" became a blank white window with an invisible line on it.
+    val design = LocalKompotDesignSystem.current
+
     Box(Modifier.fillMaxSize().padding(32.dp)) {
-        Text(text, style = MaterialTheme.typography.bodyLarge)
+        Text(text, style = design.resolveTypography(TypographyToken("body")))
     }
 }
 
