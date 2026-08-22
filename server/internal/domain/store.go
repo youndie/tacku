@@ -25,6 +25,17 @@ type Store interface {
 	// Which of the two places a status changes in — the board or the task — is a product question
 	// with a decision hanging on it, and an unnamed caller would answer it with a blank row.
 	MoveTask(ctx context.Context, id TaskID, to Status, by Provenance, from Surface) (Task, error)
+
+	// MoveTasks moves several tasks at once: either every one of them moves or none does.
+	//
+	// Atomic rather than best-effort, and the reason is the idempotency key rather than tidiness. A
+	// repeat under the same key has to give back the same outcome instead of finishing off what was
+	// left (SPEC.md §16.5), and an operation that either happened or did not makes that true by
+	// construction. The per-task outcomes come back all the same, because what to show when the
+	// outcome is not uniform is a question this does not answer — it only keeps somewhere to put
+	// the answer.
+	MoveTasks(ctx context.Context, ids []TaskID, to Status, by Provenance, from Surface) ([]MoveResult, error)
+
 	AssignTask(ctx context.Context, id TaskID, to MemberID, by Provenance) (Task, error)
 	SetDue(ctx context.Context, id TaskID, due string, by Provenance) (Task, error)
 

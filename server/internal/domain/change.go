@@ -37,7 +37,6 @@ var ChangeKinds = []ChangeKind{
 	ChangeCommentPosted,
 }
 
-
 // Surface names where a change was made from.
 //
 // It exists for one question and says so: the board's card button and the task screen's selector
@@ -57,6 +56,12 @@ const (
 	SurfaceBoard Surface = "board"
 	// SurfaceTask is the selector on the task screen.
 	SurfaceTask Surface = "task"
+	// SurfaceBulk is one action over several tasks at once.
+	//
+	// Its own surface rather than SurfaceBoard, though the button lives there: the question is
+	// which of two ways of moving one task people reach for, and a bulk move is a third way. Folded
+	// into the board it would inflate that side by however many tasks a single click carried.
+	SurfaceBulk Surface = "bulk"
 	// SurfaceAgent is a tool call. An agent has no screen at all, which is why it is a surface of
 	// its own rather than a blank: a share computed over "board or task" must be able to leave
 	// agent moves out, and it cannot do that if they are indistinguishable from unrecorded ones.
@@ -70,7 +75,7 @@ const (
 // stay a number, just no longer a true one.
 func (s Surface) Named() bool {
 	switch s {
-	case SurfaceBoard, SurfaceTask, SurfaceAgent:
+	case SurfaceBoard, SurfaceTask, SurfaceBulk, SurfaceAgent:
 		return true
 	default:
 		return false

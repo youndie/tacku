@@ -263,6 +263,16 @@ func RowMeta(task domain.Task, by domain.Provenance) string {
 	return CardMeta(task, by) + " · " + StatusName(string(task.Status))
 }
 
+// HiddenFromSelection says how much of the list a bulk move cannot see, with its verb agreed.
+//
+// Agreement is why this is here rather than beside the element: "1 more task is" and "4 more tasks
+// are" are the same sentence choosing its words from a number, and a phrase chosen by data is what
+// this file exists to hold.
+func HiddenFromSelection(hidden int) string {
+	return fmt.Sprintf("%d more %s not shown here. Move these first, or move them one at a time from the board.",
+		hidden, plural(hidden, "task is", "tasks are"))
+}
+
 // TaskMeta is the line under a task's title.
 func TaskMeta(task domain.Task) string {
 	return fmt.Sprintf("%s · created %s", task.ID, task.CreatedAt.Format(dayLayout))

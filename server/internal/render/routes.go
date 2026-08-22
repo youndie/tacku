@@ -17,6 +17,9 @@ const (
 	LinkNewTask  = "app://new-task"
 	LinkNewBoard = "app://new-board"
 
+	// The selection mode, which is a screen because the vocabulary has no mode. See render.BulkMove.
+	LinkBulkMove = "app://bulk-move"
+
 	// Known to the client rather than carried by the graph.
 	//
 	// Signing in cannot be in the graph by construction: fetching the graph needs a session, and
@@ -58,6 +61,7 @@ var Graph = []Route{
 	{Deeplink: LinkCatchUp, Endpoint: "/screens/catch-up", Kind: "screen", Title: "Catch-up"},
 	{Deeplink: LinkBoard, Endpoint: "/screens/board", Kind: "screen", Title: "Board"},
 	{Deeplink: LinkMyTasks, Endpoint: "/forms/my-tasks", Kind: "form", Title: "My tasks"},
+	{Deeplink: LinkBulkMove, Endpoint: "/forms/bulk-move", Kind: "form", Title: "Move several"},
 	{Deeplink: LinkNewTask, Endpoint: "/forms/new-task", Kind: "form", Title: "New task"},
 	{Deeplink: LinkNewBoard, Endpoint: "/forms/new-board", Kind: "form", Title: "New board"},
 }

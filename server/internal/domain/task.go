@@ -91,3 +91,28 @@ type Comment struct {
 	By        Provenance
 	CreatedAt time.Time
 }
+
+// MoveOutcome is what happened to one task of a move that named several.
+//
+// There are two of them and neither is a failure, which follows from the operation being
+// all-or-nothing: a task that cannot move takes the whole move down with it, so nothing survives to
+// be reported as failed. A task already standing in the target status is not a failure either — it
+// is the no-op every single-field edit already refuses to journal.
+type MoveOutcome string
+
+const (
+	MoveMoved     MoveOutcome = "moved"
+	MoveUnchanged MoveOutcome = "unchanged"
+)
+
+// MoveResult is what happened to one task, in the order the caller named them.
+//
+// A list rather than a count, and that is deliberate room rather than generosity: what a person is
+// shown when a bulk action does not apply to everything is an open question (B-32), and a count
+// cannot be turned back into "these two did not move" once the detail is gone.
+type MoveResult struct {
+	Task    TaskID
+	From    Status
+	To      Status
+	Outcome MoveOutcome
+}

@@ -196,6 +196,88 @@ func (s *Store) MoveTask(
 	})
 }
 
+// MoveTasks moves several tasks inside one transaction.
+//
+// Not a loop over MoveTask, and the difference is the whole guarantee: each call of that opens a
+// transaction of its own, so a refusal halfway would leave the earlier ones committed — a partial
+// outcome, under a key whose repeat must reproduce it exactly. Here the first refusal rolls the
+// whole thing back, and there is nothing partial to reproduce.
+//
+// One journal entry per task that actually moved, written in the same transaction as the move
+// itself, exactly as a single move writes it. A bulk operation that recorded one entry for the
+// batch would be cheaper and would cost the product its history: the feed, the agent's cursor and
+// the provenance stripe all read the journal per task.
+func (s *Store) MoveTasks(
+	ctx context.Context,
+	ids []domain.TaskID,
+	to domain.Status,
+	by domain.Provenance,
+	from domain.Surface,
+) ([]domain.MoveResult, error) {
+	if err := by.Validate(); err != nil {
+		return nil, err
+	}
+	// The same refusal the single move makes, for the same reason: a bulk move is a third way to
+	// change a status, and one that writes a blank would quietly spoil the share it feeds.
+	if !from.Named() {
+		return nil, fmt.Errorf("%w: %q", domain.ErrUnnamedSurface, string(from))
+	}
+	if !to.Valid() {
+		return nil, fmt.Errorf("%w: unknown status %q", domain.ErrInvalidTask, string(to))
+	}
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("%w: no tasks were named", domain.ErrInvalidTask)
+	}
+
+	var results []domain.MoveResult
+	err := s.write(ctx, func(tx *sql.Tx) error {
+		moved := make([]domain.MoveResult, 0, len(ids))
+		for _, id := range ids {
+			if !id.Valid() {
+				return fmt.Errorf("%w: %q is not a task identifier", domain.ErrInvalidTask, string(id))
+			}
+			task, err := scanTaskFor(
+				tx.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)), id)
+			if err != nil {
+				return err
+			}
+
+			// Already there. Not an error and not an entry: the same rule a single edit applies,
+			// and for the same reason — a feed telling somebody a task moved from In review to In
+			// review is noise in the one place that exists to say what changed.
+			if task.Status == to {
+				moved = append(moved, domain.MoveResult{
+					Task: id, From: task.Status, To: to, Outcome: domain.MoveUnchanged,
+				})
+				continue
+			}
+
+			now := s.stampNow()
+			if _, err := tx.ExecContext(ctx,
+				`update tasks set status = ?, updated_at = ? where id = ?`,
+				string(to), now, string(id)); err != nil {
+				return err
+			}
+			if err := s.record(ctx, tx, domain.Change{
+				Task: id, Board: task.Board, Kind: domain.ChangeStatusMoved,
+				From: string(task.Status), To: string(to), Surface: from, By: by,
+			}); err != nil {
+				return err
+			}
+
+			moved = append(moved, domain.MoveResult{
+				Task: id, From: task.Status, To: to, Outcome: domain.MoveMoved,
+			})
+		}
+		results = moved
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
 func (s *Store) AssignTask(ctx context.Context, id domain.TaskID, to domain.MemberID, by domain.Provenance) (domain.Task, error) {
 	return s.edit(ctx, id, by, domain.ChangeAssigned, domain.SurfaceNone, func(t *domain.Task) (string, string, bool) {
 		was := t.Assignee
