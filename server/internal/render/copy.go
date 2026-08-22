@@ -167,14 +167,6 @@ func Author(change domain.Change) string {
 	return fmt.Sprintf("%s · %s", change.By.Executor.Member, at)
 }
 
-// agentMeta is what a list item says instead of its usual meta line when an agent touched it.
-//
-// One phrasing shared with Author on purpose: a reader who learns what "on behalf of" means in the
-// feed should not have to learn it again on a board.
-func agentMeta(by domain.Provenance) string {
-	return fmt.Sprintf("%s · on behalf of %s", AgentWord, by.OnBehalfOf)
-}
-
 // FeedSummary is the catch-up headline: a finished sentence, not a template.
 //
 // The server resolves the language and the plural because the client never assembles text, so
@@ -248,19 +240,44 @@ func MoveLabel(target domain.Status) string {
 // BackLabel is the caption of the button that leaves a task for its board.
 func BackLabel(board domain.BoardID) string { return fmt.Sprintf("← %s", board) }
 
-// CardMeta is the second line of a board card: which task, whose, and by when — unless an agent
-// touched it last, in which case the line says so instead.
+// CardMeta is the second line of a board card: which task, whose, by when — and, when an agent was
+// the last to touch it, that as well.
 //
-// Which of the two a card shows is decided here and not at the card, because the same choice is made
-// on every list in the product: it was written out at the board and nowhere else once, and the rows
-// of a filtered list — same product, same promise — said nothing about the agent at all.
+// The line used to carry one of the two rather than both. A card an agent had touched read
+// "Agent · on behalf of anna" and no longer said which task it was, who owned it or when it was due
+// — the three facts a board is read for. Nothing failed and nothing looked broken: the line was in
+// its place, saying something else, and the only way to notice was to hold two cards side by side.
+//
+// Four facts do not fit one line, so the decision this line needs is what to leave out. How much a
+// line does fit is not something the contract answers — `text` carries a string and a token, with no
+// number of lines, no overflow and no way back from the screen (Q-54) — so the line is shortened by
+// what it says rather than by counting characters, and what is left out is the name of the person
+// the agent acted for:
+//
+//   - The card already names a person — the assignee — so the byline's name is a second person in
+//     the same line, and it is the same person twice whenever an agent works on its principal's own
+//     task.
+//   - The sentence it comes from is not lost: the feed and the task's own history carry Author,
+//     where "on behalf of" is written out in full beside the time, and both are one tap from the
+//     card. This line does not have that room; those do.
+//
+// Refused: a second line under the card, carrying the byline whole. A card's height is what decides
+// how many of them a column shows, and provenance is not the exception here — an agent is a member
+// of the team rather than a rare event, so the taller card would be the ordinary card.
+//
+// The mark goes in front. The stripe it belongs to is on the left edge of the same row, and the word
+// qualifies everything after it rather than one of the facts.
+//
+// Whether the mark appears at all is decided here and not at the card, because the same choice is
+// made on every list in the product: it was written out at the board and nowhere else once, and the
+// rows of a filtered list — same product, same promise — said nothing about the agent at all.
 func CardMeta(task domain.Task, by domain.Provenance) string {
-	if by.ByAgent() {
-		return agentMeta(by)
-	}
 	meta := string(task.ID) + " · " + AssigneeValue(task.Assignee)
 	if task.Due != "" {
 		meta += " · due " + day(task.Due)
+	}
+	if by.ByAgent() {
+		return AgentWord + " · " + meta
 	}
 	return meta
 }

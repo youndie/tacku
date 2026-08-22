@@ -215,6 +215,49 @@ func TestACommentIsCutToOneLineByTheServer(t *testing.T) {
 	}
 }
 
+// The mark of an agent joins the facts of a card instead of standing in for them.
+//
+// The line used to carry one or the other: a card an agent had touched said "Agent · on behalf of
+// anna" and stopped saying which task it was, who owned it and when it was due — the three facts a
+// board is read for. Nothing failed, which is why it survived: the line was in its place, saying
+// something else.
+//
+// Written as containment rather than as one expected string on purpose. What is being held is that
+// nothing the untouched card says goes missing when an agent touches it, and a check spelled out as
+// a literal would be rewritten by the same edit that breaks the promise.
+func TestTheAgentMarkIsAddedToACardLineAndDoesNotReplaceIt(t *testing.T) {
+	task := domain.Task{ID: "TAC-4", Assignee: "anna", Due: "2026-08-29", Status: domain.StatusInReview}
+	// A principal who is not the assignee, because the two are separate facts and a fixture where
+	// they coincide cannot tell which of them the line is showing.
+	touched := render.CardMeta(task, domain.Agent("ivan-agent", "0.1.0", "ivan"))
+	untouched := render.CardMeta(task, domain.Human("anna"))
+
+	if !strings.Contains(touched, untouched) {
+		t.Errorf("a card an agent touched reads %q and the same card untouched reads %q: the mark stands in place of the facts rather than beside them",
+			touched, untouched)
+	}
+	for _, fact := range []string{string(task.ID), string(task.Assignee), "29 Aug", render.AgentWord} {
+		if !strings.Contains(touched, fact) {
+			t.Errorf("a card an agent touched reads %q and does not say %q", touched, fact)
+		}
+	}
+	// Without this the check above would hold on a line that says "Agent" about everybody, and the
+	// word would have stopped meaning anything.
+	if strings.Contains(untouched, render.AgentWord) {
+		t.Errorf("a card nobody automated reads %q and names the agent anyway", untouched)
+	}
+
+	// The row of a list is the same line with the status after it, and it is the same function that
+	// writes both — so the row is checked rather than assumed.
+	row := render.RowMeta(task, domain.Agent("ivan-agent", "0.1.0", "ivan"))
+	if !strings.Contains(row, touched) {
+		t.Errorf("a row an agent touched reads %q and does not carry the card line %q", row, touched)
+	}
+	if status := render.StatusName(string(task.Status)); !strings.Contains(row, status) {
+		t.Errorf("a row an agent touched reads %q and does not say where the task stands (%q)", row, status)
+	}
+}
+
 // The stand-ins shown where a value is absent, in one voice.
 //
 // Two of the three used to be written twice: a board card said "unassigned" and the task beside it
