@@ -72,8 +72,14 @@ object TckGate {
      * a whole endpoint. The first is visible in the report, the second is not — the run that
      * prompted this was green while the most complicated screen in the product had never been
      * fetched, because its path carries a parameter and the walk quietly passed over it.
+     *
+     * `wizard_start` is here because it answers a document like the other four — a
+     * `KompotFormResponse` (§16.1) — and leaving it out would have meant a new endpoint kind
+     * arriving without the count noticing. Its neighbour `wizard_resume` is not: the walk is blind
+     * and only fetches, so a transition that has to carry the scenario a previous answer minted is
+     * out of its reach by construction, and the report says so by name.
      */
-    private val bodyKinds = setOf("screen", "form", "page", "graph")
+    private val bodyKinds = setOf("screen", "form", "page", "graph", "wizard_start")
 
     fun judge(
         report: TckReport,
