@@ -191,6 +191,12 @@ func EmptyWorkspace() Component {
 //
 // It answers with tokens only. What the line beside them says is the same decision made in words,
 // and words are copy.go's — see CardMeta.
+//
+// The style applies to the whole line, including the identifier and the due date, which are the
+// task's facts rather than the agent's. That is a cost and not an oversight: a line is one style
+// end to end, and splitting it into a coloured word and a plain remainder means two nodes in a row
+// the server can neither align nor wrap (Q-55). The colour says "a program touched this task",
+// which is true of the task.
 func mark(by domain.Provenance) (stripe, style string) {
 	if by.ByAgent() {
 		return ColorAgent, TextMetaAgent
