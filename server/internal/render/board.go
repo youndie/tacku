@@ -67,7 +67,7 @@ func (b Board) header() Component {
 	return Row("board-header", 0, nil,
 		Column("board-heading", 6, nil,
 			Text("board-title", b.Title, TextDisplay),
-			Text("board-count", b.summary(), TextBodyMuted),
+			Text("board-count", BoardSummary(b.open(), b.Changed), TextBodyMuted),
 		),
 		Spacer("board-header-spacer"),
 		Button("board-new", "New task", Navigate(LinkNewTask),
@@ -75,18 +75,16 @@ func (b Board) header() Component {
 	)
 }
 
-func (b Board) summary() string {
+// open counts what the headline counts. The sentence it goes into is written in copy.go, including
+// the plural: the server sends finished text, so "1 open task" is a decision and not a template.
+func (b Board) open() int {
 	open := 0
 	for _, task := range b.Tasks {
 		if task.Status != domain.StatusDone {
 			open++
 		}
 	}
-	word := "tasks"
-	if open == 1 {
-		word = "task"
-	}
-	return fmt.Sprintf("%d open %s · %d changed since your last visit", open, word, b.Changed)
+	return open
 }
 
 func (b Board) column(status domain.Status) Component {
@@ -102,11 +100,12 @@ func (b Board) column(status domain.Status) Component {
 	return Column(id, 12,
 		[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceBlock)},
 		Row(id+"-head", 0, nil,
-			Text(id+"-name", upper(StatusName(string(status))), TextSubtitle),
+			Text(id+"-name", ColumnHeading(status), TextSubtitle),
 			Spacer(id+"-head-spacer"),
 			Text(id+"-count", fmt.Sprint(len(cards)), TextMeta),
 		),
-		PaginatedList(id+"-list", cards, "", emptyColumn(id, status)),
+		PaginatedList(id+"-list", cards, "",
+			Text(id+"-empty", EmptyColumnLine(status), TextBodyMuted)),
 		Spacer(id+"-tail"),
 	)
 }
@@ -114,7 +113,7 @@ func (b Board) column(status domain.Status) Component {
 func (b Board) card(task domain.Task) Component {
 	id := "card-" + string(task.ID)
 
-	stripe, metaStyle, meta := mark(b.LastBy[task.ID], cardMeta(task))
+	stripe, metaStyle := mark(b.LastBy[task.ID])
 
 	// The part that opens the task, kept apart from the button that moves it. A container carrying
 	// an action can hold a button, and what a click on the overlap does is not something the
@@ -123,14 +122,14 @@ func (b Board) card(task domain.Task) Component {
 		Opens(
 			Column(id+"-open", 6, nil,
 				Text(id+"-title", task.Title, TextBody),
-				Text(id+"-meta", meta, metaStyle),
+				Text(id+"-meta", CardMeta(task, b.LastBy[task.ID]), metaStyle),
 			),
 			Navigate(LinkTask+string(task.ID)),
 		),
 	}
 
 	if target, ok := next(task.Status); ok {
-		body = append(body, Button(id+"-move", "Move to "+StatusName(string(target)),
+		body = append(body, Button(id+"-move", MoveLabel(target),
 			// Both values are text: the value hierarchy does not degrade, so a shape the client does
 			// not know costs the whole screen rather than this button.
 			Perform(b.MoveURL, map[string]any{
@@ -145,41 +144,6 @@ func (b Board) card(task domain.Task) Component {
 			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
 			body...),
 	)
-}
-
-func cardMeta(task domain.Task) string {
-	meta := string(task.ID)
-	if task.Assignee != "" {
-		meta += " · " + string(task.Assignee)
-	} else {
-		meta += " · unassigned"
-	}
-	if task.Due != "" {
-		meta += " · due " + day(task.Due)
-	}
-	return meta
-}
-
-// emptyColumn is one line and no call to action. Four columns empty on a Monday morning would be
-// four invitations on one screen, and the heading already says the column is empty — the line says
-// why that is fine.
-func emptyColumn(id string, status domain.Status) Component {
-	text := "Nothing here yet."
-	if status == domain.StatusDone {
-		text = "Nothing finished yet this sprint."
-	}
-	return Text(id+"-empty", text, TextBodyMuted)
-}
-
-func upper(value string) string {
-	out := make([]rune, 0, len(value))
-	for _, r := range value {
-		if r >= 'a' && r <= 'z' {
-			r -= 32
-		}
-		out = append(out, r)
-	}
-	return string(out)
 }
 
 // EmptyWorkspace is the board screen before there is a board.
@@ -211,34 +175,33 @@ func EmptyWorkspace() Component {
 	)
 }
 
-// TaskRow is one line of a task list: the same card as on a board, without the move button. A list
-// filtered by status has no next status to name.
 // mark is the one place a list decides how a person and an agent look different.
 //
 // Shared by every list in the product on purpose. It used to be written out inside the board card
 // and nowhere else, and the row of a filtered list — same product, same promise — drew a grey
 // stripe for everyone. One copy means the next list cannot forget.
-func mark(by domain.Provenance, human string) (stripe, style, meta string) {
+//
+// It answers with tokens only. What the line beside them says is the same decision made in words,
+// and words are copy.go's — see CardMeta.
+func mark(by domain.Provenance) (stripe, style string) {
 	if by.ByAgent() {
-		return ColorAgent, TextMetaAgent, "Agent · on behalf of " + string(by.OnBehalfOf)
+		return ColorAgent, TextMetaAgent
 	}
-	return ColorDivider, TextMeta, human
+	return ColorDivider, TextMeta
 }
 
 // TaskRow is one line of a filtered list — "my tasks" and every page after it.
 func TaskRow(task domain.Task, by domain.Provenance) Component {
 	id := "row-" + string(task.ID)
-	stripe, metaStyle, meta := mark(by, cardMeta(task))
-	// The status stays on the line either way: this list crosses columns, so a row that does not
-	// say where it stands is a row the reader has to open to place.
-	meta += " · " + StatusName(string(task.Status))
+	stripe, metaStyle := mark(by)
 	return Opens(
 		Row(id, 0, nil,
 			Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
 			Column(id+"-body", 6,
 				[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
 				Text(id+"-title", task.Title, TextBody),
-				Text(id+"-meta", meta, metaStyle),
+				// The status stays on the line either way: this list crosses columns.
+				Text(id+"-meta", RowMeta(task, by), metaStyle),
 			),
 		),
 		Navigate(LinkTask+string(task.ID)),

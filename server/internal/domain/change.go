@@ -21,6 +21,22 @@ const (
 	ChangeCommentPosted ChangeKind = "comment_posted"
 )
 
+// ChangeKinds is the closed set, in the order the vocabulary was written.
+//
+// It exists so that adding a kind cannot be a one-line edit of the block above: the renderer has two
+// phrasings per kind — one for the feed, one for the task's own history — and neither the compiler
+// nor a switch with a default can say that a new kind arrived without them. The check that walks
+// this list also walks the const block, so a kind declared and left out of the list is caught too.
+var ChangeKinds = []ChangeKind{
+	ChangeTaskCreated,
+	ChangeStatusMoved,
+	ChangeAssigned,
+	ChangeDueChanged,
+	ChangeTitleEdited,
+	ChangeBodyEdited,
+	ChangeCommentPosted,
+}
+
 // Change is one entry of the journal.
 //
 // The journal is part of the core rather than an audit trail bolted on top, because three different
