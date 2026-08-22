@@ -6,7 +6,6 @@ import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.generated.generatedFormsClientRenderers
 import io.github.youndie.kompot.kompotCoreRenderers
 import io.github.youndie.kompot.kompotStandardRenderers
-import io.github.youndie.kompot.standard.ButtonComponent
 import tacku.fields.DateInput
 import java.time.LocalDate
 import kotlin.reflect.KClass
@@ -14,9 +13,8 @@ import kotlin.reflect.KClass
 /**
  * What this deployment draws that the toolkit does not.
  *
- * One entry per wire type this build declares in its profile — plus, deliberately, one replacement
- * of a renderer the toolkit already has. The extension half is held equal to the profile by a test
- * rather than by hand: a type registered with the serializer and missing here decodes and then
+ * One entry per wire type this build declares in its profile, and the two lists are held equal by a
+ * test rather than by hand: a type registered with the serializer and missing here decodes and then
  * draws as a placeholder — the same picture a client that never heard of it sees, produced by our
  * own client, which makes it the failure easiest to mistake for the protocol working as designed.
  *
@@ -28,9 +26,6 @@ fun tackuRenderers(
 ): Map<KClass<out KompotComponent>, KompotComponentRenderer<out KompotComponent>> =
     mapOf(
         DateInput::class to DateInputRenderer(today),
-        // Replaces the toolkit's own, which is the point: a map union keeps the last entry, and the
-        // design needs a square button whose whole painted area is the control.
-        ButtonComponent::class to ButtonRenderer(),
     )
 
 /**

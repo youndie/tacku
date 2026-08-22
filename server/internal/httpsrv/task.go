@@ -63,8 +63,8 @@ func taskScreen(store domain.Store) http.HandlerFunc {
 			render.Row("task-comment-actions", 0, nil,
 				render.Text("task-comment-as", "Posted as you", render.TextMeta),
 				render.Spacer("task-comment-spacer"),
-				render.Button("task-comment-post", "Post", render.SubmitForm(form.FormID()),
-					render.PaddingXY(10, 18), render.Background(render.ColorAccent)),
+				render.PrimaryButton("task-comment-post", "Post", render.SubmitForm(form.FormID()),
+					render.PaddingXY(10, 18)),
 			),
 		)
 

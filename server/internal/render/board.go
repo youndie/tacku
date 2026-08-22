@@ -83,8 +83,8 @@ func (b Board) header() Component {
 		// is the common case and this is the one for a handful at a time.
 		Button("board-select", "Move several…", Navigate(LinkBulkMove),
 			PaddingXY(12, 20)),
-		Button("board-new", "New task", Navigate(LinkNewTask),
-			PaddingXY(12, 20), Background(ColorAccent)),
+		PrimaryButton("board-new", "New task", Navigate(LinkNewTask),
+			PaddingXY(12, 20)),
 	)
 }
 
@@ -177,8 +177,8 @@ func EmptyWorkspace(person domain.MemberID) Component {
 					"Boards are created by people. Your agent can fill one with tasks, but it cannot make one.",
 					TextBodyMuted),
 				Row("board-empty-actions", 0, nil,
-					Button("board-empty-new", "New board", Navigate(LinkNewBoard),
-						PaddingXY(12, 20), Background(ColorAccent)),
+					PrimaryButton("board-empty-new", "New board", Navigate(LinkNewBoard),
+						PaddingXY(12, 20)),
 					Spacer("board-empty-spacer"),
 				),
 			),

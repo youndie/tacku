@@ -275,10 +275,6 @@
        "id": "board-new",
        "modifiers": [
         {
-         "type": "background",
-         "color": "accent"
-        },
-        {
          "type": "padding",
          "top": 12,
          "bottom": 12,
@@ -290,7 +286,8 @@
        "action": {
         "type": "navigate",
         "deeplink": "app://new-task"
-       }
+       },
+       "variant": "primary"
       }
      ],
      "spacing": 12

@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.youndie.kompot.ColorToken
 import io.github.youndie.kompot.KompotDesignSystem
+import io.github.youndie.kompot.KompotSurface
+import io.github.youndie.kompot.KompotSurfaceRoles
+import io.github.youndie.kompot.SurfaceRole
 import io.github.youndie.kompot.TypographyToken
 
 /**
@@ -52,6 +55,58 @@ class TackuDesignSystem(
     @Composable
     override fun resolveTypography(token: TypographyToken): TextStyle =
         typography[token.key] ?: MaterialTheme.typography.bodyMedium.also { warn("typography", token.key) }
+
+    /**
+     * The third key, and the one that ends a whole family of workarounds.
+     *
+     * A colour token answers a name the **server** sent; this answers a role the **client** knows —
+     * `button`, `field`, `read_only_field`, `container`, and a button's variant beside them. So the
+     * appearance of a control stays off the wire, which is the property worth protecting, while the
+     * product still gets to decide what a control looks like. Until 0.22 there was no such place at
+     * all: the shape of a Material button comes from `ButtonDefaults` rather than the theme, so
+     * zeroing every `Shapes` slot changed nothing, and the only remedy was to draw the button
+     * ourselves and lose everything the toolkit's renderer knew about the modifier chain (Q-58).
+     *
+     * All four slots are filled every time, deliberately. A surface with a container and no content
+     * colour leaves whatever text colour was already in scope on top of a background chosen without
+     * it — that is how this product drew a consent checkbox in black on near-black, and how the
+     * toolkit's own first screenshot of this feature caught the same shape of mistake.
+     */
+    @Composable
+    override fun resolveSurface(role: SurfaceRole): KompotSurface =
+        when (role.key) {
+            primaryButton -> surface(container = color("accent"), content = resolved("button_primary"))
+            "button" -> surface(container = Color.Transparent, content = resolved("button_quiet"))
+            "field" -> surface(container = color("surface_field"), content = resolved("body"))
+
+            // Its own role rather than the field's, because it exists to say "this is a value, not
+            // an input" and used to draw as the editable box beside it, which says the opposite.
+            // Flat and unbordered: a value is text on a block, not a control.
+            "read_only_field" -> surface(container = color("surface_block"), content = resolved("value"))
+
+            else -> surface(container = color("surface_block"), content = resolved("body"))
+        }
+
+    // Matched by key rather than by identity: the role for a variant is composed by the toolkit, so
+    // asking it for the key is the only way to be sure of the one we answer to.
+    private val primaryButton = KompotSurfaceRoles.button(VARIANT_PRIMARY).key
+
+    /**
+     * Square, and never outlined.
+     *
+     * Both come from the same line of the design: no rounding, no borders, no shadows. The outline
+     * is transparent rather than absent because the slot exists; leaving it to a default would be
+     * the toolkit deciding a question the design has already answered.
+     */
+    private fun surface(
+        container: Color,
+        content: Color,
+    ) = KompotSurface(
+        shape = square,
+        container = container,
+        content = content,
+        outline = Color.Transparent,
+    )
 
     /**
      * The same tokens, in the shape Material asks for.
@@ -182,6 +237,9 @@ class TackuDesignSystem(
     }
 
     companion object {
+        /** The variant this server sends for the one button on a screen that is the action. */
+        const val VARIANT_PRIMARY = "primary"
+
         /** The names, which are the half the server has to agree with. */
         val colorTokens: List<String> = TackuDesignSystem().colors.keys.sorted()
 

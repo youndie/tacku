@@ -41,8 +41,8 @@ func loginForm() http.HandlerFunc {
 			email,
 			password,
 			render.Row("sign-in-actions", 0, nil,
-				render.Button("sign-in-submit", "Sign in", render.SubmitForm(form.FormID()),
-					render.PaddingXY(14, 24), render.Background(render.ColorAccent)),
+				render.PrimaryButton("sign-in-submit", "Sign in", render.SubmitForm(form.FormID()),
+					render.PaddingXY(14, 24)),
 				render.Spacer("sign-in-actions-spacer"),
 			),
 			render.Text("sign-in-note",
@@ -51,7 +51,7 @@ func loginForm() http.HandlerFunc {
 		)
 
 		screen := render.Column("screen-sign-in", 0,
-			[]render.Modifier{render.Background(render.ColorSurface)},
+			[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Background(render.ColorSurface)},
 			render.Spacer("sign-in-top"),
 			render.Row("sign-in-row", 0, nil,
 				render.Spacer("sign-in-left"),

@@ -78,10 +78,6 @@
       "id": "new-board-submit",
       "modifiers": [
        {
-        "type": "background",
-        "color": "accent"
-       },
-       {
         "type": "padding",
         "top": 14,
         "bottom": 14,
@@ -93,7 +89,8 @@
       "action": {
        "type": "submit_form",
        "formId": "new-board"
-      }
+      },
+      "variant": "primary"
      },
      {
       "type": "column",

@@ -11,7 +11,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.youndie.kompot.ColorToken
 import io.github.youndie.kompot.KompotActionHandler
 import io.github.youndie.kompot.KompotComponentRenderer
 import io.github.youndie.kompot.LocalKompotDesignSystem
@@ -64,8 +63,7 @@ class DateInputRenderer(
                     // photograph of the real form showed four pills on the one screen this client
                     // extends: the design's rule about corners applies first of all to what we add.
                     SquareButton(
-                        text = offer.label,
-                        fill = design.resolveColor(ColorToken("accent")),
+                        label = offer.label,
                         padding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
                     ) { formController.onValueChanged(component.fieldId, TextValue(offer.iso)) }
                 }

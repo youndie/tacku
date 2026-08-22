@@ -172,6 +172,7 @@ type button struct {
 	Modifiers []Modifier `json:"modifiers,omitempty"`
 	Text      string     `json:"text"`
 	Action    Action     `json:"action"`
+	Variant   string     `json:"variant,omitempty"`
 }
 
 type paginatedList struct {
@@ -223,6 +224,24 @@ func Text(id, body, style string, modifiers ...Modifier) Component {
 
 func Button(id, label string, action Action, modifiers ...Modifier) Component {
 	return button{Type: "button", ID: id, Modifiers: canonical(modifiers), Text: label, Action: action}
+}
+
+// VariantPrimary is the one button on a screen that is the action, as opposed to the way out.
+//
+// It exists on the wire from kompot 0.22 and it is content rather than theme: which button is the
+// main one is decided by whoever wrote the screen. Before it, this server said the same thing by
+// painting the button with the accent token and the client inferred emphasis from the presence of
+// a background — a guess that happened to be shared by both halves because the same person wrote
+// them. A deployment that did not share it would have drawn "Cancel" exactly like "Submit".
+const VariantPrimary = "primary"
+
+// PrimaryButton is the emphasised button. The colour is the client's business now: the variant names
+// the role and the design system answers it, so nothing about appearance travels.
+func PrimaryButton(id, label string, action Action, modifiers ...Modifier) Component {
+	return button{
+		Type: "button", ID: id, Modifiers: canonical(modifiers),
+		Text: label, Action: action, Variant: VariantPrimary,
+	}
 }
 
 // Spacer is the idiom for pushing a sibling to the edge of a row: an empty column taking the free

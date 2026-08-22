@@ -187,7 +187,7 @@
                {
                 "type": "text",
                 "id": "history-3-who",
-                "text": "anna · 19:00",
+                "text": "anna · 19:08",
                 "style": "meta"
                }
               ],
@@ -239,10 +239,6 @@
             "id": "task-comment-post",
             "modifiers": [
              {
-              "type": "background",
-              "color": "accent"
-             },
-             {
               "type": "padding",
               "top": 10,
               "bottom": 10,
@@ -254,7 +250,8 @@
             "action": {
              "type": "submit_form",
              "formId": "task-view/TAC-2"
-            }
+            },
+            "variant": "primary"
            }
           ]
          }

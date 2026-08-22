@@ -58,8 +58,8 @@ func (b BulkMove) Screen(status Component) Component {
 		status,
 		Column("bulk-move-list", 8, []Modifier{Weight(1)}, rows...),
 		Row("bulk-move-actions", 0, nil,
-			Button("bulk-move-apply", "Move selected", SubmitForm(BulkFormID),
-				PaddingXY(14, 24), Background(ColorAccent)),
+			PrimaryButton("bulk-move-apply", "Move selected", SubmitForm(BulkFormID),
+				PaddingXY(14, 24)),
 			Spacer("bulk-move-actions-spacer"),
 		),
 	)

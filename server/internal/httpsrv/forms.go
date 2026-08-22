@@ -79,8 +79,8 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 				"It may change the status and post comments on your behalf. Every action stays in the history.",
 				render.TextMeta),
 			render.Row("form-actions", 0, nil,
-				render.Button("form-submit", "Create task", render.SubmitForm(form.FormID()),
-					render.PaddingXY(14, 24), render.Background(render.ColorAccent)),
+				render.PrimaryButton("form-submit", "Create task", render.SubmitForm(form.FormID()),
+					render.PaddingXY(14, 24)),
 				render.Spacer("form-actions-spacer"),
 			),
 		)

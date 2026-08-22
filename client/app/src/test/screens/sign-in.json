@@ -32,6 +32,14 @@
    {
     "type": "background",
     "color": "surface"
+   },
+   {
+    "type": "size",
+    "width": "Fill"
+   },
+   {
+    "type": "size",
+    "height": "Fill"
    }
   ],
   "children": [
@@ -113,10 +121,6 @@
           "id": "sign-in-submit",
           "modifiers": [
            {
-            "type": "background",
-            "color": "accent"
-           },
-           {
             "type": "padding",
             "top": 14,
             "bottom": 14,
@@ -128,7 +132,8 @@
           "action": {
            "type": "submit_form",
            "formId": "sign-in"
-          }
+          },
+          "variant": "primary"
          },
          {
           "type": "column",
