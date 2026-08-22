@@ -24,6 +24,22 @@ import (
 //     task's own history does not, because the reader is already looking at it.
 const commentLimit = 120
 
+// AgentWord is the provenance signal written out, and it is the one channel that survives every way
+// of not seeing a colour.
+//
+// Three marks say "a program did this": the stripe, the colour of the byline, the word. Measured
+// rather than assumed (scripts/token_contrast.py): the stripe holds up — 4.9:1 against the human
+// placeholder in the dark theme and 3.8:1 in the light one, against a threshold of 3:1, and a wide
+// colour difference under both dichromat simulations. The colour of the byline does not hold up on
+// its own — `meta_agent` against `meta` is 1.23:1 and 1.04:1, so on a greyscale screen the two
+// bylines are the same grey; it survives protanopia and deuteranopia only because orange against
+// grey lies on the blue-yellow axis, which those two leave alone.
+//
+// The word survives all of it and costs nothing. It is a constant rather than a literal in two
+// files so that the check which guards it (TestNoAgentStripeIsTheOnlyCarrierOfItsMeaning) is
+// looking at what the screens actually send.
+const AgentWord = "Agent"
+
 // Sentence is the feed line: the event, naming the task.
 func Sentence(change domain.Change) string {
 	switch change.Kind {

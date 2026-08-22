@@ -127,7 +127,7 @@ func ChangeRow(change domain.Change) Component {
 func Author(change domain.Change) string {
 	at := change.CreatedAt.Format("15:04")
 	if change.By.ByAgent() {
-		return fmt.Sprintf("Agent · on behalf of %s · %s", change.By.OnBehalfOf, at)
+		return fmt.Sprintf("%s · on behalf of %s · %s", AgentWord, change.By.OnBehalfOf, at)
 	}
 	return fmt.Sprintf("%s · %s", change.By.Executor.Member, at)
 }

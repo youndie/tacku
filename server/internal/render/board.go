@@ -220,7 +220,7 @@ func EmptyWorkspace() Component {
 // stripe for everyone. One copy means the next list cannot forget.
 func mark(by domain.Provenance, human string) (stripe, style, meta string) {
 	if by.ByAgent() {
-		return ColorAgent, TextMetaAgent, "Agent · on behalf of " + string(by.OnBehalfOf)
+		return ColorAgent, TextMetaAgent, AgentWord + " · on behalf of " + string(by.OnBehalfOf)
 	}
 	return ColorDivider, TextMeta, human
 }
