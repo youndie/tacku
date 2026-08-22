@@ -41,7 +41,10 @@ class ExtensionRegistryTest {
 
         // Targets counted rather than assumed: a walk that finds nothing passes in silence, and a
         // profile read from the wrong place, or read wrongly, would find nothing.
-        assertTrue(components.size >= 2, "the profile declares ${components.size} component extensions")
+        // One, and it was two for a release. `multiline_input` was retired when kompot 0.21 put the
+        // cheap shape of the same addition on `text_input`, so the floor moved down rather than the
+        // check being loosened — the number says how many types this build actually adds.
+        assertTrue(components.isNotEmpty(), "the profile declares ${components.size} component extensions")
         assertTrue(fields.isNotEmpty(), "the profile declares no field extensions")
 
         for (name in fields) {

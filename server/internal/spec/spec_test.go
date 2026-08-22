@@ -65,7 +65,10 @@ func TestProfileCarriesEveryHierarchy(t *testing.T) {
 	// for — what THIS BUILD serves, not what the protocol defines. Two of the three are components,
 	// which is the cheap half of extending: an unfamiliar one costs a node rather than a response.
 	want := map[string]int{
-		"KompotComponent":     17,
+		// Sixteen. It was seventeen while this deployment carried a component of its own for
+		// multiline text; kompot 0.21 put the same thing on `text_input` as a flag, so the type
+		// went away and the count came down with it — a number that moves when a decision moves.
+		"KompotComponent":     16,
 		"KompotAction":        11,
 		"FormFieldDefinition": 6,
 		"ValidationRule":      4,

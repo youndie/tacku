@@ -338,6 +338,13 @@ func series(names []string) string {
 	return strings.Join(names[:len(names)-1], ", ") + " and " + names[len(names)-1]
 }
 
+// WizardFinishLabel is the word on the button that ends the only flow this product has.
+//
+// It lives here because it is a string on a screen, and this file is where those live. It says what
+// the step does rather than that the step is the last one: "Finish" is true of every flow ever
+// written and tells a person nothing about what is about to happen.
+func WizardFinishLabel() string { return "Create the task" }
+
 // TaskMeta is the line under a task's title.
 func TaskMeta(task domain.Task) string {
 	return fmt.Sprintf("%s · created %s", task.ID, task.CreatedAt.Format(dayLayout))

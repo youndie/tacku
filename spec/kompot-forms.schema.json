@@ -339,6 +339,9 @@
         "uppercase": {
           "type": "boolean"
         },
+        "multiline": {
+          "type": "boolean"
+        },
         "secret": {
           "type": "boolean"
         }

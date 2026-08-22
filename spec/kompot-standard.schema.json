@@ -335,6 +335,15 @@
               "type": "null"
             }
           ]
+        },
+        "maxLines": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "ellipsis": {
+          "type": "boolean"
         }
       },
       "required": [

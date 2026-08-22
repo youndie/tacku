@@ -1,12 +1,10 @@
 package tacku.app
 
-import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.kompotEngineSerializersModule
 import io.github.youndie.kompot.kompotJson
 import io.github.youndie.kompot.wizard.WizardScreenComponent
 import io.github.youndie.kompot.wizard.kompotWizardSerializersModule
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.descriptors.elementNames
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlin.test.Test
@@ -32,78 +30,37 @@ class WizardChromeTest {
         )
 
     /**
-     * The chrome of a scenario carries no words from the server.
+     * The published wizard screen names its finish button, and nothing else.
      *
-     * Eight elements, and every one of them is either an identifier or a number for the progress
-     * indicator. Every other control the server places on a screen carries its own text —
-     * `button.text`, `text_input.label`, `select_option.label` — because the server placed it. The
-     * chrome is the one thing the client places on its own, and it is the one thing the server
-     * cannot name.
+     * Eight of its nine elements are identifiers or numbers for the progress indicator. Every other
+     * control the server places carries its own text — `button.text`, `text_input.label`,
+     * `select_option.label` — because the server placed it; the chrome is the one thing the client
+     * places on its own, and until kompot 0.21 it was the one thing the server could not name.
      *
-     * The count is asserted first and on purpose: without it a renamed class would make the second
-     * assertion pass over an empty list and report that nothing resembling a label was found.
+     * This asserted the absence and was written to fail the day the field appeared. It did. What
+     * replaced it keeps the same two-sided shape: the count is checked first, so a renamed class
+     * cannot make the second assertion pass over an empty list.
      */
     @OptIn(ExperimentalSerializationApi::class)
     @Test
-    fun `the published wizard screen has no field for the label of its finish button`() {
-        val elements =
-            WizardScreenComponent
-                .serializer()
-                .descriptor
-                .elementNames
-                .toList()
+    fun `the published wizard screen names its finish button and nothing else`() {
+        val descriptor = WizardScreenComponent.serializer().descriptor
+        val names = (0 until descriptor.elementsCount).map { descriptor.getElementName(it) }
 
-        assertEquals(
-            listOf("id", "modifiers", "formId", "stepId", "stepIndex", "totalSteps", "canGoBack", "content"),
-            elements,
-            "the shape of wizard_screen moved; B-31 is about what this list does not contain",
-        )
-        val words = elements.filter { name -> WORDS.any { name.contains(it, ignoreCase = true) } }
+        assertEquals(9, names.size, "the shape of wizard_screen moved again: $names")
         assertTrue(
-            words.isEmpty(),
-            "wizard_screen now carries $words — the gap B-31 records has been closed upstream, so read it again",
+            names.contains("finishLabel"),
+            "wizard_screen carries $names and no finishLabel — the field this product relies on is gone",
         )
-    }
 
-    /**
-     * What it costs to send the label anyway, as an extra key.
-     *
-     * The schema tolerates one — `additionalProperties: true` on every variant — so a validator
-     * accepts the body, and that is what makes the route look available. This is the other end of
-     * it: the body decodes, nothing fails, and the label is simply not there afterwards. Tolerated
-     * and unreadable are not the same answer, and only one of them is visible from the schema.
-     *
-     * Re-encoding rather than reading a property is the only way to ask the question at all: there
-     * is no property to read, which is the point.
-     */
-    @Test
-    fun `an extra label on a wizard screen survives decoding and arrives nowhere`() {
-        val decoded = json.decodeFromString<KompotComponent>(STEP_WITH_A_LABEL)
-
-        assertTrue(decoded is WizardScreenComponent, "the step decoded as ${decoded::class.simpleName}")
-        val again = json.encodeToString<KompotComponent>(decoded)
-        assertTrue(
-            !again.contains("submitLabel") && !again.contains("Delete the board"),
-            "the extra key came back out, so this deployment could carry it after all: $again",
-        )
-    }
-
-    private companion object {
-        /** Every way the toolkit names words elsewhere, so that a field under any of them counts. */
-        val WORDS = listOf("label", "title", "text", "caption")
-
-        val STEP_WITH_A_LABEL = """
-            {
-              "type": "wizard_screen",
-              "id": "step-confirm",
-              "formId": "delete-board",
-              "stepId": "confirm",
-              "stepIndex": 1,
-              "totalSteps": 2,
-              "canGoBack": true,
-              "submitLabel": "Delete the board",
-              "content": {"type": "text", "id": "warning", "text": "This cannot be undone."}
+        val worded =
+            names.filter { name ->
+                listOf("label", "title", "text", "caption").any { name.lowercase().contains(it) }
             }
-        """
+        assertEquals(
+            listOf("finishLabel"),
+            worded,
+            "the chrome carries $worded: a word the server does not fill is a word somebody else chose",
+        )
     }
 }

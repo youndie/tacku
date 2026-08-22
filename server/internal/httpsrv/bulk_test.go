@@ -578,7 +578,7 @@ func TestARepeatedRefusalOfABulkMoveSaysTheSameThingAndStillMovesNothing(t *test
 // on its merits counts as an outcome to replay — and the two readings differ in what a person meets
 // after correcting the form: either the corrected submission goes through, or it collides with the
 // refusal recorded under the same key and is answered 409.
-func TestAKeyIsNotSpentByARefusalAndCarriesTheCorrectedSubmission(t *testing.T) {
+func TestARefusalSpendsTheKeyAndTheCorrectedSelectionBringsANewOne(t *testing.T) {
 	r := newResource(t)
 	r.fill(t, 3)
 	token := r.reader(t)
@@ -589,11 +589,17 @@ func TestAKeyIsNotSpentByARefusalAndCarriesTheCorrectedSubmission(t *testing.T) 
 		t.Fatalf("a selection with nothing ticked answered %d, want 422", refused.StatusCode)
 	}
 
-	corrected := r.post(t, bulkSubmit, token, key, bulkBody("done", map[string]bool{"TAC-2": true}))
+	// The same key with a different body is a conflict. This asserted 200 until §16.5 was read the
+	// other way round: the client rule is a fresh key per attempt whatever the outcome, so a person
+	// who fixes the form is not left with nothing to send — they are sending a new attempt.
+	reused := r.post(t, bulkSubmit, token, key, bulkBody("done", map[string]bool{"TAC-2": true}))
+	if reused.StatusCode != http.StatusConflict {
+		t.Fatalf("the corrected selection under the spent key answered %d, want 409", reused.StatusCode)
+	}
+
+	corrected := r.post(t, bulkSubmit, token, key+"-2", bulkBody("done", map[string]bool{"TAC-2": true}))
 	if corrected.StatusCode != http.StatusOK {
-		t.Fatalf("the corrected submission under the same key answered %d, want 200: a refusal that "+
-			"consumed the key leaves a person who fixed the form nothing to send it with",
-			corrected.StatusCode)
+		t.Fatalf("the corrected submission with a fresh key answered %d, want 200", corrected.StatusCode)
 	}
 	if got := r.statusOf(t, "TAC-2"); got != domain.StatusDone {
 		t.Errorf("TAC-2 stands in %q after the corrected submission answered 200", got)

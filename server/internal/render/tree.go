@@ -97,6 +97,8 @@ type text struct {
 	Modifiers []Modifier `json:"modifiers,omitempty"`
 	Text      string     `json:"text"`
 	Style     string     `json:"style,omitempty"`
+	MaxLines  *int       `json:"maxLines,omitempty"`
+	Ellipsis  bool       `json:"ellipsis,omitempty"`
 }
 
 type button struct {
@@ -252,6 +254,7 @@ type textInput struct {
 	Placeholder string     `json:"placeholder,omitempty"`
 	Mask        string     `json:"mask,omitempty"`
 	Secret      bool       `json:"secret,omitempty"`
+	Multiline   bool       `json:"multiline,omitempty"`
 }
 
 type selectInput struct {
@@ -286,6 +289,24 @@ func TextInput(id, fieldID, label, placeholder, mask string, secret bool) Compon
 	return textInput{
 		Type: "text_input", ID: id, FieldID: fieldID, Label: label,
 		Placeholder: placeholder, Mask: mask, Secret: secret,
+	}
+}
+
+// Multiline is a text input that shows more than one line of what is typed into it.
+//
+// It was a wire type of this deployment's own for exactly one release. The type existed only
+// because the cheap shape of the same addition — an optional flag on `text_input` — belongs to
+// whoever owns the type, and asking for it is what closed the gap: kompot 0.21 carries `multiline`,
+// so a whole component of ours would now be a second way to say something the vocabulary says.
+//
+// What that buys is not tidiness. An unfamiliar component costs a placeholder in a form whose field
+// stays declared and unfillable (§9.2); an unfamiliar *flag* costs nothing at all — §3 says a reader
+// ignores what it does not know, so a client released before this draws an ordinary one-line box
+// with the same value in it.
+func Multiline(id, fieldID, label, placeholder string) Component {
+	return textInput{
+		Type: "text_input", ID: id, FieldID: fieldID, Label: label,
+		Placeholder: placeholder, Multiline: true,
 	}
 }
 
@@ -375,17 +396,6 @@ func DateInput(id, fieldID, label, hint string, modifiers ...Modifier) Component
 	}
 }
 
-type multilineInput struct {
-	Type        string     `json:"type"`
-	ID          string     `json:"id"`
-	Modifiers   []Modifier `json:"modifiers,omitempty"`
-	FieldID     string     `json:"fieldId"`
-	Label       string     `json:"label"`
-	Placeholder string     `json:"placeholder,omitempty"`
-	Hint        string     `json:"hint,omitempty"`
-	MinLines    int        `json:"minLines"`
-}
-
 // DefaultLines is how tall a box for prose is when the caller has no opinion.
 //
 // Lines rather than dp, and that is the one measurement the protocol has no unit for: §5.3 gives it
@@ -394,32 +404,17 @@ type multilineInput struct {
 // tall — geometry changed, behaviour unchanged.
 const DefaultLines = 4
 
-// MultilineInput is the tree half of the deployment's own box for prose — see
-// forms.Builder.MultilineInput.
-//
-// `minLines` is written out even when it equals the client's own default, never omitted. Two
-// defaults for one number is how the wire and the screen come to disagree in silence, and the
-// server owns every other decision about this screen.
-func MultilineInput(id, fieldID, label, placeholder, hint string, lines int, modifiers ...Modifier) Component {
-	if lines < 1 {
-		lines = DefaultLines
-	}
-	return multilineInput{
-		Type: "multiline_input", ID: id, Modifiers: modifiers,
-		FieldID: fieldID, Label: label, Placeholder: placeholder, Hint: hint, MinLines: lines,
-	}
-}
-
 type wizardScreen struct {
-	Type       string     `json:"type"`
-	ID         string     `json:"id"`
-	Modifiers  []Modifier `json:"modifiers,omitempty"`
-	FormID     string     `json:"formId"`
-	StepID     string     `json:"stepId"`
-	StepIndex  int        `json:"stepIndex"`
-	TotalSteps *int       `json:"totalSteps"`
-	CanGoBack  bool       `json:"canGoBack"`
-	Content    Component  `json:"content"`
+	Type        string     `json:"type"`
+	ID          string     `json:"id"`
+	Modifiers   []Modifier `json:"modifiers,omitempty"`
+	FormID      string     `json:"formId"`
+	StepID      string     `json:"stepId"`
+	StepIndex   int        `json:"stepIndex"`
+	TotalSteps  *int       `json:"totalSteps"`
+	CanGoBack   bool       `json:"canGoBack"`
+	Content     Component  `json:"content"`
+	FinishLabel string     `json:"finishLabel,omitempty"`
 }
 
 // WizardScreen wraps one step of a multi-step flow.
@@ -432,11 +427,18 @@ type wizardScreen struct {
 // totalSteps is a pointer because null is a value the protocol gives a meaning to: under branching
 // the length of a particular walk is not known in advance, and the client then shows the current
 // step alone (§11.2). Omitting the field and sending null are not the same statement.
-func WizardScreen(id, formID, stepID string, stepIndex int, totalSteps *int, canGoBack bool, content Component) Component {
+// WizardScreen wraps one step, and names its own finishing button.
+//
+// The chrome — Next, Back, Finish — is drawn by the client, so until kompot 0.21 the last button of
+// every flow in every build read the same word. That is tolerable while the last step creates
+// something and not tolerable when it is irreversible: "Finish" under a step that deletes a board
+// looks harmless, which is the cost. `finishLabel` was asked for on those grounds and arrived; an
+// empty one leaves the client's own wording, so a reader released earlier is not affected.
+func WizardScreen(id, formID, stepID string, stepIndex int, totalSteps *int, canGoBack bool, finishLabel string, content Component) Component {
 	return wizardScreen{
 		Type: "wizard_screen", ID: id,
 		FormID: formID, StepID: stepID, StepIndex: stepIndex, TotalSteps: totalSteps,
-		CanGoBack: canGoBack, Content: content,
+		CanGoBack: canGoBack, Content: content, FinishLabel: finishLabel,
 	}
 }
 

@@ -133,6 +133,12 @@
         },
         "content": {
           "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        },
+        "finishLabel": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -157,6 +163,12 @@
           "additionalProperties": {
             "$ref": "form-core.schema.json#/$defs/FieldValue"
           }
+        },
+        "wizardId": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [

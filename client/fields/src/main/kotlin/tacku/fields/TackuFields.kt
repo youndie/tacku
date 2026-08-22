@@ -17,7 +17,6 @@ import kotlinx.serialization.modules.subclass
  *
  * The two entries cost different things when they are missing, and the difference is the point of
  * keeping them side by side. Without `date_field` a form is not parsed at all (§2.2). Without
- * `multiline_input` the same form parses and one box turns into a placeholder (§2.1) — which is why
  * the multiline pair leaves the definition as `text_field` and touches nothing but the hierarchy
  * that survives.
  */
@@ -25,7 +24,6 @@ val tackuFieldsSerializersModule: SerializersModule =
     SerializersModule {
         polymorphic(KompotComponent::class) {
             subclass(DateInput::class, DateInput.serializer())
-            subclass(MultilineInput::class, MultilineInput.serializer())
         }
         polymorphic(FormFieldDefinition::class) {
             subclass(DateField::class, DateField.serializer())

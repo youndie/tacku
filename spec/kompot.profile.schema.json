@@ -183,8 +183,7 @@
       "x-kompot-open": false,
       "x-kompot-degrades": true,
       "x-kompot-extensions": [
-        "date_input",
-        "multiline_input"
+        "date_input"
       ],
       "oneOf": [
         {
@@ -254,8 +253,7 @@
           "text": "kompot-standard.schema.json#/$defs/KompotComponentText",
           "text_input": "kompot-forms.schema.json#/$defs/KompotComponentTextInput",
           "wizard_screen": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen",
-          "date_input": "#/$defs/KompotComponentExtension",
-          "multiline_input": "#/$defs/KompotComponentExtension"
+          "date_input": "#/$defs/KompotComponentExtension"
         }
       }
     },
@@ -266,8 +264,7 @@
       "properties": {
         "type": {
           "enum": [
-            "date_input",
-            "multiline_input"
+            "date_input"
           ]
         }
       },

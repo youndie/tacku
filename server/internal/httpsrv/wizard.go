@@ -19,13 +19,17 @@ const (
 	kindWizardResume = "wizard_resume"
 )
 
-// WizardHeader carries the identifier of a scenario.
+// WizardHeader carries the identifier of a scenario back to its start.
 //
-// §16.7 leaves the name to the application and declares the header in one direction only — the
-// response of wizard_start. The request side is not described anywhere, and the resume envelope has
-// no field for it either, so the same header is what the caller sends back (Q-50). Exported because
-// the OpenAPI description has to name it: that description is the only place a reader can learn a
-// name the protocol declined to fix.
+// It is now one direction only, and the other direction is no longer ours. §16.7 declared this
+// header for the answer of `wizard_start`; the request side was described nowhere and the resume
+// envelope had no field for it, so a header of our own naming carried it back (Q-50) — a private
+// convention a client written against the specification could not have guessed.
+//
+// kompot 0.21 put it in the envelope: `WizardResumeRequest.wizardId`. A field and not a header,
+// because the type belongs to the toolkit — the schema describes it and the conformance kit can
+// check it, neither of which is true of a header. The header stays where the specification put it
+// and no longer carries anything back.
 const WizardHeader = "X-Tacku-Scenario"
 
 const (
@@ -178,6 +182,8 @@ func wizardStart(store domain.Store, scenarios *wizard.Store) http.HandlerFunc {
 // in. It names neither the scenario nor the step — the first travels in a header, the second the
 // server is required to remember (§13.1).
 type wizardResumeRequest struct {
+	// Named by the protocol as of 0.21 and read from here rather than from a header of ours.
+	WizardID   string `json:"wizardId"`
 	Transition struct {
 		Type   string `json:"type"`
 		StepID string `json:"stepId"`
@@ -204,7 +210,13 @@ func wizardResume(store domain.Store, scenarios *wizard.Store) http.HandlerFunc 
 			return
 		}
 
-		id := wizard.ID(r.Header.Get(WizardHeader))
+		// From the envelope. A header is still accepted for one release so that a client built
+		// against the previous shape is not broken by this server moving first — §15 orders the
+		// rollout, and this is the same rule seen from the serving side.
+		id := wizard.ID(request.WizardID)
+		if id == "" {
+			id = wizard.ID(r.Header.Get(WizardHeader))
+		}
 		state, err := scenarios.Resume(id, person)
 		if err != nil {
 			// The one answer to an expired scenario, one that never existed and one belonging to
@@ -330,7 +342,7 @@ func wizardScreenOf(step wizardStep, index, total int, canGoBack bool, content r
 	// §11.3: the identifier here and the identifier of the content's schema must agree — it is what
 	// the client builds its own transitions from.
 	return render.WizardScreen("wizard-"+step.id, step.formID, step.id,
-		index, render.Steps(total), canGoBack, content)
+		index, render.Steps(total), canGoBack, render.WizardFinishLabel(), content)
 }
 
 // wizardMerge writes a step's answers over what was held for that step.

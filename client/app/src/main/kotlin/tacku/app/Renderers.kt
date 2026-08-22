@@ -3,7 +3,6 @@ package tacku.app
 import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.KompotComponentRenderer
 import tacku.fields.DateInput
-import tacku.fields.MultilineInput
 import java.time.LocalDate
 import kotlin.reflect.KClass
 
@@ -23,5 +22,4 @@ fun tackuRenderers(
 ): Map<KClass<out KompotComponent>, KompotComponentRenderer<out KompotComponent>> =
     mapOf(
         DateInput::class to DateInputRenderer(today),
-        MultilineInput::class to MultilineInputRenderer(),
     )

@@ -15,35 +15,39 @@ import (
 // spellings rather than of properties, so that a field named under any of them counts as words.
 var words = []string{"label", "title", "text", "caption"}
 
-// The chrome of a scenario is the one thing on a screen the server cannot put words on (B-31).
+// The chrome of a scenario carries one word from the server, and exactly one (B-31).
 //
 // Next, Back and Finish are drawn by the client out of `stepIndex`, `totalSteps` and `canGoBack`,
-// and the finish button therefore reads the same in every scenario. That is tolerable under "New
-// task" and not under a step that deletes a board — but there is no field to say so, and this test
-// is where that claim stops being prose.
+// so until kompot 0.21 the finishing button read the same in every scenario of every build —
+// tolerable under "New task" and not under a step that deletes a board. `finishLabel` was asked for
+// on those grounds and arrived.
 //
-// It is written to go red from either side. A release that gives `wizard_screen` a label closes the
-// gap, and the test then says so rather than staying quietly true; a rename of the component makes
-// the lookup fail rather than find nothing.
-func TestTheChromeOfAScenarioCarriesNoWordsFromTheServer(t *testing.T) {
+// The previous version of this test asserted the opposite and was written to go red from either
+// side: it named the eight properties the type had and failed the day a ninth appeared, with a
+// message saying the gap was closed. It fired. This is what replaced it, and the shape of the check
+// is the same — it fails if the field disappears and it fails if the chrome grows words the server
+// is not using.
+func TestTheScenarioNamesItsOwnFinishButton(t *testing.T) {
 	s := load(t)
 
 	properties := propertiesOf(t, s, "KompotComponent", "wizard_screen")
 
-	// The eight of the published type plus the discriminator, which travels but is not data.
-	expected := []string{"canGoBack", "content", "formId", "id", "modifiers", "stepId", "stepIndex", "totalSteps", "type"}
-	if !slices.Equal(properties, expected) {
-		// Reported rather than fatal, so that the sharper message below is still reached: a shape
-		// that moved is worth knowing, and a shape that moved by acquiring a label is the answer.
-		t.Errorf("wizard_screen carries %v, want %v — the shape moved, so read B-31 again", properties, expected)
+	if !slices.Contains(properties, "finishLabel") {
+		t.Fatalf("wizard_screen carries %v and no finishLabel — the field this product relies on is gone", properties)
 	}
 
+	// Only the finishing one. Back and Next move rather than commit, and the cost of their wording
+	// is not the same — a label for each would be three decisions where one was needed.
+	named := []string{}
 	for _, property := range properties {
 		for _, word := range words {
 			if strings.Contains(strings.ToLower(property), word) {
-				t.Errorf("wizard_screen now carries %q: the server can name its finish button, and B-31 is answered", property)
+				named = append(named, property)
 			}
 		}
+	}
+	if !slices.Equal(named, []string{"finishLabel"}) {
+		t.Errorf("the chrome carries %v, want only finishLabel — a word the server does not fill is a word somebody else chose", named)
 	}
 }
 

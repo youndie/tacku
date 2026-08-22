@@ -34,11 +34,15 @@ func boxes(node any, wireType string, into map[string]map[string]any) {
 // The two texts a person writes in a tracker are boxes they can see what they wrote in — and the
 // schema half of both is an ordinary `text_field`.
 //
-// That asymmetry is the design of the extension rather than an accident of it. The component
-// hierarchy degrades (§2.1), so a client that never heard of `multiline_input` loses a box; the
-// field hierarchy does not (§2.2), and a type of our own there would have cost the whole response.
-// Which is why this check looks at both halves: the same field would pass a check that only looked
-// at the tree even if the definition had quietly become a type of ours.
+// It is an ordinary `text_input` carrying `multiline` now, and was a wire type of this deployment's
+// own for one release. The type existed only because the cheap shape belonged to whoever owns
+// `text_input`; asking for it is what removed the need (kompot#28), and the price went with it — an
+// unfamiliar component costs a placeholder in a form whose field stays declared and unfillable,
+// an unfamiliar flag costs nothing at all (§3).
+//
+// This still looks at both halves. The definition must stay a plain `text_field`: the field
+// hierarchy does not degrade (§2.2), and a type of our own there would cost the whole response —
+// so a check that only looked at the tree would pass even if the definition had quietly changed.
 func TestBothTextsAPersonWritesAreMultilineOverAnOrdinaryTextField(t *testing.T) {
 	r := newResource(t)
 	r.fill(t, 3)
@@ -66,16 +70,17 @@ func TestBothTextsAPersonWritesAreMultilineOverAnOrdinaryTextField(t *testing.T)
 		}
 
 		found := map[string]map[string]any{}
-		boxes(form.Screen, "multiline_input", found)
+		boxes(form.Screen, "text_input", found)
 		box, ok := found[c.fieldID]
 		if !ok {
 			t.Errorf("%s draws no multiline box for %q; it has %d of them", c.path, c.fieldID, len(found))
 			continue
 		}
-		// Written out rather than left to the client's default: two defaults for one number is how
-		// the wire and the screen come to disagree in silence.
-		if lines, ok := box["minLines"].(float64); !ok || lines < 2 {
-			t.Errorf("%s: %q asks for %v lines, which is not a box for prose", c.path, c.fieldID, box["minLines"])
+		// A flag rather than a line count. The toolkit's field says the box is multiline and leaves
+		// the height to the renderer, which is the right split: how many lines fit is a question
+		// about a screen the server has never seen.
+		if multiline, _ := box["multiline"].(bool); !multiline {
+			t.Errorf("%s: %q is drawn as an ordinary one-line box", c.path, c.fieldID)
 		}
 
 		declared := ""

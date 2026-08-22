@@ -442,3 +442,53 @@ func (r *resource) tasks(t *testing.T) []domain.Task {
 	}
 	return all
 }
+
+// The scenario identifier travels in the envelope, which is where the protocol put it.
+//
+// It used to travel in a header of this deployment's own naming, because §16.7 declared one for the
+// answer of wizard_start and described nothing for the way back — a private convention a client
+// written against the specification could not have guessed, recorded as a question and answered by
+// kompot 0.21 with `WizardResumeRequest.wizardId`.
+//
+// The header is still accepted, and that is deliberate rather than lazy: this server moved first,
+// and §15 orders a rollout so that readers are not broken by writers. Both paths are checked, so
+// the day the header is dropped it is dropped by deleting a test rather than by discovering a
+// client that stopped working.
+func TestTheScenarioIdentifierTravelsInTheEnvelope(t *testing.T) {
+	r := newResource(t)
+	r.fill(t, 1)
+	token := r.reader(t)
+
+	for _, one := range []struct {
+		name     string
+		inBody   bool
+		inHeader bool
+	}{
+		{name: "envelope", inBody: true},
+		{name: "header, for one release", inHeader: true},
+	} {
+		started, _ := r.get(t, wizardStart, token, "")
+		scenario := started.Header.Get(httpsrv.WizardHeader)
+		if scenario == "" {
+			t.Fatalf("%s: nothing was started, so this check has nothing to resume", one.name)
+		}
+
+		body := nextWith(basicsValues)
+		if one.inBody {
+			body = `{"wizardId":"` + scenario + `",` + body[1:]
+		}
+
+		headers := map[string]string{}
+		if one.inHeader {
+			headers[httpsrv.WizardHeader] = scenario
+		}
+
+		headers["Idempotency-Key"] = "step-" + one.name
+		response := r.requestWith(t, http.MethodPost, wizardResume, token, body, headers)
+		_ = response.Body.Close()
+		if response.StatusCode != http.StatusOK {
+			t.Errorf("%s: the transition answered %d, so the identifier did not arrive",
+				one.name, response.StatusCode)
+		}
+	}
+}

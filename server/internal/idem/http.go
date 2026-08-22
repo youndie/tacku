@@ -80,11 +80,18 @@ func Middleware(attempts domain.Attempts, next http.Handler) http.Handler {
 		recorder := &recording{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(recorder, r)
 
-		// Only a success is remembered. A refusal recorded would mean a request corrected after one
-		// could never succeed under the key it was refused with.
-		if recorder.status < 200 || recorder.status > 299 {
-			return
-		}
+		// Every outcome is remembered, refusals included, and this used to be the opposite.
+		//
+		// The reasoning for remembering only a success was that a request corrected after a refusal
+		// could never succeed under the key it was refused with. §16.5 answers that in the rule it
+		// already had for the client: a fresh key per attempt regardless of outcome. A corrected
+		// request is a new attempt and carries a new key, so remembering the refusal costs nothing.
+		//
+		// What it buys is the hole this harness reported twice as an idempotency defect: a first
+		// attempt refused on its merits recorded nothing, so the retry with a different body found
+		// nothing to compare against and was refused again instead of answering 409. Both times the
+		// finding described the stand and not the server — and both times it was the missing half of
+		// this rule that made the two indistinguishable.
 
 		outcome, err := json.Marshal(response{Status: recorder.status, Body: recorder.body.Bytes()})
 		if err != nil {
