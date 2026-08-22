@@ -23,12 +23,12 @@ func (t Task) Screen(comment, status Component) Component {
 	return Column("screen-task", 24,
 		[]Modifier{Padding(32), Background(ColorSurface)},
 		Row("task-back-row", 0, nil,
-			Button("task-back", "← "+string(t.Task.Board), Navigate(LinkBoard), PaddingXY(12, 20)),
+			Button("task-back", BackLabel(t.Task.Board), Navigate(LinkBoard), PaddingXY(12, 20)),
 			Spacer("task-back-spacer"),
 		),
 		Column("task-heading", 6, nil,
 			Text("task-title", t.Task.Title, TextDisplay),
-			Text("task-meta", t.meta(), TextMeta),
+			Text("task-meta", TaskMeta(t.Task), TextMeta),
 		),
 		Row("task-body", 32, []Modifier{Weight(1)},
 			t.left(comment),
@@ -37,15 +37,11 @@ func (t Task) Screen(comment, status Component) Component {
 	)
 }
 
-func (t Task) meta() string {
-	return fmt.Sprintf("%s · created %s", t.Task.ID, day(t.Task.CreatedAt.Format(domain.DuePattern)))
-}
-
 func (t Task) left(comment Component) Component {
 	children := []Component{
 		Column("task-description", 8, nil,
 			Text("task-description-label", "DESCRIPTION", TextSubtitle),
-			Text("task-description-body", t.description(), TextBody),
+			Text("task-description-body", DescriptionValue(t.Task.Body), TextBody),
 		),
 		Column("task-activity", 8, nil,
 			Text("task-activity-label", "ACTIVITY", TextSubtitle),
@@ -55,15 +51,6 @@ func (t Task) left(comment Component) Component {
 		Spacer("task-left-tail"),
 	}
 	return Column("task-left", 24, []Modifier{Weight(1)}, children...)
-}
-
-func (t Task) description() string {
-	if t.Task.Body == "" {
-		// Written rather than left blank: an empty area says nothing about whether a description is
-		// missing or merely short.
-		return "No description yet."
-	}
-	return t.Task.Body
 }
 
 // activity is where HistoryLine finally gets called.
@@ -114,21 +101,14 @@ func (t Task) sidebar(status Component) Component {
 		statusBackground = ColorDanger
 	}
 
-	assignee := string(t.Task.Assignee)
-	if assignee == "" {
-		assignee = "Unassigned"
-	}
-
-	due := "No due date"
-	if t.Task.Due != "" {
-		due = day(t.Task.Due)
-	}
-
 	return Column("task-sidebar", 12,
 		[]Modifier{WidthDp(320)},
+		// The labels are this screen's; the values are copy.go's, including the stand-ins it shows
+		// where there is nothing to render — a card and this sidebar used to spell one of them two
+		// different ways.
 		field("task-status", "Status", StatusName(string(t.Task.Status)), "", statusBackground),
-		field("task-assignee", "Assignee", assignee, "", ColorSurfaceField),
-		field("task-due", "Due", due, "", ColorSurfaceField),
+		field("task-assignee", "Assignee", AssigneeValue(t.Task.Assignee), "", ColorSurfaceField),
+		field("task-due", "Due", DueValue(t.Task.Due), "", ColorSurfaceField),
 		field("task-board", "Board", string(t.Task.Board), "", ColorSurfaceField),
 		status,
 		Spacer("task-sidebar-tail"),

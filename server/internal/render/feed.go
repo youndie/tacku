@@ -44,11 +44,13 @@ func (f Feed) navigation() Component {
 	return Column("nav", 4,
 		[]Modifier{WidthDp(240), Background(ColorSurfaceBlock), PaddingXY(20, 0)},
 		Text("nav-brand", "tacku", TextTitle, PaddingXY(0, 20)),
+		// The captions come from the graph, which is where a destination is named. Spelled here as
+		// well, they had already parted: the graph said "Board" and the button beside it "Boards".
 		Column("nav-current", 0, []Modifier{Background(ColorSurfaceSelected)},
-			Button("nav-catchup", "Catch-up", Navigate(LinkCatchUp), PaddingXY(12, 20)),
+			Button("nav-catchup", RouteTitle(LinkCatchUp), Navigate(LinkCatchUp), PaddingXY(12, 20)),
 		),
-		Button("nav-boards", "Boards", Navigate(LinkBoard), PaddingXY(12, 20)),
-		Button("nav-mine", "My tasks", Navigate(LinkMyTasks), PaddingXY(12, 20)),
+		Button("nav-boards", RouteTitle(LinkBoard), Navigate(LinkBoard), PaddingXY(12, 20)),
+		Button("nav-mine", RouteTitle(LinkMyTasks), Navigate(LinkMyTasks), PaddingXY(12, 20)),
 		Spacer("nav-spacer"),
 		Text("nav-person", string(f.Person), TextMeta, PaddingXY(0, 20)),
 		Button("nav-signout", "Sign out", Navigate(LinkSignOut), PaddingXY(12, 20)),
@@ -67,7 +69,7 @@ func (f Feed) header() Component {
 	return Row("feed-header", 0, nil,
 		Column("feed-heading", 6, nil,
 			Text("feed-title", "Since your last visit", TextDisplay),
-			Text("feed-count", f.summary(), TextBodyMuted),
+			Text("feed-count", FeedSummary(f.Total, f.Boards), TextBodyMuted),
 		),
 		Spacer("feed-header-spacer"),
 		// A perform and not a navigate: marking everything seen changes state, and it used to be a
@@ -75,20 +77,6 @@ func (f Feed) header() Component {
 		// of navigation, which is also a deeplink the graph could never carry.
 		Button("feed-seen", "Mark all as seen", Perform(f.SeenURL, nil), PaddingXY(12, 20)),
 	)
-}
-
-// summary is a finished sentence, not a template. The server resolves the language and the plural,
-// and the client never assembles text — so "1 change" and "14 changes" are decided here.
-func (f Feed) summary() string {
-	changes := "changes"
-	if f.Total == 1 {
-		changes = "change"
-	}
-	boards := "boards"
-	if f.Boards == 1 {
-		boards = "board"
-	}
-	return fmt.Sprintf("%d %s across %d %s", f.Total, changes, f.Boards, boards)
 }
 
 func (f Feed) rows() []Component {
@@ -121,15 +109,6 @@ func ChangeRow(change domain.Change) Component {
 	// The whole row opens the task, which is what the design drew and what the vocabulary could
 	// not say until kompot 0.15. It was a button per entry for exactly one release (Q-22).
 	return Opens(body, Navigate(LinkTask+string(change.Task)))
-}
-
-// Author is the second half of provenance: who acted, and for whom.
-func Author(change domain.Change) string {
-	at := change.CreatedAt.Format("15:04")
-	if change.By.ByAgent() {
-		return fmt.Sprintf("Agent · on behalf of %s · %s", change.By.OnBehalfOf, at)
-	}
-	return fmt.Sprintf("%s · %s", change.By.Executor.Member, at)
 }
 
 func emptyFeed() Component {
