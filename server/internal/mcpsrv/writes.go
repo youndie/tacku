@@ -54,7 +54,12 @@ func registerWrites(server *mcp.Server, deps Deps) {
 			return nil, taskOut{}, err
 		}
 		out, err := idem.Once(ctx, deps.Attempts, in.IdempotencyKey, in, func() (taskOut, error) {
-			task, err := deps.Store.MoveTask(ctx, domain.TaskID(in.Task), domain.Status(in.Status), by)
+			// An agent has no screen, and that is a surface of its own rather than a blank: the
+			// share of moves made from the task screen is counted over the two human surfaces, and
+			// a tool call has to be visibly outside it rather than indistinguishable from a move
+			// nobody recorded.
+			task, err := deps.Store.MoveTask(ctx, domain.TaskID(in.Task), domain.Status(in.Status), by,
+				domain.SurfaceAgent)
 			if err != nil {
 				return taskOut{}, err
 			}

@@ -255,7 +255,7 @@ func (r *resource) agentTouch(t *testing.T) {
 	// in its history too. Without it that screen could only be checked for the absence of a wrong
 	// colour, which is not the same as checking that the right one appears.
 	if _, err := r.store.MoveTask(context.Background(), "TAC-1", domain.StatusDone,
-		domain.Agent("anna-agent", "0.1.0", "anna")); err != nil {
+		domain.Agent("anna-agent", "0.1.0", "anna"), domain.SurfaceAgent); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -1,0 +1,11 @@
+-- Where a change was made from.
+--
+-- The board's card button and the task screen's selector both move a task, and until now the two
+-- wrote the same row: which of them people actually use was unanswerable, and a product decision
+-- hangs on the answer. Nothing in the KOMPOT request names the screen it came from, so the surface
+-- has to be recorded from the address the call arrived at, at the moment it arrives.
+--
+-- Empty on every kind but a status move. That is the question not being asked of them rather than
+-- an answer that went missing; a status move with a blank here is impossible, because the domain
+-- refuses a mover that does not name itself.
+alter table changes add column surface text not null default '';

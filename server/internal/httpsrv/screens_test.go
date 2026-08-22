@@ -99,7 +99,7 @@ func (r *resource) seed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := r.store.MoveTask(ctx, task.ID, domain.StatusInReview, domain.Human("ivan")); err != nil {
+	if _, err := r.store.MoveTask(ctx, task.ID, domain.StatusInReview, domain.Human("ivan"), domain.SurfaceBoard); err != nil {
 		t.Fatal(err)
 	}
 }

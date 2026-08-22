@@ -51,7 +51,7 @@ func TestEveryChangeLandsInTheJournalWithBothActors(t *testing.T) {
 	b := board(t, s, ctx)
 
 	created := task(t, s, ctx, b, "Fix login redirect loop")
-	if _, err := s.MoveTask(ctx, created.ID, domain.StatusInReview, domain.Agent(robot, "0.1.0", anna)); err != nil {
+	if _, err := s.MoveTask(ctx, created.ID, domain.StatusInReview, domain.Agent(robot, "0.1.0", anna), domain.SurfaceAgent); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Comment(ctx, created.ID, "Reproduced on staging.", domain.Human(ivan)); err != nil {
@@ -98,12 +98,12 @@ func TestARepeatedMoveWritesNothing(t *testing.T) {
 	created := task(t, s, ctx, b, "Audit the session cookie flags")
 
 	by := domain.Agent(robot, "0.1.0", anna)
-	if _, err := s.MoveTask(ctx, created.ID, domain.StatusInProgress, by); err != nil {
+	if _, err := s.MoveTask(ctx, created.ID, domain.StatusInProgress, by, domain.SurfaceAgent); err != nil {
 		t.Fatal(err)
 	}
 	before, _ := s.Latest(ctx)
 
-	got, err := s.MoveTask(ctx, created.ID, domain.StatusInProgress, by)
+	got, err := s.MoveTask(ctx, created.ID, domain.StatusInProgress, by, domain.SurfaceAgent)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestCursorReturnsExactlyWhatFollowedIt(t *testing.T) {
 	}
 
 	second := task(t, s, ctx, b, "two")
-	if _, err := s.MoveTask(ctx, first.ID, domain.StatusDone, domain.Human(anna)); err != nil {
+	if _, err := s.MoveTask(ctx, first.ID, domain.StatusDone, domain.Human(anna), domain.SurfaceBoard); err != nil {
 		t.Fatal(err)
 	}
 
@@ -212,7 +212,7 @@ func TestStateAndCursorSurviveARestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := first.MoveTask(ctx, created.ID, domain.StatusInReview, domain.Agent(robot, "0.1.0", anna)); err != nil {
+	if _, err := first.MoveTask(ctx, created.ID, domain.StatusInReview, domain.Agent(robot, "0.1.0", anna), domain.SurfaceAgent); err != nil {
 		t.Fatal(err)
 	}
 	if err := first.Close(); err != nil {
@@ -293,13 +293,13 @@ func TestUnknownStatusAndTaskAreRefused(t *testing.T) {
 	b := board(t, s, ctx)
 	created := task(t, s, ctx, b, "Tighten the empty states copy")
 
-	if _, err := s.MoveTask(ctx, created.ID, "archived", domain.Human(anna)); !errors.Is(err, domain.ErrInvalidTask) {
+	if _, err := s.MoveTask(ctx, created.ID, "archived", domain.Human(anna), domain.SurfaceBoard); !errors.Is(err, domain.ErrInvalidTask) {
 		t.Errorf("a status outside the closed set was accepted (err = %v)", err)
 	}
-	if _, err := s.MoveTask(ctx, "TAC-9999", domain.StatusDone, domain.Human(anna)); !errors.Is(err, domain.ErrNotFound) {
+	if _, err := s.MoveTask(ctx, "TAC-9999", domain.StatusDone, domain.Human(anna), domain.SurfaceBoard); !errors.Is(err, domain.ErrNotFound) {
 		t.Errorf("moving a task that does not exist returned %v, want not found", err)
 	}
-	if _, err := s.MoveTask(ctx, "tac-1", domain.StatusDone, domain.Human(anna)); !errors.Is(err, domain.ErrInvalidTask) {
+	if _, err := s.MoveTask(ctx, "tac-1", domain.StatusDone, domain.Human(anna), domain.SurfaceBoard); !errors.Is(err, domain.ErrInvalidTask) {
 		t.Errorf("a malformed identifier was accepted (err = %v)", err)
 	}
 }
@@ -448,5 +448,38 @@ func TestTheReadBoundarySurvivesAReopen(t *testing.T) {
 	}
 	if len(changes) != 1 {
 		t.Fatalf("after one new task the feed would show %d changes, want 1", len(changes))
+	}
+}
+
+// A mover that does not name where it came from is refused, and the task stays where it was.
+//
+// The refusal is the point rather than the validation. A blank surface would break nothing: the
+// task would move, the journal would hold an entry, every test would stay green — and the share of
+// moves made from the task screen would be wrong by exactly however many calls that path made,
+// with nothing anywhere to say so. Bulk status change is the next path to be written, and this is
+// what makes it impossible to add it without deciding what it is called.
+func TestAMoveThatDoesNotNameItsSurfaceIsRefused(t *testing.T) {
+	s, ctx := open(t)
+	b := board(t, s, ctx)
+	created := task(t, s, ctx, b, "Rename the stale feature flag")
+
+	for _, surface := range []domain.Surface{domain.SurfaceNone, "kanban"} {
+		_, err := s.MoveTask(ctx, created.ID, domain.StatusDone, domain.Human(anna), surface)
+		if !errors.Is(err, domain.ErrUnnamedSurface) {
+			t.Errorf("a move from surface %q returned %v, want a refusal", surface, err)
+		}
+	}
+
+	after, err := s.Task(ctx, created.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.Status != domain.StatusTodo {
+		t.Errorf("the task moved to %q on a call that was refused", after.Status)
+	}
+	// Creating the board writes nothing to the journal, so the only entry that may stand here is
+	// the task's own creation.
+	if latest, err := s.Latest(ctx); err != nil || latest != domain.CursorAt(1) {
+		t.Errorf("the journal stands at %q (err = %v), want only the task creation in it", latest, err)
 	}
 }

@@ -230,10 +230,14 @@ func submitMove(store domain.Store) http.HandlerFunc {
 			return
 		}
 
+		// The surface is named here and nowhere else: nothing in the request says which screen it
+		// came from (Q-24), so the address is the only witness — and this address is the board's
+		// alone.
 		if _, err := store.MoveTask(r.Context(),
 			domain.TaskID(request.text("task")),
 			domain.Status(request.text("status")),
-			principal.Provenance); err != nil {
+			principal.Provenance,
+			domain.SurfaceBoard); err != nil {
 			fail(w, err)
 			return
 		}

@@ -21,7 +21,10 @@ type Store interface {
 	Tasks(ctx context.Context, board BoardID) ([]Task, error)
 
 	CreateTask(ctx context.Context, draft Task, by Provenance) (Task, error)
-	MoveTask(ctx context.Context, id TaskID, to Status, by Provenance) (Task, error)
+	// MoveTask takes the surface it was asked from, and refuses a call that does not name one.
+	// Which of the two places a status changes in — the board or the task — is a product question
+	// with a decision hanging on it, and an unnamed caller would answer it with a blank row.
+	MoveTask(ctx context.Context, id TaskID, to Status, by Provenance, from Surface) (Task, error)
 	AssignTask(ctx context.Context, id TaskID, to MemberID, by Provenance) (Task, error)
 	SetDue(ctx context.Context, id TaskID, due string, by Provenance) (Task, error)
 

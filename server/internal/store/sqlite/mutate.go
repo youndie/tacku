@@ -13,10 +13,10 @@ import (
 // change, which is the invariant domain.Store states.
 func (s *Store) record(ctx context.Context, tx *sql.Tx, c domain.Change) error {
 	_, err := tx.ExecContext(ctx,
-		`insert into changes (task, board, kind, from_value, to_value,
+		`insert into changes (task, board, kind, from_value, to_value, surface,
 		                      actor_kind, actor_member, actor_version, on_behalf_of, created_at)
-		 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		string(c.Task), string(c.Board), string(c.Kind), c.From, c.To,
+		 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		string(c.Task), string(c.Board), string(c.Kind), c.From, c.To, string(c.Surface),
 		string(c.By.Executor.Kind), string(c.By.Executor.Member), c.By.Executor.Version,
 		string(c.By.OnBehalfOf), s.stampNow())
 	return err
@@ -112,11 +112,16 @@ func nextTaskNumber(ctx context.Context, tx *sql.Tx) (int64, error) {
 // a task from In review to In review is noise in a feed whose whole purpose is telling a person
 // what actually changed while they were away — and an agent retrying a call would otherwise fill
 // that feed by itself.
+//
+// The surface is passed through rather than derived, and it is domain.SurfaceNone for every kind but
+// a status move: only there do two places in the interface produce the same entry, and only there is
+// telling them apart a question anybody asked.
 func (s *Store) edit(
 	ctx context.Context,
 	id domain.TaskID,
 	by domain.Provenance,
 	kind domain.ChangeKind,
+	surface domain.Surface,
 	apply func(t *domain.Task) (from, to string, changed bool),
 ) (domain.Task, error) {
 	if err := by.Validate(); err != nil {
@@ -151,7 +156,7 @@ func (s *Store) edit(
 		}
 
 		if err := s.record(ctx, tx, domain.Change{
-			Task: id, Board: task.Board, Kind: kind, From: from, To: to, By: by,
+			Task: id, Board: task.Board, Kind: kind, From: from, To: to, Surface: surface, By: by,
 		}); err != nil {
 			return err
 		}
@@ -165,11 +170,26 @@ func (s *Store) edit(
 	return result, nil
 }
 
-func (s *Store) MoveTask(ctx context.Context, id domain.TaskID, to domain.Status, by domain.Provenance) (domain.Task, error) {
+// MoveTask changes a status and records which surface asked for it.
+//
+// An unnamed surface is refused rather than stored as a blank. The share of moves made from the task
+// screen is a number a decision waits on, and a caller that forgot to name itself would not break
+// anything — it would quietly land in neither half and make the share wrong by however many calls it
+// made.
+func (s *Store) MoveTask(
+	ctx context.Context,
+	id domain.TaskID,
+	to domain.Status,
+	by domain.Provenance,
+	from domain.Surface,
+) (domain.Task, error) {
 	if !to.Valid() {
 		return domain.Task{}, fmt.Errorf("%w: unknown status %q", domain.ErrInvalidTask, string(to))
 	}
-	return s.edit(ctx, id, by, domain.ChangeStatusMoved, func(t *domain.Task) (string, string, bool) {
+	if !from.Named() {
+		return domain.Task{}, fmt.Errorf("%w: %q", domain.ErrUnnamedSurface, string(from))
+	}
+	return s.edit(ctx, id, by, domain.ChangeStatusMoved, from, func(t *domain.Task) (string, string, bool) {
 		was := t.Status
 		t.Status = to
 		return string(was), string(to), was != to
@@ -177,7 +197,7 @@ func (s *Store) MoveTask(ctx context.Context, id domain.TaskID, to domain.Status
 }
 
 func (s *Store) AssignTask(ctx context.Context, id domain.TaskID, to domain.MemberID, by domain.Provenance) (domain.Task, error) {
-	return s.edit(ctx, id, by, domain.ChangeAssigned, func(t *domain.Task) (string, string, bool) {
+	return s.edit(ctx, id, by, domain.ChangeAssigned, domain.SurfaceNone, func(t *domain.Task) (string, string, bool) {
 		was := t.Assignee
 		t.Assignee = to
 		return string(was), string(to), was != to
@@ -185,7 +205,7 @@ func (s *Store) AssignTask(ctx context.Context, id domain.TaskID, to domain.Memb
 }
 
 func (s *Store) SetDue(ctx context.Context, id domain.TaskID, due string, by domain.Provenance) (domain.Task, error) {
-	return s.edit(ctx, id, by, domain.ChangeDueChanged, func(t *domain.Task) (string, string, bool) {
+	return s.edit(ctx, id, by, domain.ChangeDueChanged, domain.SurfaceNone, func(t *domain.Task) (string, string, bool) {
 		was := t.Due
 		t.Due = due
 		return was, due, was != due
