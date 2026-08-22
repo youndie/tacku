@@ -96,6 +96,22 @@ jobs:
       - if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: python3 scripts/docs_check.py --on-main
 
+      # THE CONFORMANCE WALK, and it is here now for a reason that did not hold before.
+      #
+      # It was deliberately outside every automated set while it was red: a red walk was a finding
+      # about this server for a person to read and classify, not a broken build — and a build that
+      # is red on purpose teaches everybody to ignore it.
+      #
+      # From kompot 0.17.0.24 it passes with every declared endpoint checked, 11 of 11. So its
+      # redness now means something changed rather than something is unfinished, and a check that
+      # runs only when somebody remembers is a check that rots. The most likely change it catches is
+      # an endpoint added without anything to reach it with: the walk skips it, the count drops, and
+      # nobody would notice until the next hand-run.
+      #
+      # It is a step of this job rather than a job of its own so that it runs against the same tree
+      # the gate just checked, and stops on the same failure.
+      - run: make tck
+
   # Separate from the gate, and on a schedule rather than on a pull request, because an anchor rots
   # when somebody refactors a **different** repository. A pull request here is the least likely
   # moment for one to break, and running it there trains people to ignore a red build they did not

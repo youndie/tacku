@@ -54,6 +54,16 @@ fun main() {
                     // looks at the header — so it only runs when a payload is given. This walk is
                     // against a throwaway database, which is where the kit's own README says to
                     // run it.
+                    // The two endpoints addressed by naming a thing. Until 0.17 there was nowhere
+                    // to put this: the walk skipped them, the report said which, and Q-23 recorded
+                    // that the gap was in the kit rather than in this server. The screen of one
+                    // task is the most complicated tree this product emits and no check had ever
+                    // looked at it.
+                    pathParameters =
+                        mapOf(
+                            "/forms/task/{task}" to mapOf("task" to "TAC-1"),
+                            "/submit/task-view/{task}" to mapOf("task" to "TAC-1"),
+                        ),
                     // One body per submit endpoint the walk can reach. Until 0.15 a missing body
                     // was a silent skip: the report said "9 of 10 endpoints" and left the reader to
                     // guess which, so four of these five were being passed over without anybody
@@ -93,6 +103,14 @@ fun main() {
                                     "bulk-move",
                                     "status" to entityValue("in_progress"),
                                     "task-TAC-1" to booleanValue(true),
+                                ),
+                            // Now reachable, so it needs a body like any other submit. The form is
+                            // named after the task it belongs to, which is what carries the subject
+                            // the envelope cannot.
+                            "/submit/task-view/{task}" to
+                                submission(
+                                    "task-view/TAC-1",
+                                    "status" to entityValue("in_review"),
                                 ),
                         ),
                 ),
