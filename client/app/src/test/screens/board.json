@@ -318,10 +318,6 @@
          "value": 1
         },
         {
-         "type": "size",
-         "width": "Fill"
-        },
-        {
          "type": "padding",
          "all": 12
         }
@@ -1013,10 +1009,6 @@
          "value": 1
         },
         {
-         "type": "size",
-         "width": "Fill"
-        },
-        {
          "type": "padding",
          "all": 12
         }
@@ -1298,10 +1290,6 @@
         {
          "type": "weight",
          "value": 1
-        },
-        {
-         "type": "size",
-         "width": "Fill"
         },
         {
          "type": "padding",
@@ -1587,10 +1575,6 @@
          "value": 1
         },
         {
-         "type": "size",
-         "width": "Fill"
-        },
-        {
          "type": "padding",
          "all": 12
         }
@@ -1751,10 +1735,6 @@
         {
          "type": "weight",
          "value": 1
-        },
-        {
-         "type": "size",
-         "width": "Fill"
         },
         {
          "type": "padding",

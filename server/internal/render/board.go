@@ -111,7 +111,7 @@ func (b Board) column(status domain.Status) Component {
 	}
 
 	return Column(id, 12,
-		[]Modifier{Weight(1), FillWidth(), Padding(12), Background(ColorSurfaceBlock)},
+		[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceBlock)},
 		Row(id+"-head", 0, nil,
 			Text(id+"-name", ColumnHeading(status), TextSubtitle),
 			Spacer(id+"-head-spacer"),

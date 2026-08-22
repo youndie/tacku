@@ -138,7 +138,7 @@ func myTasks(store domain.Store) http.HandlerFunc {
 		// is reachable from the navigation and used to draw none of its own, so arriving there was
 		// a one-way trip — the same defect the board had, and the board at least reserved the space.
 		body := render.Column("screen-my-tasks", 20,
-			[]render.Modifier{render.Weight(1), render.FillWidth(), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
+			[]render.Modifier{render.Weight(1), render.FillHeight(), render.Padding(32), render.Background(render.ColorSurface)},
 			render.Text("my-tasks-title", "My tasks", render.TextDisplay),
 			status,
 			// The filter reaches the server through this and through nothing else: the schema says
@@ -147,7 +147,7 @@ func myTasks(store domain.Store) http.HandlerFunc {
 			// in appearance only — the value stayed on the screen it was chosen on.
 			render.Filtered(
 				render.PaginatedList("my-tasks-list", items, next, render.EmptyMyTasks(),
-					render.FillWidth(), render.Weight(1)),
+					render.Weight(1)),
 				tasksPagePath,
 			),
 		)

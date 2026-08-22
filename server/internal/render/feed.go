@@ -51,7 +51,7 @@ func (f Feed) body() Component {
 	return Column("feed", 24,
 		[]Modifier{Weight(1), Padding(32)},
 		f.header(),
-		PaginatedList("feed-list", f.rows(), f.NextPage, emptyFeed(), FillWidth(), Weight(1)),
+		PaginatedList("feed-list", f.rows(), f.NextPage, emptyFeed(), Weight(1)),
 	)
 }
 

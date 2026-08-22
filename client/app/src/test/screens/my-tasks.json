@@ -228,10 +228,6 @@
      },
      {
       "type": "size",
-      "width": "Fill"
-     },
-     {
-      "type": "size",
       "height": "Fill"
      },
      {
@@ -283,10 +279,6 @@
       "type": "paginated_list",
       "id": "my-tasks-list",
       "modifiers": [
-       {
-        "type": "size",
-        "width": "Fill"
-       },
        {
         "type": "weight",
         "value": 1

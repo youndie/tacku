@@ -277,10 +277,6 @@
      "id": "feed-list",
      "modifiers": [
       {
-       "type": "size",
-       "width": "Fill"
-      },
-      {
        "type": "weight",
        "value": 1
       }
@@ -348,7 +344,7 @@
             {
              "type": "text",
              "id": "change-1-who",
-             "text": "Agent · on behalf of anna · 17:45",
+             "text": "Agent · on behalf of anna · 19:00",
              "style": "meta_agent"
             }
            ],
@@ -424,7 +420,7 @@
             {
              "type": "text",
              "id": "change-2-who",
-             "text": "Agent · on behalf of anna · 17:45",
+             "text": "Agent · on behalf of anna · 19:00",
              "style": "meta_agent"
             }
            ],
@@ -500,7 +496,7 @@
             {
              "type": "text",
              "id": "change-3-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -576,7 +572,7 @@
             {
              "type": "text",
              "id": "change-4-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -652,7 +648,7 @@
             {
              "type": "text",
              "id": "change-5-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -728,7 +724,7 @@
             {
              "type": "text",
              "id": "change-6-who",
-             "text": "Agent · on behalf of anna · 17:45",
+             "text": "Agent · on behalf of anna · 19:00",
              "style": "meta_agent"
             }
            ],
@@ -804,7 +800,7 @@
             {
              "type": "text",
              "id": "change-7-who",
-             "text": "Agent · on behalf of anna · 17:45",
+             "text": "Agent · on behalf of anna · 19:00",
              "style": "meta_agent"
             }
            ],
@@ -880,7 +876,7 @@
             {
              "type": "text",
              "id": "change-8-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -956,7 +952,7 @@
             {
              "type": "text",
              "id": "change-9-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -1032,7 +1028,7 @@
             {
              "type": "text",
              "id": "change-10-who",
-             "text": "Agent · on behalf of anna · 17:45",
+             "text": "Agent · on behalf of anna · 19:00",
              "style": "meta_agent"
             }
            ],
@@ -1108,7 +1104,7 @@
             {
              "type": "text",
              "id": "change-11-who",
-             "text": "Agent · on behalf of anna · 17:45",
+             "text": "Agent · on behalf of anna · 19:00",
              "style": "meta_agent"
             }
            ],
@@ -1184,7 +1180,7 @@
             {
              "type": "text",
              "id": "change-12-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -1260,7 +1256,7 @@
             {
              "type": "text",
              "id": "change-13-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
@@ -1336,7 +1332,7 @@
             {
              "type": "text",
              "id": "change-14-who",
-             "text": "anna · 17:45",
+             "text": "anna · 19:00",
              "style": "meta"
             }
            ],
