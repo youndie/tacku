@@ -12,7 +12,7 @@
 // button the client handles on its own, and this package never hears about it. So a finished
 // scenario is dropped on its own signal, and an abandoned one can only be dropped by a clock —
 // which makes the lifetime here a consequence of the protocol rather than a product decision
-// (Q-24).
+// (Q-25).
 //
 // The state is invisible to the person and says nothing about the promise the interface makes.
 // "Nothing is saved until you finish" is about the task: none is created, and nothing appears
