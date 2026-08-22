@@ -45,10 +45,11 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (6)
+## Open (7)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-45](docs/backlog/B-45-adopt-kompot-0-22.md) `[ ]` | Принять kompot 0.22: снять три обхода, заведённые под закрытые issue | P1 | M | - |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
