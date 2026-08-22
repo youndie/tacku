@@ -43,7 +43,7 @@ var ChangeKinds = []ChangeKind{
 // It exists for one question and says so: the board's card button and the task screen's selector
 // both move a task, and nothing in the entry told them apart, so "do people move tasks from the
 // board or from inside the task" could not be answered even in principle. The protocol does not
-// carry the originating screen in any request (Q-24), so the surface is what the server knows from
+// carry the originating screen in any request (Q-32), so the surface is what the server knows from
 // the address the call arrived at, and it has to be written down at that moment or it is gone.
 //
 // Recorded only where two surfaces compete for the same change — status moves today. Empty on the

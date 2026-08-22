@@ -231,7 +231,7 @@ func submitMove(store domain.Store) http.HandlerFunc {
 		}
 
 		// The surface is named here and nowhere else: nothing in the request says which screen it
-		// came from (Q-24), so the address is the only witness — and this address is the board's
+		// came from (Q-32), so the address is the only witness — and this address is the board's
 		// alone.
 		if _, err := store.MoveTask(r.Context(),
 			domain.TaskID(request.text("task")),
