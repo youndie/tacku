@@ -146,6 +146,14 @@ func (c *testClock) pass(d time.Duration) {
 
 func newResource(t *testing.T) *resource {
 	t.Helper()
+	return newResourceWith(t, nil)
+}
+
+// newResourceWith is newResource for a test that is about a setting rather than about a screen.
+// The configuration is adjusted after the defaults are in place, so a test names only what it cares
+// about and inherits the rest from the server every other test runs against.
+func newResourceWith(t *testing.T, adjust func(*httpsrv.Config)) *resource {
+	t.Helper()
 
 	as := newAuthServer(t)
 	store, err := sqlite.Open(filepath.Join(t.TempDir(), "tacku.db"))
@@ -164,7 +172,7 @@ func newResource(t *testing.T) *resource {
 
 	clock := &testClock{at: time.Date(2026, 8, 20, 18, 40, 0, 0, time.UTC)}
 
-	handler, err := httpsrv.New(httpsrv.Config{
+	config := httpsrv.Config{
 		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: "0.1.0"},
 		Members:    store,
 		Seen:       store,
@@ -175,7 +183,12 @@ func newResource(t *testing.T) *resource {
 			Resource: base + httpsrv.MCPPath,
 			JWKSURL:  as.http.URL + "/jwks",
 		},
-	})
+	}
+	if adjust != nil {
+		adjust(&config)
+	}
+
+	handler, err := httpsrv.New(config)
 	if err != nil {
 		t.Fatal(err)
 	}

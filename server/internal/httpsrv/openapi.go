@@ -74,6 +74,12 @@ func OpenAPI(resource string) json.RawMessage {
 			"/submit/task-view/{task}": map[string]any{
 				"post": templated(submitOperation("submitTaskView")),
 			},
+			wizardStartPath: map[string]any{
+				"get": wizardStartOperation("startNewTaskFlow"),
+			},
+			wizardResumePath: map[string]any{
+				"post": wizardResumeOperation("resumeNewTaskFlow"),
+			},
 			"/forms/new-board": map[string]any{
 				"get": operation("newBoardForm", kindForm,
 					ref("kompot-forms.schema.json#/$defs/KompotFormResponse")),
@@ -155,6 +161,63 @@ func submitOperation(id string) map[string]any {
 	}}
 	responses, _ := op["responses"].(map[string]any)
 	responses["400"] = map[string]any{"description": "no idempotency key"}
+	responses["409"] = map[string]any{"description": "the key was used for a different request"}
+	responses["422"] = map[string]any{"description": "refused on its merits"}
+	return op
+}
+
+// wizardStartOperation declares the endpoint that opens a scenario.
+//
+// The response header is the point of declaring it at all. §16.7 leaves its name to the application
+// and describes it in one direction, so this document is the only place a reader — or a harness —
+// can learn what to look for and what to send back (Q-50).
+func wizardStartOperation(id string) map[string]any {
+	op := operation(id, kindWizardStart, ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))
+	responses, _ := op["responses"].(map[string]any)
+	success, _ := responses["200"].(map[string]any)
+	success["headers"] = map[string]any{
+		WizardHeader: map[string]any{
+			"description": "the scenario to send back with every transition of this flow",
+			"required":    true,
+			"schema":      map[string]any{"type": "string"},
+		},
+	}
+	return op
+}
+
+// wizardResumeOperation declares the endpoint that carries a scenario one transition further.
+//
+// It asks for the idempotency key like a submit, which §16.5 does not require of it: the transition
+// that finishes a flow performs what a submit performs, and a repeated `next` moves a person past a
+// step they never pressed past. The decision and its cost are recorded as Q-51.
+func wizardResumeOperation(id string) map[string]any {
+	op := operation(id, kindWizardResume, ref("kompot-core.schema.json#/$defs/KompotAction"))
+	op["parameters"] = []any{
+		map[string]any{
+			"name":        WizardHeader,
+			"in":          "header",
+			"required":    true,
+			"description": "the scenario answered by wizard_start",
+			"schema":      map[string]any{"type": "string"},
+		},
+		map[string]any{
+			"name":     "Idempotency-Key",
+			"in":       "header",
+			"required": true,
+			"schema":   map[string]any{"type": "string"},
+		},
+	}
+	op["requestBody"] = map[string]any{
+		"required": true,
+		"content": map[string]any{
+			"application/json": map[string]any{
+				"schema": ref("kompot-wizard.schema.json#/$defs/WizardResumeRequest"),
+			},
+		},
+	}
+	responses, _ := op["responses"].(map[string]any)
+	responses["400"] = map[string]any{"description": "no idempotency key, or a body that is not a transition"}
+	responses["404"] = map[string]any{"description": "this scenario has expired, never existed, or belongs to somebody else"}
 	responses["409"] = map[string]any{"description": "the key was used for a different request"}
 	responses["422"] = map[string]any{"description": "refused on its merits"}
 	return op

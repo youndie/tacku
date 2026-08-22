@@ -49,7 +49,8 @@ func usage() error {
 		"  TACKU_ISSUER          the authorization server's issuer identifier\n" +
 		"  TACKU_JWKS_URL        where that issuer publishes its signing keys\n\n" +
 		"The KOMPOT client carries tokens this server issues through the sign-in form:\n" +
-		"  TACKU_SESSION_KEY     at least 32 characters; generated per run when unset")
+		"  TACKU_SESSION_KEY     at least 32 characters; generated per run when unset\n" +
+		"  TACKU_WIZARD_TTL      how long an untouched multi-step scenario is kept (default 30m)")
 }
 
 func run(args []string) error {
@@ -123,11 +124,17 @@ func runServe(args []string) error {
 		return err
 	}
 
+	ttl, err := wizardTTL()
+	if err != nil {
+		return err
+	}
+
 	handler, err := httpsrv.New(httpsrv.Config{
 		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: version()},
 		Members:    store,
 		Seen:       store,
 		SessionKey: key,
+		WizardTTL:  ttl,
 		Verifier: auth.VerifierConfig{
 			Issuer:   os.Getenv("TACKU_ISSUER"),
 			Resource: os.Getenv("TACKU_RESOURCE"),
@@ -177,6 +184,31 @@ func sessionKey() ([]byte, error) {
 	}
 	fmt.Fprintln(os.Stderr, "tacku: TACKU_SESSION_KEY is unset; sessions will not survive a restart")
 	return key, nil
+}
+
+// wizardTTL is how long an untouched multi-step scenario is kept.
+//
+// A variable rather than a constant because there is nothing else that can end a scenario: the
+// protocol has no cancel transition, so a walk somebody abandoned is removed by a clock or not at
+// all. The default is a choice and not a measurement — see wizard.DefaultTTL for the bounds it sits
+// between — and whoever measures it must be able to change it without a build.
+//
+// An unreadable value stops the process instead of falling back to the default. A server silently
+// running on thirty minutes while its configuration says two hours is the kind of wrong nobody
+// finds, because everything works.
+func wizardTTL() (time.Duration, error) {
+	configured := os.Getenv("TACKU_WIZARD_TTL")
+	if configured == "" {
+		return 0, nil
+	}
+	ttl, err := time.ParseDuration(configured)
+	if err != nil {
+		return 0, fmt.Errorf("TACKU_WIZARD_TTL is not a duration: %w", err)
+	}
+	if ttl <= 0 {
+		return 0, fmt.Errorf("TACKU_WIZARD_TTL must be positive, got %s", configured)
+	}
+	return ttl, nil
 }
 
 func version() string {

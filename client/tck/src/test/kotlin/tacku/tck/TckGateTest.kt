@@ -3,6 +3,8 @@ package tacku.tck
 import io.github.youndie.kompot.tck.TckFinding
 import io.github.youndie.kompot.tck.TckReport
 import io.github.youndie.kompot.tck.TckSkip
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -138,4 +140,59 @@ class TckGateTest {
             )
         }
     }
+
+    /**
+     * An endpoint kind that answers a document is counted, whatever its name.
+     *
+     * The count exists to notice an endpoint no check looked at, and a new kind is exactly the way
+     * one arrives: `wizard_start` answers a `KompotFormResponse` like any form (§16.1), so a walk
+     * that never fetched it must show as a shortfall rather than as a green run over the endpoints
+     * the gate happened to have heard of.
+     */
+    @Test
+    fun `an endpoint answering a document is counted whatever its kind is called`() {
+        val document = openApiOf("wizard_start", "form")
+
+        val fetchedBoth = TckGate.judge(report(everyCheckBusy + ("schema" to 2)), document)
+        assertEquals(2, fetchedBoth.bodiesDeclared)
+        assertTrue(fetchedBoth.passed, TckGate.describe(report(everyCheckBusy + ("schema" to 2)), fetchedBoth))
+
+        val fetchedOne = TckGate.judge(report(everyCheckBusy + ("schema" to 1)), document)
+        assertFalse(
+            fetchedOne.passed,
+            "one body checked out of two declared passed the gate, so a whole endpoint can go unlooked-at",
+        )
+    }
+
+    /**
+     * And the other direction, without which the count would be a number that only ever grows: a
+     * kind with no document behind it must not inflate what the walk is expected to have fetched.
+     */
+    @Test
+    fun `an endpoint that answers no document is not counted`() {
+        val verdict = TckGate.judge(report(everyCheckBusy + ("schema" to 1)), openApiOf("form", "submit"))
+
+        assertEquals(1, verdict.bodiesDeclared)
+        assertTrue(verdict.passed)
+    }
+
+    private fun openApiOf(vararg kinds: String) =
+        buildJsonObject {
+            put(
+                "paths",
+                buildJsonObject {
+                    kinds.forEachIndexed { index, kind ->
+                        put(
+                            "/endpoint-$index",
+                            buildJsonObject {
+                                put(
+                                    "get",
+                                    buildJsonObject { put("x-kompot-endpoint-kind", JsonPrimitive(kind)) },
+                                )
+                            },
+                        )
+                    }
+                },
+            )
+        }
 }

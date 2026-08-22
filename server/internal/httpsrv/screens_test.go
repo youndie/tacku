@@ -56,15 +56,22 @@ func (r *resource) getWith(t *testing.T, path, token string, headers map[string]
 // auth.Sessions.
 func (r *resource) reader(t *testing.T) string {
 	t.Helper()
+	return r.readerAs(t, "anna", "anna@tacku.team", "Anna")
+}
+
+// readerAs is reader for the tests that need two people, which is how anything owned by one of them
+// gets tested for being out of the other's reach.
+func (r *resource) readerAs(t *testing.T, member domain.MemberID, email, name string) string {
+	t.Helper()
 
 	const password = "a-good-password"
-	if _, err := r.store.AddMember(context.Background(), "anna", "anna@tacku.team", "Anna", password); err != nil {
+	if _, err := r.store.AddMember(context.Background(), member, email, name, password); err != nil {
 		t.Fatal(err)
 	}
 
 	response := r.request(t, http.MethodPost, httpsrv.LoginPath, "",
 		`{"formId":"sign_in","fieldId":"","values":{`+
-			`"email":{"type":"text_value","text":"anna@tacku.team"},`+
+			`"email":{"type":"text_value","text":"`+email+`"},`+
 			`"password":{"type":"text_value","text":"`+password+`"}}}`)
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("signing in answered %d", response.StatusCode)
@@ -293,6 +300,18 @@ func (r *resource) post(t *testing.T, path, token, key, body string) *http.Respo
 func (r *resource) request(t *testing.T, method, path, token, body string, key ...string) *http.Response {
 	t.Helper()
 
+	headers := map[string]string{}
+	if len(key) > 0 && key[0] != "" {
+		headers["Idempotency-Key"] = key[0]
+	}
+	return r.requestWith(t, method, path, token, body, headers)
+}
+
+// requestWith is request for the calls whose interesting half is a header of their own — a scenario
+// identifier, say, which SPEC.md §16.7 leaves the application to name.
+func (r *resource) requestWith(t *testing.T, method, path, token, body string, headers map[string]string) *http.Response {
+	t.Helper()
+
 	var reader io.Reader
 	if body != "" {
 		reader = strings.NewReader(body)
@@ -304,8 +323,10 @@ func (r *resource) request(t *testing.T, method, path, token, body string, key .
 	if token != "" {
 		request.Header.Set("Authorization", "Bearer "+token)
 	}
-	if len(key) > 0 && key[0] != "" {
-		request.Header.Set("Idempotency-Key", key[0])
+	for name, value := range headers {
+		if value != "" {
+			request.Header.Set(name, value)
+		}
 	}
 	request.Header.Set("Content-Type", "application/json")
 

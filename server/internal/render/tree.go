@@ -409,3 +409,37 @@ func MultilineInput(id, fieldID, label, placeholder, hint string, lines int, mod
 		FieldID: fieldID, Label: label, Placeholder: placeholder, Hint: hint, MinLines: lines,
 	}
 }
+
+type wizardScreen struct {
+	Type       string     `json:"type"`
+	ID         string     `json:"id"`
+	Modifiers  []Modifier `json:"modifiers,omitempty"`
+	FormID     string     `json:"formId"`
+	StepID     string     `json:"stepId"`
+	StepIndex  int        `json:"stepIndex"`
+	TotalSteps *int       `json:"totalSteps"`
+	CanGoBack  bool       `json:"canGoBack"`
+	Content    Component  `json:"content"`
+}
+
+// WizardScreen wraps one step of a multi-step flow.
+//
+// Everything it carries besides the content is bookkeeping the client draws for itself: the step
+// counter, the back button and its absence, the finish button (SPEC.md §11.1). None of that goes
+// into the content — a step drawing its own header and its own Next would show both twice, which is
+// what the first round of the design review found in the mock-up.
+//
+// totalSteps is a pointer because null is a value the protocol gives a meaning to: under branching
+// the length of a particular walk is not known in advance, and the client then shows the current
+// step alone (§11.2). Omitting the field and sending null are not the same statement.
+func WizardScreen(id, formID, stepID string, stepIndex int, totalSteps *int, canGoBack bool, content Component) Component {
+	return wizardScreen{
+		Type: "wizard_screen", ID: id,
+		FormID: formID, StepID: stepID, StepIndex: stepIndex, TotalSteps: totalSteps,
+		CanGoBack: canGoBack, Content: content,
+	}
+}
+
+// Steps names a walk whose length is known in advance. The pointer is what the wire asks for; a call
+// site in the middle of a tree should not have to take an address to say "two".
+func Steps(count int) *int { return &count }

@@ -602,6 +602,108 @@
         ],
         "x-kompot-endpoint-kind": "submit"
       }
+    },
+    "/wizard/new-task": {
+      "get": {
+        "operationId": "startNewTaskFlow",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-forms.schema.json#/$defs/KompotFormResponse"
+                }
+              }
+            },
+            "description": "ok",
+            "headers": {
+              "X-Tacku-Scenario": {
+                "description": "the scenario to send back with every transition of this flow",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "wizard_start"
+      }
+    },
+    "/wizard/new-task/step": {
+      "post": {
+        "operationId": "resumeNewTaskFlow",
+        "parameters": [
+          {
+            "description": "the scenario answered by wizard_start",
+            "in": "header",
+            "name": "X-Tacku-Scenario",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "kompot-wizard.schema.json#/$defs/WizardResumeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+                }
+              }
+            },
+            "description": "ok"
+          },
+          "400": {
+            "description": "no idempotency key, or a body that is not a transition"
+          },
+          "401": {
+            "description": "no token, or a token issued for another resource"
+          },
+          "404": {
+            "description": "this scenario has expired, never existed, or belongs to somebody else"
+          },
+          "409": {
+            "description": "the key was used for a different request"
+          },
+          "422": {
+            "description": "refused on its merits"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-kompot-endpoint-kind": "wizard_resume"
+      }
     }
   },
   "security": [

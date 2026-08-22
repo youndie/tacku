@@ -20,6 +20,7 @@ import (
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/idem"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
+	"github.com/youndie/tacku/server/internal/wizard"
 )
 
 // MetadataPath is fixed by RFC 9728, which a compliant MCP server MUST implement.
@@ -51,6 +52,14 @@ type Config struct {
 	// through the sign-in form. See auth.Sessions for why there are two token systems here.
 	Members    domain.Members
 	SessionKey []byte
+
+	// WizardTTL is how long an untouched multi-step scenario is kept. Zero means wizard.DefaultTTL.
+	//
+	// Configuration rather than a constant because the protocol leaves the server no other way to
+	// let go of a scenario: there is no cancel transition, so an abandoned walk is only ever
+	// removed by a clock (Q-25). The default is a choice and not a measurement, which is stated
+	// where the constant is.
+	WizardTTL time.Duration
 }
 
 // New assembles the mux.
@@ -145,6 +154,12 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("GET /pages/tasks", tasksPage(config.Deps.Store))
 	screens.Handle("GET /forms/task/{task}", taskScreen(config.Deps.Store))
 	screens.Handle("POST /submit/task-view/{task}", submitTaskView(config.Deps.Store))
+	// The two endpoint kinds of §16.1 nothing here used to answer. The scenario store is built with
+	// the same clock as the visit boundary: the guarantee is about time passing, and a test that
+	// proved it by sleeping would be measuring the runner.
+	scenarios := wizard.New(config.WizardTTL, now)
+	screens.Handle("GET "+wizardStartPath, wizardStart(config.Deps.Store, scenarios))
+	screens.Handle("POST "+wizardResumePath, wizardResume(config.Deps.Store, scenarios))
 	screens.Handle("GET /forms/new-board", newBoardForm())
 	screens.Handle("POST /submit/new-board", submitNewBoard(config.Deps.Store))
 	screens.Handle("POST /submit/seen", submitSeen(config.Seen, config.Deps.Store, now))
@@ -163,6 +178,10 @@ func New(config Config) (http.Handler, error) {
 	guardedScreens := requireSession(sessions, idem.Middleware(config.Deps.Attempts, screens))
 
 	mux.Handle("/screens/", guardedScreens)
+	// Behind the same idempotency middleware as the submits, and that is the decision Q-51 records:
+	// a transition that finishes a flow performs exactly what a submit performs, while §16.5 names
+	// only the submit.
+	mux.Handle("/wizard/", guardedScreens)
 	mux.Handle("/pages/", guardedScreens)
 	mux.Handle("/forms/", guardedScreens)
 	mux.Handle("/submit/", guardedScreens)
