@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.youndie.kompot.KompotActionHandler
-import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.KompotComponentRenderer
 import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.TypographyToken
@@ -21,7 +20,6 @@ import io.github.youndie.kompot.form.standard.TextValue
 import tacku.fields.DateInput
 import java.time.DayOfWeek
 import java.time.LocalDate
-import kotlin.reflect.KClass
 
 /**
  * What a date looks like when it is a date rather than a text box with a mask.
@@ -103,15 +101,3 @@ class DateInputRenderer(
         )
     }
 }
-
-/**
- * What this deployment draws that the toolkit does not.
- *
- * A map rather than a list because that is what the registry takes, and one entry because one type
- * is what was added. It is a function rather than a value so that the clock comes from the caller:
- * a renderer that reads the wall clock cannot be photographed.
- */
-fun tackuRenderers(
-    today: () -> LocalDate = { LocalDate.now() },
-): Map<KClass<out KompotComponent>, KompotComponentRenderer<out KompotComponent>> =
-    mapOf(DateInput::class to DateInputRenderer(today))

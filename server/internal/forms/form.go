@@ -196,3 +196,22 @@ func (b *Builder) DateInput(fieldID, label, value, min, max, hint string, rules 
 	})
 	return render.DateInput(componentID(fieldID), fieldID, label, hint)
 }
+
+// MultilineInput declares an ordinary text field and returns a box that shows more than one line of
+// it.
+//
+// **The definition stays `text_field`, and that is the whole design of this extension.** A box for
+// prose differs from a text box in what a person can see while typing, and in nothing that travels:
+// the value is a `text_value` either way, and the rules are the same rules. Adding a field type
+// would have extended a hierarchy with no fallback (§2.2), where an unfamiliar name costs the whole
+// response; this way the cost of an unfamiliar name is one node (§2.1).
+//
+// It is still not free, and the price is named rather than left to be discovered: a client that does
+// not know the component draws a placeholder, so the field stays declared with nothing to fill it —
+// the state §9.2 tells servers to avoid — and there is no way to tell that client what to draw
+// instead (Q-42). The cheap shape of the same addition, an optional `multiline` on `text_input`,
+// belongs to whoever owns the type (Q-40).
+func (b *Builder) MultilineInput(fieldID, label, placeholder, hint string, lines int, rules []Rule) render.Component {
+	b.declare(fieldID, textField{Type: "text_field", FieldID: fieldID, Rules: nonNilRules(rules)})
+	return render.MultilineInput(componentID(fieldID), fieldID, label, placeholder, hint, lines)
+}

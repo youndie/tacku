@@ -60,11 +60,12 @@ func TestLoadReadsEveryModuleTheProfileNames(t *testing.T) {
 func TestProfileCarriesEveryHierarchy(t *testing.T) {
 	s := load(t)
 
-	// Sixteen and six rather than fifteen and five: this deployment declares two wire types of its
-	// own, and the profile counts them alongside the toolkit's because that is what a profile is
-	// for — what THIS BUILD serves, not what the protocol defines.
+	// Seventeen and six rather than fifteen and five: this deployment declares three wire types of
+	// its own, and the profile counts them alongside the toolkit's because that is what a profile is
+	// for — what THIS BUILD serves, not what the protocol defines. Two of the three are components,
+	// which is the cheap half of extending: an unfamiliar one costs a node rather than a response.
 	want := map[string]int{
-		"KompotComponent":     16,
+		"KompotComponent":     17,
 		"KompotAction":        11,
 		"FormFieldDefinition": 6,
 		"ValidationRule":      4,

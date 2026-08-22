@@ -53,8 +53,13 @@ func taskScreen(store domain.Store) http.HandlerFunc {
 
 		form := forms.New(taskFormPrefix + string(id))
 
+		// The second of the two texts a person writes in a tracker, and it was a one-line box for
+		// the same reason the description did not exist: the vocabulary has no multiline input
+		// (B-29). Shorter than the description — a comment is a remark, not a specification — and
+		// the number is the server's either way, because the protocol cannot express a height in
+		// lines at all (Q-41).
 		comment := render.Column("task-comment-block", 8, nil,
-			form.TextInput("comment", "Comment", "Write a comment…", nil),
+			form.MultilineInput("comment", "Comment", "Write a comment…", "", 3, nil),
 			render.Row("task-comment-actions", 0, nil,
 				render.Text("task-comment-as", "Posted as you", render.TextMeta),
 				render.Spacer("task-comment-spacer"),

@@ -374,3 +374,38 @@ func DateInput(id, fieldID, label, hint string, modifiers ...Modifier) Component
 		FieldID: fieldID, Label: label, DisplayFormat: dayLayoutPattern, Hint: hint,
 	}
 }
+
+type multilineInput struct {
+	Type        string     `json:"type"`
+	ID          string     `json:"id"`
+	Modifiers   []Modifier `json:"modifiers,omitempty"`
+	FieldID     string     `json:"fieldId"`
+	Label       string     `json:"label"`
+	Placeholder string     `json:"placeholder,omitempty"`
+	Hint        string     `json:"hint,omitempty"`
+	MinLines    int        `json:"minLines"`
+}
+
+// DefaultLines is how tall a box for prose is when the caller has no opinion.
+//
+// Lines rather than dp, and that is the one measurement the protocol has no unit for: §5.3 gives it
+// exactly one, and the height that matters for text is a count of lines of the reader's own font
+// (Q-41). The design asked for this with `text_input [size h 96]`, which is a single-line box 96 dp
+// tall — geometry changed, behaviour unchanged.
+const DefaultLines = 4
+
+// MultilineInput is the tree half of the deployment's own box for prose — see
+// forms.Builder.MultilineInput.
+//
+// `minLines` is written out even when it equals the client's own default, never omitted. Two
+// defaults for one number is how the wire and the screen come to disagree in silence, and the
+// server owns every other decision about this screen.
+func MultilineInput(id, fieldID, label, placeholder, hint string, lines int, modifiers ...Modifier) Component {
+	if lines < 1 {
+		lines = DefaultLines
+	}
+	return multilineInput{
+		Type: "multiline_input", ID: id, Modifiers: modifiers,
+		FieldID: fieldID, Label: label, Placeholder: placeholder, Hint: hint, MinLines: lines,
+	}
+}

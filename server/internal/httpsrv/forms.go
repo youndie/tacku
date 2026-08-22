@@ -45,6 +45,14 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 		title := form.TextInput("title", "Title", "What needs to be done?",
 			[]forms.Rule{forms.Required("Give the task a title.")})
 
+		// The description, which until now a person could not write at all: the store has held a
+		// body since the first migration, agents fill it through MCP, and the human surface had no
+		// component that shows more than one line of anything (B-29). Optional on purpose — an
+		// older client draws a placeholder here and cannot fill it (Q-42), and a required field
+		// nobody can fill is a form nobody can submit.
+		description := form.MultilineInput("description", "Description",
+			"What does done look like?", "", render.DefaultLines, nil)
+
 		board := form.Select("board", "Board", "Choose a board", boardOptions,
 			[]forms.Rule{forms.Required("Every task belongs to a board.")})
 
@@ -62,6 +70,7 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 			[]render.Modifier{render.Padding(32), render.Background(render.ColorSurface)},
 			render.Text("form-new-task-title", "New task", render.TextDisplay),
 			title,
+			description,
 			board,
 			status,
 			due,
@@ -110,6 +119,7 @@ func submitNewTask(store domain.Store) http.HandlerFunc {
 		task, err := store.CreateTask(r.Context(), domain.Task{
 			Board:  domain.BoardID(request.chosen("board")),
 			Title:  request.text("title"),
+			Body:   request.text("description"),
 			Status: domain.Status(request.chosen("status")),
 			Due:    request.text("due"),
 		}, principal.Provenance)

@@ -124,6 +124,37 @@ func TestTheValidatorRefusesTypesNobodyDeclared(t *testing.T) {
 	}
 }
 
+// What a deployment may put on the wire and what any reader will ever do with it are two different
+// questions, and only the first one has an artefact behind it.
+//
+// This is the measurement behind Q-40. The cheapest way to give `text_input` more than one line is
+// an optional field on it — the shape the protocol chose for itself in §4.5 when a row had to become
+// clickable, because an unknown field is ignored (§3) and costs nothing. The wire agrees: every
+// object carries `additionalProperties: true`, so the extra key sails through the profile of this
+// very build. It is also useless for ever, because the reader that would have to honour it is
+// generated from the toolkit's own types, and §2.4 lets a deployment declare a NAME, never a field
+// of somebody else's type.
+//
+// So the assertion is deliberately the opposite of what a test usually asserts: the body is
+// accepted, and being accepted is the finding.
+func TestTheWireAcceptsAFieldNoReaderWillEverRead(t *testing.T) {
+	v := validator(t)
+
+	const extraField = `{"type":"text_input","id":"field-description","fieldId":"description",` +
+		`"label":"Description","multiline":true}`
+	if err := v.Validate(spec.Profile("KompotComponent"), []byte(extraField)); err != nil {
+		t.Errorf("the profile refused an unknown field, which §3 says every reader must ignore: %v", err)
+	}
+
+	// And the pair that keeps it from proving nothing: the same body under a type nobody declared is
+	// refused. Without this, a validator that accepted anything would pass the check above.
+	const unknownType = `{"type":"prose_input","id":"field-description","fieldId":"description",` +
+		`"label":"Description","multiline":true}`
+	if err := v.Validate(spec.Profile("KompotComponent"), []byte(unknownType)); err == nil {
+		t.Error("a type outside the profile was accepted; the check above measures nothing")
+	}
+}
+
 // The rule the whole package exists to keep: every input names a field the schema declares.
 func TestEveryInputNamesADeclaredField(t *testing.T) {
 	r := newResource(t)

@@ -7,9 +7,6 @@ import io.github.youndie.kompot.form.FormFieldDefinition
 import io.github.youndie.kompot.form.ValidationRule
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 /**
  * A date, which the protocol's vocabulary does not have.
@@ -64,22 +61,3 @@ data class DateInput(
     val placeholder: String = "",
     val hint: String = "",
 ) : KompotComponent
-
-/**
- * How the two types join the vocabulary at runtime.
- *
- * The same names appear in three places and each is a different half of the same statement: this
- * module registers them with the serializer, the profile declares them for anything that validates,
- * and the registry maps one of them to something that draws. A name present in one and missing from
- * another is exactly the failure this extension exists to make impossible to write by accident, so
- * the trio is checked by a test rather than kept in step by hand.
- */
-val tackuFieldsSerializersModule: SerializersModule =
-    SerializersModule {
-        polymorphic(KompotComponent::class) {
-            subclass(DateInput::class, DateInput.serializer())
-        }
-        polymorphic(FormFieldDefinition::class) {
-            subclass(DateField::class, DateField.serializer())
-        }
-    }

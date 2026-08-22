@@ -36,13 +36,20 @@ object TackuSpec {
      * a deployment on another stack could send its own type and no artefact anywhere said it was
      * allowed to.
      *
-     * `date_input` degrades to a placeholder; `date_field` does not degrade at all, and a client
-     * that does not know it loses the whole form. That is why the pair ships by deployment order
-     * (§15) and not behind a flag — there is no flag, which is the answer B-26 recorded.
+     * `date_input` and `multiline_input` degrade to a placeholder; `date_field` does not degrade at
+     * all, and a client that does not know it loses the whole form. That is why the date pair ships
+     * by deployment order (§15) and not behind a flag — there is no flag, which is the answer B-26
+     * recorded.
+     *
+     * `multiline_input` is deliberately alone: the box for prose is a component and its definition
+     * stays `text_field`, so the extension costs a placeholder rather than a response. What it does
+     * not do is make the field fillable again — the server cannot name a substitute for a type the
+     * client does not know (Q-42), and the cheap shape of the same addition, an optional field on
+     * `text_input`, is available to the toolkit and not to a deployment (Q-40).
      */
     val extensions: Map<String, Set<String>> =
         mapOf(
-            "KompotComponent" to setOf("date_input"),
+            "KompotComponent" to setOf("date_input", "multiline_input"),
             "FormFieldDefinition" to setOf("date_field"),
         )
 
