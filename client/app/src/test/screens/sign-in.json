@@ -26,7 +26,7 @@
   ]
  },
  "screen": {
-  "type": "column",
+  "type": "row",
   "id": "screen-sign-in",
   "modifiers": [
    {
@@ -45,22 +45,21 @@
   "children": [
    {
     "type": "column",
-    "id": "sign-in-top",
+    "id": "sign-in-body",
     "modifiers": [
      {
       "type": "weight",
       "value": 1
+     },
+     {
+      "type": "size",
+      "height": "Fill"
      }
     ],
-    "children": []
-   },
-   {
-    "type": "row",
-    "id": "sign-in-row",
     "children": [
      {
       "type": "column",
-      "id": "sign-in-left",
+      "id": "sign-in-top",
       "modifiers": [
        {
         "type": "weight",
@@ -70,96 +69,124 @@
       "children": []
      },
      {
-      "type": "column",
-      "id": "sign-in-card",
-      "modifiers": [
-       {
-        "type": "size",
-        "widthDp": 420
-       }
-      ],
+      "type": "row",
+      "id": "sign-in-row",
       "children": [
        {
         "type": "column",
-        "id": "sign-in-heading",
-        "children": [
+        "id": "sign-in-left",
+        "modifiers": [
          {
-          "type": "text",
-          "id": "sign-in-brand",
-          "text": "tacku",
-          "style": "display"
-         },
-         {
-          "type": "text",
-          "id": "sign-in-title",
-          "text": "Sign in to your workspace",
-          "style": "body_muted"
+          "type": "weight",
+          "value": 1
          }
         ],
-        "spacing": 4
+        "children": []
        },
        {
-        "type": "text_input",
-        "id": "field-email",
-        "fieldId": "email",
-        "label": "Email",
-        "placeholder": "you@company.com"
-       },
-       {
-        "type": "text_input",
-        "id": "field-password",
-        "fieldId": "password",
-        "label": "Password",
-        "secret": true
-       },
-       {
-        "type": "row",
-        "id": "sign-in-actions",
+        "type": "column",
+        "id": "sign-in-card",
+        "modifiers": [
+         {
+          "type": "size",
+          "widthDp": 420
+         }
+        ],
         "children": [
          {
-          "type": "button",
-          "id": "sign-in-submit",
-          "modifiers": [
+          "type": "column",
+          "id": "sign-in-heading",
+          "children": [
            {
-            "type": "padding",
-            "top": 14,
-            "bottom": 14,
-            "start": 24,
-            "end": 24
+            "type": "text",
+            "id": "sign-in-brand",
+            "text": "tacku",
+            "style": "display"
+           },
+           {
+            "type": "text",
+            "id": "sign-in-title",
+            "text": "Sign in to your workspace",
+            "style": "body_muted"
            }
           ],
-          "text": "Sign in",
-          "action": {
-           "type": "submit_form",
-           "formId": "sign-in"
-          },
-          "variant": "primary"
+          "spacing": 4
          },
          {
-          "type": "column",
-          "id": "sign-in-actions-spacer",
-          "modifiers": [
+          "type": "text_input",
+          "id": "field-email",
+          "fieldId": "email",
+          "label": "Email",
+          "placeholder": "you@company.com"
+         },
+         {
+          "type": "text_input",
+          "id": "field-password",
+          "fieldId": "password",
+          "label": "Password",
+          "secret": true
+         },
+         {
+          "type": "row",
+          "id": "sign-in-actions",
+          "children": [
            {
-            "type": "weight",
-            "value": 1
+            "type": "button",
+            "id": "sign-in-submit",
+            "modifiers": [
+             {
+              "type": "padding",
+              "top": 14,
+              "bottom": 14,
+              "start": 24,
+              "end": 24
+             }
+            ],
+            "text": "Sign in",
+            "action": {
+             "type": "submit_form",
+             "formId": "sign-in"
+            },
+            "variant": "primary"
+           },
+           {
+            "type": "column",
+            "id": "sign-in-actions-spacer",
+            "modifiers": [
+             {
+              "type": "weight",
+              "value": 1
+             }
+            ],
+            "children": []
            }
-          ],
-          "children": []
+          ]
+         },
+         {
+          "type": "text",
+          "id": "sign-in-note",
+          "text": "Your agent signs in with its own credentials. Every action it takes is recorded on your behalf.",
+          "style": "meta"
          }
-        ]
+        ],
+        "spacing": 24
        },
        {
-        "type": "text",
-        "id": "sign-in-note",
-        "text": "Your agent signs in with its own credentials. Every action it takes is recorded on your behalf.",
-        "style": "meta"
+        "type": "column",
+        "id": "sign-in-right",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         }
+        ],
+        "children": []
        }
-      ],
-      "spacing": 24
+      ]
      },
      {
       "type": "column",
-      "id": "sign-in-right",
+      "id": "sign-in-bottom",
       "modifiers": [
        {
         "type": "weight",
@@ -169,17 +196,6 @@
       "children": []
      }
     ]
-   },
-   {
-    "type": "column",
-    "id": "sign-in-bottom",
-    "modifiers": [
-     {
-      "type": "weight",
-      "value": 1
-     }
-    ],
-    "children": []
    }
   ]
  }

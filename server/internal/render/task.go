@@ -20,19 +20,26 @@ type Task struct {
 
 // Screen renders the tree; the caller supplies the schema half through the form builder.
 func (t Task) Screen(comment, status Component) Component {
-	return Column("screen-task", 24,
-		[]Modifier{FillWidth(), FillHeight(), Padding(32), Background(ColorSurface)},
-		Row("task-back-row", 0, nil,
-			Button("task-back", BackLabel(t.Task.Board), Navigate(LinkBoard), PaddingXY(12, 20)),
-			Spacer("task-back-spacer"),
-		),
-		Column("task-heading", 6, nil,
-			Text("task-title", t.Task.Title, TextDisplay),
-			Text("task-meta", TaskMeta(t.Task), TextMeta),
-		),
-		Row("task-body", 32, []Modifier{Weight(1)},
-			t.left(comment),
-			t.sidebar(status),
+	// A row at the root, for the same reason the sign-in screen has one: the client lays the root's
+	// children out as separate items so that a screen can scroll, and a `weight` among them divides
+	// nothing. `task-body` is weighted, so without this wrapper the body would collapse to the
+	// height of its text instead of taking the rest of the screen.
+	return Row("screen-task", 0,
+		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
+		Column("screen-task-body", 24,
+			[]Modifier{Weight(1), FillHeight(), Padding(32), Background(ColorSurface)},
+			Row("task-back-row", 0, nil,
+				Button("task-back", BackLabel(t.Task.Board), Navigate(LinkBoard), PaddingXY(12, 20)),
+				Spacer("task-back-spacer"),
+			),
+			Column("task-heading", 6, nil,
+				Text("task-title", t.Task.Title, TextDisplay),
+				Text("task-meta", TaskMeta(t.Task), TextMeta),
+			),
+			Row("task-body", 32, []Modifier{Weight(1)},
+				t.left(comment),
+				t.sidebar(status),
+			),
 		),
 	)
 }

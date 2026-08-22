@@ -50,15 +50,27 @@ func loginForm() http.HandlerFunc {
 				render.TextMeta),
 		)
 
-		screen := render.Column("screen-sign-in", 0,
+		// A row at the root, and that is not decoration.
+		//
+		// The client draws a screen so that it scrolls when it is taller than the window, and the
+		// mechanism lays the ROOT's children out as separate items — which is why a `weight` among
+		// them has nothing to divide and collapses to nothing. Centring is two weighted spacers, so
+		// on this screen, and only on this screen, the form ended up jammed against the top edge
+		// with its heading clipped. Every other screen has a row at the root already and never saw
+		// it. Wrapping the column in one puts the whole thing inside a single item, where weight
+		// means what it means everywhere else.
+		screen := render.Row("screen-sign-in", 0,
 			[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Background(render.ColorSurface)},
-			render.Spacer("sign-in-top"),
-			render.Row("sign-in-row", 0, nil,
-				render.Spacer("sign-in-left"),
-				card,
-				render.Spacer("sign-in-right"),
+			render.Column("sign-in-body", 0,
+				[]render.Modifier{render.Weight(1), render.FillHeight()},
+				render.Spacer("sign-in-top"),
+				render.Row("sign-in-row", 0, nil,
+					render.Spacer("sign-in-left"),
+					card,
+					render.Spacer("sign-in-right"),
+				),
+				render.Spacer("sign-in-bottom"),
 			),
-			render.Spacer("sign-in-bottom"),
 		)
 
 		respond(w, r, form.Build(screen))
