@@ -107,7 +107,7 @@ func builtTypes(t *testing.T) []string {
 			if !ok || !namesTheDiscriminator(pair.Key) {
 				return true
 			}
-			if value, ok := literal(pair.Value); ok {
+			if value, ok := stringValue(pair.Value); ok {
 				found[value] = true
 			}
 			return true
@@ -128,11 +128,11 @@ func namesTheDiscriminator(key ast.Expr) bool {
 	if ident, ok := key.(*ast.Ident); ok {
 		return ident.Name == "Type"
 	}
-	value, ok := literal(key)
+	value, ok := stringValue(key)
 	return ok && value == "type"
 }
 
-func literal(expr ast.Expr) (string, bool) {
+func stringValue(expr ast.Expr) (string, bool) {
 	basic, ok := expr.(*ast.BasicLit)
 	if !ok || basic.Kind != token.STRING {
 		return "", false
