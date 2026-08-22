@@ -475,3 +475,127 @@ func textOf(node any) string {
 	}
 	return strings.Join(found, "\n")
 }
+
+// refusalOf reads the sentence a refused submit answers with.
+func (r *resource) refusalOf(t *testing.T, response *http.Response) string {
+	t.Helper()
+	var refusal struct {
+		Error   string `json:"error"`
+		FieldID string `json:"fieldId"`
+	}
+	if err := json.Unmarshal(r.bodyOf(t, response), &refusal); err != nil {
+		t.Fatal(err)
+	}
+	if refusal.FieldID != "" {
+		t.Errorf("the refusal points at the field %q, and it is about a set of them: an answer that "+
+			"highlights one of two ticked tasks says the other one is fine (Q-48)", refusal.FieldID)
+	}
+	return refusal.Error
+}
+
+// What B-32 is actually about: the outcome a person is shown when a bulk action does not apply.
+//
+// The move is all-or-nothing, so there is one such outcome and it is the refusal — and it has to
+// name what stopped the move. Every one of them, not the first: a message naming one of two sends
+// the person back to correct half the selection and meet the rest on the second attempt.
+//
+// The sentences are written out here rather than taken from render, because a check that asks the
+// code what it says agrees with anything the code is later edited to say.
+func TestARefusedBulkMoveNamesEveryTaskThatIsNoLongerThere(t *testing.T) {
+	cases := map[string]struct {
+		ticked  map[string]bool
+		message string
+	}{
+		"one is gone": {
+			map[string]bool{"TAC-2": true, "TAC-404": true},
+			"TAC-404 is no longer there, so nothing moved. " +
+				"Open the screen again and choose from what is left.",
+		},
+		"two are gone": {
+			map[string]bool{"TAC-2": true, "TAC-404": true, "TAC-405": true},
+			"TAC-404 and TAC-405 are no longer there, so nothing moved. " +
+				"Open the screen again and choose from what is left.",
+		},
+	}
+
+	for name, c := range cases {
+		r := newResource(t)
+		r.fill(t, 3)
+		token := r.reader(t)
+
+		before := r.journalLength(t)
+		response := r.post(t, bulkSubmit, token, "gone-"+name, bulkBody("done", c.ticked))
+		if response.StatusCode != http.StatusUnprocessableEntity {
+			t.Fatalf("%s answered %d, want 422", name, response.StatusCode)
+		}
+
+		if got := r.refusalOf(t, response); got != c.message {
+			t.Errorf("%s is refused with\n  %q\nwant\n  %q", name, got, c.message)
+		}
+		if got := r.statusOf(t, "TAC-2"); got == domain.StatusDone {
+			t.Errorf("%s moved a task anyway, so the refusal describes an outcome that did not happen", name)
+		}
+		if got := r.journalLength(t); got != before {
+			t.Errorf("%s wrote %d journal entries", name, got-before)
+		}
+	}
+}
+
+// The other half of the acceptance criterion: a repeat under the same key answers the same thing
+// instead of finishing off the remainder.
+//
+// It holds for a reason worth writing down rather than by being implemented. A refusal is not
+// recorded — the key survives it (Q-47) — so the repeat runs the handler again and reaches the same
+// answer because the operation is atomic and therefore left nothing half done. Under a best-effort
+// bulk move the same two decisions would produce exactly the failure B-32 forbids.
+func TestARepeatedRefusalOfABulkMoveSaysTheSameThingAndStillMovesNothing(t *testing.T) {
+	r := newResource(t)
+	r.fill(t, 3)
+	token := r.reader(t)
+
+	before := r.journalLength(t)
+	body := bulkBody("done", map[string]bool{"TAC-2": true, "TAC-3": true, "TAC-404": true})
+
+	first := r.refusalOf(t, r.post(t, bulkSubmit, token, "gone-repeat", body))
+	second := r.refusalOf(t, r.post(t, bulkSubmit, token, "gone-repeat", body))
+
+	if first != second {
+		t.Errorf("the repeat is refused with %q, the first attempt with %q", second, first)
+	}
+	for _, id := range []domain.TaskID{"TAC-2", "TAC-3"} {
+		if got := r.statusOf(t, id); got == domain.StatusDone {
+			t.Errorf("%s moved on the repeat: the second attempt finished off what the first refused", id)
+		}
+	}
+	if got := r.journalLength(t); got != before {
+		t.Errorf("two refused attempts wrote %d journal entries", got-before)
+	}
+}
+
+// A key is not spent by a refusal, and this is the decision of Q-47 rather than an accident.
+//
+// §16.5 describes the key of an attempt that did something. Nothing says whether an attempt refused
+// on its merits counts as an outcome to replay — and the two readings differ in what a person meets
+// after correcting the form: either the corrected submission goes through, or it collides with the
+// refusal recorded under the same key and is answered 409.
+func TestAKeyIsNotSpentByARefusalAndCarriesTheCorrectedSubmission(t *testing.T) {
+	r := newResource(t)
+	r.fill(t, 3)
+	token := r.reader(t)
+
+	const key = "corrected-after-a-refusal"
+	refused := r.post(t, bulkSubmit, token, key, bulkBody("done", map[string]bool{"TAC-2": false}))
+	if refused.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("a selection with nothing ticked answered %d, want 422", refused.StatusCode)
+	}
+
+	corrected := r.post(t, bulkSubmit, token, key, bulkBody("done", map[string]bool{"TAC-2": true}))
+	if corrected.StatusCode != http.StatusOK {
+		t.Fatalf("the corrected submission under the same key answered %d, want 200: a refusal that "+
+			"consumed the key leaves a person who fixed the form nothing to send it with",
+			corrected.StatusCode)
+	}
+	if got := r.statusOf(t, "TAC-2"); got != domain.StatusDone {
+		t.Errorf("TAC-2 stands in %q after the corrected submission answered 200", got)
+	}
+}

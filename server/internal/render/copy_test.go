@@ -329,3 +329,27 @@ func kindsInSource(t *testing.T) []domain.ChangeKind {
 	})
 	return kinds
 }
+
+// The refusal of a bulk move, at the three lengths where its grammar changes.
+//
+// One name stands alone, two are joined by a word, three take commas and keep the word before the
+// last — and the verb agrees with how many there are. Each expectation is written out here in full
+// rather than assembled from the same pieces the function uses, because a check built out of the
+// code's own parts agrees with whatever the code is edited into.
+func TestTheRefusalOfASelectionNamesEveryTaskAndAgreesItsVerb(t *testing.T) {
+	const tail = ", so nothing moved. Open the screen again and choose from what is left."
+
+	cases := []struct {
+		gone []domain.TaskID
+		want string
+	}{
+		{[]domain.TaskID{"TAC-4"}, "TAC-4 is no longer there" + tail},
+		{[]domain.TaskID{"TAC-4", "TAC-9"}, "TAC-4 and TAC-9 are no longer there" + tail},
+		{[]domain.TaskID{"TAC-4", "TAC-9", "TAC-12"}, "TAC-4, TAC-9 and TAC-12 are no longer there" + tail},
+	}
+	for _, c := range cases {
+		if got := render.MissingFromSelection(c.gone); got != c.want {
+			t.Errorf("%d gone renders\n  %q\nwant\n  %q", len(c.gone), got, c.want)
+		}
+	}
+}

@@ -105,6 +105,33 @@ const (
 	MoveUnchanged MoveOutcome = "unchanged"
 )
 
+// MissingTasks is the refusal of a move that named tasks the store does not have.
+//
+// A type rather than a formatted ErrNotFound because the identifiers have to survive the trip out.
+// What a person is told when a bulk action does not apply is the whole of B-32, and the answer there
+// is that the refusal names what stopped it — which is impossible once the names have been baked
+// into a sentence written for a log (§14).
+//
+// Every one of them and not the first: a refusal naming one of two sends the person back to correct
+// half the selection, apply it, and meet the other half on the second attempt. The store therefore
+// looks at everything that was named before it writes anything, which it has to do anyway — the
+// operation is all-or-nothing.
+type MissingTasks struct {
+	Tasks []TaskID
+}
+
+func (e *MissingTasks) Error() string {
+	names := make([]string, 0, len(e.Tasks))
+	for _, id := range e.Tasks {
+		names = append(names, string(id))
+	}
+	return fmt.Sprintf("%v: no tasks %s", ErrNotFound, strings.Join(names, ", "))
+}
+
+// Unwrap keeps the class of the refusal readable by everything that asks about it in the usual way,
+// so a caller that does not care which tasks are gone goes on treating it as ErrNotFound.
+func (e *MissingTasks) Unwrap() error { return ErrNotFound }
+
 // MoveResult is what happened to one task, in the order the caller named them.
 //
 // A list rather than a count, and that is deliberate room rather than generosity: what a person is

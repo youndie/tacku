@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -231,16 +232,34 @@ func (s *Store) MoveTasks(
 
 	var results []domain.MoveResult
 	err := s.write(ctx, func(tx *sql.Tx) error {
-		moved := make([]domain.MoveResult, 0, len(ids))
+		// Everything that was named is read before anything is written, and the reason is the
+		// refusal rather than the write: stopping at the first task that is gone would name one of
+		// two, and the person would correct half the selection and meet the rest on the next try
+		// (B-32). Nothing is lost by looking first — the operation is all-or-nothing anyway.
+		named := make([]domain.Task, 0, len(ids))
+		var missing []domain.TaskID
 		for _, id := range ids {
 			if !id.Valid() {
 				return fmt.Errorf("%w: %q is not a task identifier", domain.ErrInvalidTask, string(id))
 			}
 			task, err := scanTaskFor(
 				tx.QueryRowContext(ctx, taskColumns+` from tasks where id = ?`, string(id)), id)
+			if errors.Is(err, domain.ErrNotFound) {
+				missing = append(missing, id)
+				continue
+			}
 			if err != nil {
 				return err
 			}
+			named = append(named, task)
+		}
+		if len(missing) > 0 {
+			return &domain.MissingTasks{Tasks: missing}
+		}
+
+		moved := make([]domain.MoveResult, 0, len(named))
+		for _, task := range named {
+			id := task.ID
 
 			// Already there. Not an error and not an entry: the same rule a single edit applies,
 			// and for the same reason — a feed telling somebody a task moved from In review to In
