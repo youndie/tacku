@@ -222,6 +222,11 @@ class Navigator(
         const val TASK_PREFIX = "app://task/"
         const val TASK_PATH = "/forms/task/"
 
+        // Checked before the task prefix, and the order is the point: `app://edit-task/` does not
+        // start with `app://task/`, but a prefix table is exactly where that stops being obvious.
+        const val EDIT_TASK_PREFIX = "app://edit-task/"
+        const val EDIT_TASK_PATH = "/forms/edit-task/"
+
         /**
          * The one address this client assembles instead of looking up.
          *

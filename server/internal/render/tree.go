@@ -506,6 +506,17 @@ func FieldText(text string) map[string]any {
 	return map[string]any{"type": "text_value", "text": text}
 }
 
+// FieldEntity is the shape a chosen option travels in, which is not the shape a typed string
+// travels in. A select answers with an identity, and the server reads it as one.
+//
+// The title is required by the contract and is not decoration: a value that carries only an
+// identifier cannot be shown back to a person by anything that receives it. Omitting it made the
+// whole screen fail to decode — the client refuses the response rather than the field, which is
+// §2.2's asymmetry doing exactly what it says it does.
+func FieldEntity(id, title string) map[string]any {
+	return map[string]any{"type": "entity_value", "id": id, "title": title}
+}
+
 type readOnlyField struct {
 	Type       string     `json:"type"`
 	ID         string     `json:"id"`

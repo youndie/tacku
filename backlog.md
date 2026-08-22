@@ -45,21 +45,18 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (9)
+## Open (6)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
-| [B-46](docs/backlog/B-46-edit-a-task.md) `[ ]` | Изменить задачу: после создания заголовок и описание менять нечем | P1 | M | - |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
-| [B-47](docs/backlog/B-47-mark-as-done.md) `[ ]` | «Отметить сделанной» одним нажатием вместо цепочки статусов | P2 | S | - |
-| [B-48](docs/backlog/B-48-sidebar-says-what-happened.md) `[ ]` | Панель задачи говорит, что есть, и молчит о том, что произошло | P2 | S | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
 | [B-44](docs/backlog/B-44-reproducible-screen-corpus.md) `[ ]` | Корпус экранов зависит от часов: обновление всегда переписывает два голдена | P3 | S | - |
 
-## Closed (39)
+## Closed (42)
 
 **Чем меряем**
 
@@ -114,6 +111,9 @@
 - [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[x]` - Что показывать, когда массовое действие применилось частично
 - [B-33](docs/backlog/B-33-wizard-scenario-state-lifetime.md) `[x]` - Срок жизни состояния сценария: отменить его нечем
 - [B-45](docs/backlog/B-45-adopt-kompot-0-22.md) `[x]` - Принять kompot 0.22: третий ключ дизайн-системы, вид кнопки, доля у weight
+- [B-46](docs/backlog/B-46-edit-a-task.md) `[x]` - Изменить задачу: после создания заголовок и описание менять нечем
+- [B-47](docs/backlog/B-47-mark-as-done.md) `[x]` - «Отметить сделанной» одним нажатием вместо цепочки статусов
+- [B-48](docs/backlog/B-48-sidebar-says-what-happened.md) `[x]` - Панель задачи говорит, что есть, и молчит о том, что произошло
 
 <!-- END INDEX -->
 

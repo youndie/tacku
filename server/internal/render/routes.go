@@ -30,6 +30,10 @@ const (
 
 	// The prefix a task identifier follows. Client-known of necessity: the graph has no parameters.
 	LinkTask = "app://task/"
+
+	// The same for the form that edits one. A second prefix rather than a query on the first,
+	// because the graph carries neither and the client has to recognise both by shape anyway.
+	LinkEditTask = "app://edit-task/"
 )
 
 // Route is one entry of the navigation graph.
@@ -75,4 +79,4 @@ var ClientNative = []string{LinkSignIn, LinkSignOut}
 //
 // Listed separately because the graph cannot express them at all: a route's endpoint is a literal
 // path, so anything addressed by naming a thing is resolved by the client from a prefix it knows.
-var ClientNativePrefixes = []string{LinkTask}
+var ClientNativePrefixes = []string{LinkTask, LinkEditTask}

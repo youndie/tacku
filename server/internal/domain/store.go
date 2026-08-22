@@ -36,6 +36,12 @@ type Store interface {
 	// the answer.
 	MoveTasks(ctx context.Context, ids []TaskID, to Status, by Provenance, from Surface) ([]MoveResult, error)
 
+	// Retitle and Rewrite are two calls rather than one taking both halves, because the journal has
+	// two kinds for them and a history that cannot say which half changed sends a reader to open the
+	// task and compare.
+	Retitle(ctx context.Context, id TaskID, title string, by Provenance) (Task, error)
+	Rewrite(ctx context.Context, id TaskID, body string, by Provenance) (Task, error)
+
 	AssignTask(ctx context.Context, id TaskID, to MemberID, by Provenance) (Task, error)
 	SetDue(ctx context.Context, id TaskID, due string, by Provenance) (Task, error)
 

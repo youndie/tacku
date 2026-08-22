@@ -313,6 +313,29 @@ func (s *Store) SetDue(ctx context.Context, id domain.TaskID, due string, by dom
 	})
 }
 
+// Retitle changes a task's name.
+//
+// Separate from Rewrite rather than one call taking both, and the reason is the journal: the
+// vocabulary has had `title_edited` and `body_edited` as distinct kinds since it was written, and a
+// history that says "edited" where it could say which half changed is a history that makes somebody
+// open the task to find out.
+func (s *Store) Retitle(ctx context.Context, id domain.TaskID, title string, by domain.Provenance) (domain.Task, error) {
+	return s.edit(ctx, id, by, domain.ChangeTitleEdited, domain.SurfaceNone, func(t *domain.Task) (string, string, bool) {
+		was := t.Title
+		t.Title = strings.TrimSpace(title)
+		return was, t.Title, was != t.Title
+	})
+}
+
+// Rewrite changes a task's description.
+func (s *Store) Rewrite(ctx context.Context, id domain.TaskID, body string, by domain.Provenance) (domain.Task, error) {
+	return s.edit(ctx, id, by, domain.ChangeBodyEdited, domain.SurfaceNone, func(t *domain.Task) (string, string, bool) {
+		was := t.Body
+		t.Body = strings.TrimSpace(body)
+		return was, t.Body, was != t.Body
+	})
+}
+
 func (s *Store) Comment(ctx context.Context, id domain.TaskID, text string, by domain.Provenance) (domain.Comment, error) {
 	if err := by.Validate(); err != nil {
 		return domain.Comment{}, err

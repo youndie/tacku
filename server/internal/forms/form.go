@@ -39,18 +39,21 @@ type textField struct {
 	Rules        []Rule `json:"rules"`
 	KeyboardType string `json:"keyboardType,omitempty"`
 	Mask         string `json:"mask,omitempty"`
+	InitialValue any    `json:"initialValue,omitempty"`
 }
 
 type selectionField struct {
-	Type    string `json:"type"`
-	FieldID string `json:"fieldId"`
-	Rules   []Rule `json:"rules,omitempty"`
+	Type         string `json:"type"`
+	FieldID      string `json:"fieldId"`
+	Rules        []Rule `json:"rules,omitempty"`
+	InitialValue any    `json:"initialValue,omitempty"`
 }
 
 type checkboxField struct {
-	Type    string `json:"type"`
-	FieldID string `json:"fieldId"`
-	Rules   []Rule `json:"rules,omitempty"`
+	Type         string `json:"type"`
+	FieldID      string `json:"fieldId"`
+	Rules        []Rule `json:"rules,omitempty"`
+	InitialValue any    `json:"initialValue,omitempty"`
 }
 
 type requiredRule struct {
@@ -104,6 +107,7 @@ func (b *Builder) TextInput(fieldID, label, placeholder string, rules []Rule, op
 	b.declare(fieldID, textField{
 		Type: "text_field", FieldID: fieldID, Rules: nonNilRules(rules),
 		KeyboardType: settings.keyboard, Mask: settings.mask,
+		InitialValue: settings.initial,
 	})
 
 	return render.TextInput(componentID(fieldID), fieldID, label, placeholder, settings.mask, settings.secret)
@@ -113,6 +117,7 @@ type textSettings struct {
 	keyboard string
 	mask     string
 	secret   bool
+	initial  any
 }
 
 type TextOption func(*textSettings)
@@ -121,12 +126,38 @@ func Keyboard(kind string) TextOption { return func(s *textSettings) { s.keyboar
 func Mask(mask string) TextOption     { return func(s *textSettings) { s.mask = mask } }
 func Secret() TextOption              { return func(s *textSettings) { s.secret = true } }
 
+// Filled is what the field starts as.
+//
+// The value goes on the field **definition**, not on the input: `text_input` has no field for it,
+// and there is nowhere else for it to live (§9.x, added upstream as `initialValue`). Which is why
+// editing anything was impossible here until now — a form that cannot arrive filled in can only
+// create.
+//
+// Empty means empty: an absent value and a value of "" are the same thing to a person looking at a
+// text box, and `omitempty` keeps the wire from carrying the difference.
+func Filled(text string) TextOption {
+	return func(s *textSettings) {
+		if text != "" {
+			s.initial = render.FieldText(text)
+		}
+	}
+}
+
 // Select declares a selection field and returns the input that shows it.
 //
 // Options belong to the component rather than to the schema (§9.8): the same field can be drawn as
 // a dropdown or as a radio group, and the contract does not care which.
 func (b *Builder) Select(fieldID, label, placeholder string, options []render.SelectOption, rules []Rule) render.Component {
-	b.declare(fieldID, selectionField{Type: "selection_field", FieldID: fieldID, Rules: rules})
+	return b.SelectFilled(fieldID, label, placeholder, "", options, rules)
+}
+
+// SelectFilled is the same with an option already chosen, which is what an edit form needs.
+func (b *Builder) SelectFilled(fieldID, label, placeholder, selected string, options []render.SelectOption, rules []Rule) render.Component {
+	field := selectionField{Type: "selection_field", FieldID: fieldID, Rules: rules}
+	if selected != "" {
+		field.InitialValue = render.FieldEntity(selected, selected)
+	}
+	b.declare(fieldID, field)
 	return render.SelectInput(componentID(fieldID), fieldID, label, placeholder, options)
 }
 

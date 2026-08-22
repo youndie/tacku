@@ -415,7 +415,7 @@
                    {
                     "type": "text",
                     "id": "history-3-who",
-                    "text": "anna · 22:12",
+                    "text": "anna · 23:09",
                     "style": "meta"
                    }
                   ],
@@ -524,7 +524,8 @@
              }
             ],
             "label": "Status",
-            "value": "To do"
+            "value": "To do",
+            "helperText": "Changed by anna just now"
            },
            {
             "type": "read_only_field",
@@ -556,7 +557,8 @@
              }
             ],
             "label": "Due",
-            "value": "29 Aug"
+            "value": "29 Aug",
+            "helperText": "In 6 days"
            },
            {
             "type": "read_only_field",
@@ -602,6 +604,67 @@
              }
             ],
             "placeholder": "Choose a status…"
+           },
+           {
+            "type": "button",
+            "id": "task-mark-done",
+            "modifiers": [
+             {
+              "type": "size",
+              "width": "Fill"
+             },
+             {
+              "type": "padding",
+              "top": 12,
+              "bottom": 12,
+              "start": 24,
+              "end": 24
+             }
+            ],
+            "text": "Mark as Done",
+            "action": {
+             "type": "perform",
+             "url": "/submit/task-view/TAC-2",
+             "payload": {
+              "status": {
+               "id": "done",
+               "title": "Done",
+               "type": "entity_value"
+              }
+             }
+            },
+            "variant": "primary"
+           },
+           {
+            "type": "row",
+            "id": "task-edit",
+            "modifiers": [
+             {
+              "type": "size",
+              "width": "Fill"
+             }
+            ],
+            "children": [
+             {
+              "type": "text",
+              "id": "task-edit-label",
+              "modifiers": [
+               {
+                "type": "padding",
+                "top": 12,
+                "bottom": 12,
+                "start": 12,
+                "end": 12
+               }
+              ],
+              "text": "Edit task",
+              "style": "button_quiet"
+             }
+            ],
+            "action": {
+             "type": "navigate",
+             "deeplink": "app://edit-task/TAC-2"
+            }
            },
            {
             "type": "column",

@@ -84,6 +84,12 @@ func navItem(id, link, current string) Component {
 // beside it: 12 by 18 against the action's 12 by 24, so the two read as one pair.
 func BackAction(to string) Component { return backTo(to, RouteTitle(to), PaddingXY(12, 18)) }
 
+// BackTask is the way out of a screen that belongs to one task: back to that task, named by its
+// identifier because that is what the person came from and what they will recognise.
+func BackTask(id domain.TaskID) Component {
+	return backTo(LinkTask+string(id), string(id), PaddingXY(12, 18))
+}
+
 // BackLink is the way out standing above a title, where the design gives it no padding at all: a
 // plain line at the content's left edge, 24 above the heading. Padding it there pushed the heading
 // 33 points down the screen and indented the arrow away from everything under it.

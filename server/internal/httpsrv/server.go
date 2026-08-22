@@ -159,6 +159,8 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("GET /forms/my-tasks", myTasks(config.Deps.Store))
 	screens.Handle("GET /pages/tasks", tasksPage(config.Deps.Store))
 	screens.Handle("GET /forms/task/{task}", taskScreen(config.Deps.Store))
+	screens.Handle("GET /forms/edit-task/{task}", editTaskForm(config.Deps.Store))
+	screens.Handle("POST /submit/edit-task/{task}", submitEditTask(config.Deps.Store))
 	screens.Handle("POST /submit/task-view/{task}", submitTaskView(config.Deps.Store))
 	// The two endpoint kinds of §16.1 nothing here used to answer. The scenario store is built with
 	// the same clock as the visit boundary: the guarantee is about time passing, and a test that

@@ -2,6 +2,7 @@ package httpsrv
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/forms"
@@ -74,10 +75,12 @@ func taskScreen(store domain.Store) http.HandlerFunc {
 		status := form.Select("status", "Move to", "Choose a status…", statusOptions(), nil)
 
 		screen := render.Task{
-			Task:     task,
-			History:  history,
-			Comments: comments,
-			Person:   principal.Provenance.OnBehalfOf,
+			Task:      task,
+			History:   history,
+			Comments:  comments,
+			Person:    principal.Provenance.OnBehalfOf,
+			SubmitURL: "/submit/task-view/" + string(id),
+			Now:       time.Now(),
 		}.Screen(comment, status)
 
 		respond(w, r, form.Build(screen))

@@ -17,6 +17,8 @@ const (
 
 const newTaskFormID = "new-task"
 
+const editTaskFormID = "edit-task"
+
 // newTaskForm serves the form that creates a task.
 //
 // The due date is this deployment's own field type, which the vocabulary does not have and now has
@@ -87,6 +89,106 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 		)
 
 		respond(w, r, form.Build(screen))
+	}
+}
+
+// editTaskForm serves the form that changes a task, filled in with what it currently is.
+//
+// It exists because nothing here could change a title. The journal has had `title_edited` and
+// `body_edited` as kinds since it was written and the store had no call that produced either: the
+// vocabulary of what happened was ahead of what could happen, which is a shape of gap that no test
+// notices — every entry the server writes is one it can write.
+//
+// Filled in through `initialValue` on the field definitions rather than through the inputs, which
+// carry no value at all. Until that arrived upstream a form could only create.
+//
+// Three fields, not four. The assignee is missing on purpose: the store knows how to look one member
+// up and not how to list them, so a select here would need a new way to read — and handing a task to
+// somebody is arguably its own act with its own journal kind rather than a line on an edit form.
+// Written down in B-46 rather than added quietly.
+func editTaskForm(store domain.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if _, err := principalOf(r); err != nil {
+			unauthenticated(w)
+			return
+		}
+
+		id := domain.TaskID(r.PathValue("task"))
+		task, err := store.Task(r.Context(), id)
+		if err != nil {
+			fail(w, err)
+			return
+		}
+
+		form := forms.New(editTaskFormID)
+
+		title := form.TextInput("title", "Title", "What needs to be done?",
+			[]forms.Rule{forms.Required("Give the task a title.")}, forms.Filled(task.Title))
+
+		description := form.MultilineInput("description", "Description",
+			"What does done look like?", task.Body, render.DefaultLines, nil)
+
+		due := form.DateInput("due", "Due date", task.Due, "", "", "Leave it empty if there is no deadline.",
+			[]forms.Rule{forms.Regex(`^\d{4}-\d{2}-\d{2}$`, "Enter the date as YYYY-MM-DD, for example 2026-08-29.")})
+
+		screen := render.Column("form-edit-task", 20,
+			[]render.Modifier{render.FillWidth(), render.Padding(32), render.Background(render.ColorSurface)},
+			render.Text("form-edit-task-title", "Edit task", render.TextDisplay),
+			render.Text("form-edit-task-meta", string(task.ID), render.TextMeta),
+			title,
+			description,
+			due,
+			render.Row("edit-actions", 12, nil,
+				render.BackTask(id),
+				render.PrimaryButton("edit-submit", "Save changes", render.SubmitForm(form.FormID()),
+					render.PaddingXY(12, 24)),
+				render.Spacer("edit-actions-spacer"),
+			),
+		)
+
+		respond(w, r, form.Build(screen))
+	}
+}
+
+// submitEditTask applies what changed, and only what changed.
+//
+// Four calls rather than one, because the journal distinguishes four kinds and a history that says
+// "edited" makes a reader open the task to find out which half moved. A field that arrives equal to
+// what is stored writes nothing: the store's own edit refuses to record a change that changed
+// nothing, so a person who opens the form and saves it untouched leaves no trace.
+func submitEditTask(store domain.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		principal, err := principalOf(r)
+		if err != nil {
+			unauthenticated(w)
+			return
+		}
+
+		var request submitRequest
+		if err := decodeSubmit(r, &request); err != nil {
+			http.Error(w, `{"error":"the body is not a form submission"}`, http.StatusBadRequest)
+			return
+		}
+
+		id := domain.TaskID(r.PathValue("task"))
+		by := principal.Provenance
+
+		if title := request.text("title"); title != "" {
+			if _, err := store.Retitle(r.Context(), id, title, by); err != nil {
+				fail(w, err)
+				return
+			}
+		}
+		if _, err := store.Rewrite(r.Context(), id, request.text("description"), by); err != nil {
+			fail(w, err)
+			return
+		}
+		if _, err := store.SetDue(r.Context(), id, request.text("due"), by); err != nil {
+			fail(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": render.LinkTask + string(id)})
 	}
 }
 

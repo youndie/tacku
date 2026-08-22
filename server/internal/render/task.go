@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 )
@@ -20,6 +21,16 @@ type Task struct {
 	// Who is looking, for the rail. Needed here for the same reason it is needed on the board: the
 	// navigation names the person at its foot, and a screen without it is one you cannot leave.
 	Person domain.MemberID
+
+	// Where a status change from this screen posts. It is not the board's address, and the
+	// difference is not cosmetic: the surface is derived from the address and the measurement of
+	// where people actually change status (B-36) is derived from the surface.
+	SubmitURL string
+
+	// When the screen was asked for. Two lines of this panel are distances in time, and a distance
+	// needs both ends; taking the clock here rather than inside keeps the screen a function of its
+	// input, which is what lets it be photographed.
+	Now time.Time
 }
 
 // Screen renders the tree; the caller supplies the schema half through the form builder.
@@ -128,11 +139,17 @@ func (t Task) sidebar(status Component) Component {
 		// The labels are this screen's; the values are copy.go's, including the stand-ins it shows
 		// where there is nothing to render — a card and this sidebar used to spell one of them two
 		// different ways.
-		field("task-status", "Status", StatusName(string(t.Task.Status)), "", statusBackground),
+		field("task-status", "Status", StatusName(string(t.Task.Status)), StatusHelper(t.History, t.Now), statusBackground),
 		field("task-assignee", "Assignee", AssigneeValue(t.Task.Assignee), "", ColorSurfaceField),
-		field("task-due", "Due", DueValue(t.Task.Due), "", ColorSurfaceField),
+		field("task-due", "Due", DueValue(t.Task.Due), DueHelper(t.Task.Due, t.Now), ColorSurfaceField),
 		field("task-board", "Board", string(t.Task.Board), "", ColorSurfaceField),
 		status,
+		t.markDone(),
+		Opens(
+			Row("task-edit", 0, []Modifier{FillWidth()},
+				Text("task-edit-label", EditTaskLabel, TextButtonQuiet, PaddingXY(12, 12))),
+			Navigate(LinkEditTask+string(t.Task.ID)),
+		),
 		Spacer("task-sidebar-tail"),
 	)
 }
@@ -142,4 +159,23 @@ func field(id, label, value, helper, background string) Component {
 	// and leave the padding outside it, which is §5.1 in one line and the reason the chain is
 	// written out rather than assembled somewhere convenient.
 	return ReadOnlyField(id, label, value, helper, Padding(12), Background(background))
+}
+
+// markDone is the shortest way to the commonest outcome.
+//
+// The status chain is linear and forward — that is a decision of the design, written down beside
+// `next` — so reaching Done from To do costs two intermediate moves, two requests, and two journal
+// entries about transitions that never happened as intentions. This is one press, one entry, and it
+// says what it does rather than naming a mechanism.
+//
+// Absent on a task already there. A control that does nothing is worse than no control: it invites
+// a press and answers with silence.
+func (t Task) markDone() Component {
+	if t.Task.Status == domain.StatusDone {
+		return Column("task-mark-done-absent", 0, nil)
+	}
+
+	return PrimaryButton("task-mark-done", MarkDoneLabel, Perform(t.SubmitURL, map[string]any{
+		"status": FieldEntity(string(domain.StatusDone), StatusName(string(domain.StatusDone))),
+	}), FillWidth(), PaddingXY(12, 24))
 }

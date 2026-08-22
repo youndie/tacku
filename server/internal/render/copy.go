@@ -452,3 +452,97 @@ func upper(value string) string {
 	}
 	return string(out)
 }
+
+// MarkDoneLabel names the outcome rather than the mechanism: a person finishing a task is not
+// "moving it to Done", they are done with it.
+const MarkDoneLabel = "Mark as Done"
+
+// EditTaskLabel names the screen it opens, which is a form and not an action: pressing it changes
+// nothing by itself.
+const EditTaskLabel = "Edit task"
+
+// StatusHelper is the line under the status: who put it there, and how long ago.
+//
+// The panel used to say what a task is and nothing about how it got that way, while the promise this
+// product makes is about the second thing. The history is on the screen already — this is the same
+// fact where a person is looking when they read the current state, instead of four blocks below it.
+//
+// An empty history gives an empty line rather than a guess: a task with no journal is a task nothing
+// is known about, and "Changed by nobody" would be an invention.
+func StatusHelper(history []domain.Change, now time.Time) string {
+	for i := len(history) - 1; i >= 0; i-- {
+		change := history[i]
+		if change.Kind != domain.ChangeStatusMoved && change.Kind != domain.ChangeTaskCreated {
+			continue
+		}
+		return fmt.Sprintf("Changed by %s %s", actor(change.By), since(change.CreatedAt, now))
+	}
+	return ""
+}
+
+// actor names who did something, in the second person where it was the reader's own agent.
+//
+// "your agent" rather than the agent's identifier: the identifier means nothing to the person
+// reading it, and the fact that matters is that it acted on their behalf.
+func actor(by domain.Provenance) string {
+	if by.ByAgent() {
+		return "your agent"
+	}
+	return string(by.Executor.Member)
+}
+
+// since is a distance in time, in the largest unit that still says something.
+//
+// Minutes stop being interesting after an hour and hours after a day, and a person reading "changed
+// 4320 minutes ago" has to do arithmetic to learn "three days".
+func since(then, now time.Time) string {
+	gap := now.Sub(then)
+	switch {
+	case gap < time.Minute:
+		return "just now"
+	case gap < time.Hour:
+		minutes := int(gap.Minutes())
+		return fmt.Sprintf("%d %s ago", minutes, plural(minutes, "minute", "minutes"))
+	case gap < 24*time.Hour:
+		hours := int(gap.Hours())
+		return fmt.Sprintf("%d %s ago", hours, plural(hours, "hour", "hours"))
+	default:
+		days := int(gap.Hours() / 24)
+		return fmt.Sprintf("%d %s ago", days, plural(days, "day", "days"))
+	}
+}
+
+// DueHelper is the line under the due date: how far away it is, counted in days.
+//
+// The date itself is above it and answers "when"; this answers "how soon", which is the question a
+// person actually has and the one an ISO date makes them compute. The same argument the date field
+// is built on (B-12): a person thinks in "next Friday", not in offsets from today.
+//
+// Counted in whole days from midnight to midnight, so that "tomorrow" means the next calendar day
+// and not twenty-four hours: a task due tomorrow morning is due tomorrow, whatever time it is now.
+func DueHelper(iso string, now time.Time) string {
+	if iso == "" {
+		return ""
+	}
+	parsed, err := time.Parse(domain.DuePattern, iso)
+	if err != nil {
+		return ""
+	}
+
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	due := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.UTC)
+	days := int(due.Sub(today).Hours() / 24)
+
+	switch {
+	case days == 0:
+		return "Today"
+	case days == 1:
+		return "Tomorrow"
+	case days == -1:
+		return "Yesterday"
+	case days > 1:
+		return fmt.Sprintf("In %d %s", days, plural(days, "day", "days"))
+	default:
+		return fmt.Sprintf("%d %s ago", -days, plural(-days, "day", "days"))
+	}
+}
