@@ -43,14 +43,31 @@ func (s *Store) RecordVisit(ctx context.Context, member domain.MemberID, visit d
 	if _, err := visit.Pending.Seq(); err != nil {
 		return err
 	}
-	_, err := s.db.ExecContext(ctx,
-		`insert into seen (member, cursor, pending, at, away) values (?, ?, ?, ?, ?)
-		 on conflict (member) do update set
-		   cursor = excluded.cursor, pending = excluded.pending,
-		   at = excluded.at, away = excluded.away`,
-		string(member), string(visit.Boundary), string(visit.Pending),
-		visit.At.UTC().Format(stamp), int64(visit.Away/time.Second))
-	return err
+	return s.write(ctx, func(tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx,
+			`insert into seen (member, cursor, pending, at, away) values (?, ?, ?, ?, ?)
+			 on conflict (member) do update set
+			   cursor = excluded.cursor, pending = excluded.pending,
+			   at = excluded.at, away = excluded.away`,
+			string(member), string(visit.Boundary), string(visit.Pending),
+			visit.At.UTC().Format(stamp), int64(visit.Away/time.Second)); err != nil {
+			return err
+		}
+
+		// And a row that stays. `seen` answers where a reader is now and overwrites itself doing
+		// it; the question B-38 asks is about the shape of a distribution, and a distribution
+		// cannot be recovered from one value per person after the fact.
+		//
+		// Only an arrival that began a visit — a gap of zero is the same visit continuing, and
+		// counting those would fill the table with rows that measure nothing.
+		if visit.Away <= 0 {
+			return nil
+		}
+		_, err := tx.ExecContext(ctx,
+			`insert into visits (member, at, away) values (?, ?, ?)`,
+			string(member), visit.At.UTC().Format(stamp), int64(visit.Away/time.Second))
+		return err
+	})
 }
 
 // MarkSeen moves both halves of the boundary.

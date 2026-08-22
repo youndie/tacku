@@ -87,7 +87,12 @@ func where(db *sql.DB, out io.Writer, least int) error {
 // away answers B-38: how long people are actually gone between two visits, which is the number
 // domain.DefaultVisitGap was chosen instead of.
 func away(db *sql.DB, out io.Writer, least int) error {
-	rows, err := db.Query(`select away from seen where away > 0 order by away`)
+	// From `visits`, which keeps a row per arrival, and not from `seen`, which keeps one row per
+	// person and overwrites it. The first version of this read `seen` and would have printed a
+	// "distribution" made of one latest gap per member — a shape that cannot show the trough the
+	// threshold is chosen from, labelled as though it could. The item said so in a line that was
+	// read and not acted on.
+	rows, err := db.Query(`select away from visits where away > 0 order by away`)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
@@ -109,7 +114,7 @@ func away(db *sql.DB, out io.Writer, least int) error {
 	}
 
 	fmt.Fprintf(out, "how long people are away between visits (B-38)\n")
-	fmt.Fprintf(out, "  %d gaps recorded\n", len(gaps))
+	fmt.Fprintf(out, "  %d gaps recorded across %d arrivals\n", len(gaps), len(gaps))
 	if len(gaps) < least {
 		fmt.Fprintf(out, "  no distribution printed: the threshold is chosen from where the gaps fall,\n"+
 			"  and %d of them fall nowhere in particular\n", len(gaps))

@@ -110,3 +110,72 @@ func applyThrough(t *testing.T, db *sql.DB, last string) {
 		t.Fatalf("no migration named %q, so the old shape was never built", last)
 	}
 }
+
+// Every arrival that began a visit leaves a row behind.
+//
+// `seen` overwrites itself by design — it answers where a reader is now — and the threshold B-38
+// asks about is chosen from the SHAPE of the gaps, which one value per person cannot show. The
+// history is therefore appended, and it is appended at the moment of arrival because nothing can
+// reconstruct it afterwards.
+func TestEveryVisitThatBeganAfterAGapIsKept(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "tacku.db")
+	s, err := sqlite.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = s.Close() })
+	ctx := context.Background()
+
+	base := time.Date(2026, 8, 22, 9, 0, 0, 0, time.UTC)
+	gaps := []time.Duration{0, 10 * time.Hour, 30 * time.Minute, 26 * time.Hour}
+	for i, away := range gaps {
+		visit := domain.Visit{
+			Boundary: domain.Start,
+			Pending:  domain.Start,
+			At:       base.Add(time.Duration(i) * time.Hour),
+			Away:     away,
+		}
+		if err := s.RecordVisit(ctx, anna, visit); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	kept := visitGaps(t, path)
+
+	// Three rather than four: an arrival with no gap is the same visit continuing, and counting it
+	// would fill the history with rows that measure nothing.
+	if len(kept) != 3 {
+		t.Fatalf("kept %v, want the three arrivals that began a visit", kept)
+	}
+	if kept[0] != 30*time.Minute || kept[2] != 26*time.Hour {
+		t.Errorf("the gaps came back as %v, which is not what was recorded", kept)
+	}
+}
+
+// visitGaps reads the history the way the measurement does, and through the same door: a query
+// against the file, because that is what `make measure` has.
+func visitGaps(t *testing.T, path string) []time.Duration {
+	t.Helper()
+
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = db.Close() }()
+
+	rows, err := db.Query(`select away from visits order by away`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	found := []time.Duration{}
+	for rows.Next() {
+		var seconds int64
+		if err := rows.Scan(&seconds); err != nil {
+			t.Fatal(err)
+		}
+		found = append(found, time.Duration(seconds)*time.Second)
+	}
+	return found
+}

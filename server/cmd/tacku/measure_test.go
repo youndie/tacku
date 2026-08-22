@@ -60,7 +60,8 @@ func seedMoves(t *testing.T, path string, moves int) {
 		seq integer primary key autoincrement, task text, kind text, surface text)`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.Exec(`create table seen (member text primary key, away integer not null default 0)`); err != nil {
+	if _, err := db.Exec(`create table visits (
+		id integer primary key autoincrement, member text, at text, away integer not null)`); err != nil {
 		t.Fatal(err)
 	}
 	for i := range moves {
