@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 )
@@ -24,6 +25,10 @@ type Feed struct {
 	// because a plausible number beside a list of twenty rows looks like a count of that list.
 	Total  int
 	Boards int
+
+	// Away is how long this reader had been gone when this visit began; zero for somebody who has
+	// never been here, and the headline then says nothing about a previous visit.
+	Away time.Duration
 }
 
 // Screen renders the tree.
@@ -88,7 +93,42 @@ func (f Feed) summary() string {
 	if f.Boards == 1 {
 		boards = "board"
 	}
-	return fmt.Sprintf("%d %s across %d %s", f.Total, changes, f.Boards, boards)
+	line := fmt.Sprintf("%d %s across %d %s", f.Total, changes, f.Boards, boards)
+	if since := lastVisit(f.Away); since != "" {
+		line += " · " + since
+	}
+	return line
+}
+
+// lastVisit says when the reader was last here, and says it as an elapsed duration rather than as
+// the date and time the design drew.
+//
+// Not a compromise on the design but the only sentence that can be true. §14 hands the server the
+// finished text, and §16.7 gives it `Accept-Language` and nothing else: no header, field or profile
+// carries the reader's timezone, so "on 20 Aug at 18:40" would be the server's own wall clock
+// wearing the reader's — plausible, unfalsifiable from the screen, and wrong by however many hours
+// separate them (Q-25). How long ago it was is the same number everywhere.
+//
+// Rounded to the nearest hour or day rather than truncated: "9 hours ago" for eight hours and
+// fifty-five minutes is the answer a person would give, and truncation would say eight.
+func lastVisit(away time.Duration) string {
+	switch {
+	case away <= 0:
+		return ""
+	case away < time.Hour:
+		return "you were last here under an hour ago"
+	case away < 48*time.Hour:
+		return "you were last here " + plural(int((away+30*time.Minute)/time.Hour), "hour") + " ago"
+	default:
+		return "you were last here " + plural(int((away+12*time.Hour)/(24*time.Hour)), "day") + " ago"
+	}
+}
+
+func plural(count int, unit string) string {
+	if count == 1 {
+		return "1 " + unit
+	}
+	return fmt.Sprintf("%d %ss", count, unit)
 }
 
 func (f Feed) rows() []Component {

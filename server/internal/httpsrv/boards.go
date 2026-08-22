@@ -2,6 +2,7 @@ package httpsrv
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/forms"
@@ -79,7 +80,9 @@ func submitNewBoard(store domain.Store) http.HandlerFunc {
 // A submit rather than a navigate with a query on the end, which is what it used to be: marking
 // everything seen changes state, and dressing a state change as navigation also produced a deeplink
 // the graph could never carry.
-func submitSeen(seen domain.Seen, store domain.Store) http.HandlerFunc {
+// It is also the only way the boundary can be made to skip something: the automatic half moves it
+// only over what a visit was offered, and the button says "all" and means it.
+func submitSeen(seen domain.Seen, store domain.Store, now func() time.Time) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
@@ -92,7 +95,10 @@ func submitSeen(seen domain.Seen, store domain.Store) http.HandlerFunc {
 			fail(w, err)
 			return
 		}
-		if err := seen.MarkSeen(r.Context(), principal.Provenance.OnBehalfOf, latest); err != nil {
+		// The same clock the arrival is measured against. Timing this from anywhere else would put
+		// the next arrival on either side of the gap for a reason nothing in the request explains.
+		visit := domain.Dismiss(now(), latest)
+		if err := seen.RecordVisit(r.Context(), principal.Provenance.OnBehalfOf, visit); err != nil {
 			fail(w, err)
 			return
 		}

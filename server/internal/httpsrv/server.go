@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	sdkauth "github.com/modelcontextprotocol/go-sdk/auth"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -34,6 +35,17 @@ type Config struct {
 
 	// Seen is where each person had read up to, which the catch-up screen is measured from.
 	Seen domain.Seen
+
+	// VisitGap is how long away counts as having left, after which coming back to the catch-up
+	// screen moves the boundary on its own. Zero means domain.DefaultVisitGap.
+	//
+	// Configuration rather than a constant because the value that belongs here has never been
+	// measured — see the constant for what the eight hours are and are not.
+	VisitGap time.Duration
+
+	// Now is the clock the visit is measured against. Zero means time.Now, and a test supplies its
+	// own: a boundary that only moves after eight hours is otherwise checkable only by waiting.
+	Now func() time.Time
 
 	// Members and SessionKey belong to the KOMPOT surface, whose tokens this server issues itself
 	// through the sign-in form. See auth.Sessions for why there are two token systems here.
@@ -102,6 +114,15 @@ func New(config Config) (http.Handler, error) {
 		BearerMethodsSupported: []string{"header"},
 	})
 
+	gap := config.VisitGap
+	if gap == 0 {
+		gap = domain.DefaultVisitGap
+	}
+	now := config.Now
+	if now == nil {
+		now = time.Now
+	}
+
 	// The human surface, behind its own tokens.
 	//
 	// An earlier version guarded it with the OAuth check as well, on the argument that two token
@@ -112,7 +133,7 @@ func New(config Config) (http.Handler, error) {
 	// spending a credential bound by audience to somewhere else is the confused deputy arriving
 	// through the front door.
 	screens := http.NewServeMux()
-	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store, config.Seen))
+	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store, config.Seen, gap, now))
 	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
 	screens.Handle("GET /screens/board", board(config.Deps.Store))
 	screens.Handle("GET /forms/new-task", newTaskForm(config.Deps.Store))
@@ -124,7 +145,7 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("POST /submit/task-view", submitTaskView(config.Deps.Store))
 	screens.Handle("GET /forms/new-board", newBoardForm())
 	screens.Handle("POST /submit/new-board", submitNewBoard(config.Deps.Store))
-	screens.Handle("POST /submit/seen", submitSeen(config.Seen, config.Deps.Store))
+	screens.Handle("POST /submit/seen", submitSeen(config.Seen, config.Deps.Store, now))
 	screens.Handle("GET /graph", navigationGraph())
 
 	mux := http.NewServeMux()

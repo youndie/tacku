@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/render"
@@ -20,21 +21,44 @@ const (
 )
 
 // catchUp serves the one screen of this product that takes no input.
-func catchUp(store domain.Store, seen domain.Seen) http.HandlerFunc {
+//
+// Asking for it is what the server treats as a person arriving, which is an assumption and is
+// recorded as one (Q-24): the protocol has no arrival signal, and §16.2 designs for the client
+// re-requesting a screen it already holds. Under a client that revalidates on a timer the visit
+// would never end and the feed would only grow — the harmless direction of being wrong, which is
+// why the assumption is allowed to stand.
+func catchUp(store domain.Store, seen domain.Seen, gap time.Duration, now func() time.Time) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
 			http.Error(w, `{"error":"unauthenticated"}`, http.StatusUnauthorized)
 			return
 		}
+		person := principal.Provenance.OnBehalfOf
 
-		// From where this person had read up to, which is what makes the screen a catch-up rather
-		// than a list of everything that ever happened.
-		from, err := seen.SeenAt(r.Context(), principal.Provenance.OnBehalfOf)
+		latest, err := store.Latest(r.Context())
 		if err != nil {
 			fail(w, err)
 			return
 		}
+		visit, err := seen.Visit(r.Context(), person)
+		if err != nil {
+			fail(w, err)
+			return
+		}
+
+		// The boundary moves here and nowhere else on a read, and it moves to where the *previous*
+		// visit ended rather than to the end of the journal. Advancing to the end would empty the
+		// screen being rendered, which is the one thing a catch-up screen must never do.
+		arrived := visit.Arrive(now(), latest, gap)
+		if err := seen.RecordVisit(r.Context(), person, arrived); err != nil {
+			fail(w, err)
+			return
+		}
+
+		// From where this person had read up to, which is what makes the screen a catch-up rather
+		// than a list of everything that ever happened.
+		from := arrived.Boundary
 
 		changes, next, err := store.Changes(r.Context(), from, pageSize)
 		if err != nil {
@@ -55,11 +79,12 @@ func catchUp(store domain.Store, seen domain.Seen) http.HandlerFunc {
 		}
 
 		respond(w, r, render.Feed{
-			Person:   principal.Provenance.OnBehalfOf,
+			Person:   person,
 			SeenURL:  seenURL,
 			Changes:  changes,
 			Total:    total,
 			Boards:   boards,
+			Away:     arrived.Away,
 			NextPage: more,
 		}.Screen())
 	}
