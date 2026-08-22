@@ -42,6 +42,7 @@ docs:
 	$(PY) scripts/docs_check.py --docs $(DOCS) --backlog $(BACKLOG)
 	$(PY) scripts/coverage_map.py --check --docs $(DOCS)
 	$(PY) scripts/questions_check.py
+	$(PY) scripts/reports_check.py
 
 # Guards the committed spec against the generator: a kompot upgrade that changes the wire must not
 # leave the Go server validating against a contract that no longer exists.
