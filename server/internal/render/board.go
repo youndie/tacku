@@ -64,12 +64,20 @@ func (b Board) Screen() Component {
 }
 
 func (b Board) header() Component {
-	return Row("board-header", 0, nil,
+	// Spacing rather than nothing, because the header now ends in two buttons and a row with no
+	// spacing would join them into one shape.
+	return Row("board-header", 12, nil,
 		Column("board-heading", 6, nil,
 			Text("board-title", b.Title, TextDisplay),
 			Text("board-count", b.summary(), TextBodyMuted),
 		),
 		Spacer("board-header-spacer"),
+		// The way into the selection mode, and it is a link rather than a toggle because the mode
+		// is a screen: nothing in the vocabulary holds client-side state, so "select several" is a
+		// different tree rather than a different state of this one. Quiet, because a card's button
+		// is the common case and this is the one for a handful at a time.
+		Button("board-select", "Move several…", Navigate(LinkBulkMove),
+			PaddingXY(12, 20)),
 		Button("board-new", "New task", Navigate(LinkNewTask),
 			PaddingXY(12, 20), Background(ColorAccent)),
 	)

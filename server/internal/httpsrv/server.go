@@ -118,6 +118,8 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("GET /forms/new-task", newTaskForm(config.Deps.Store))
 	screens.Handle("POST /submit/new-task", submitNewTask(config.Deps.Store))
 	screens.Handle("POST /submit/move", submitMove(config.Deps.Store))
+	screens.Handle("GET "+bulkFormPath, bulkMoveForm(config.Deps.Store))
+	screens.Handle("POST "+bulkSubmitPath, submitBulkMove(config.Deps.Store))
 	screens.Handle("GET /forms/my-tasks", myTasks(config.Deps.Store))
 	screens.Handle("GET /pages/tasks", tasksPage(config.Deps.Store))
 	screens.Handle("GET /forms/task/{task}", taskScreen(config.Deps.Store))
