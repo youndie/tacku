@@ -9,7 +9,7 @@ import (
 	"github.com/youndie/tacku/server/internal/render"
 )
 
-const newBoardFormID = "board_create"
+const newBoardFormID = "new-board"
 
 // newBoardForm closes the gap the design named: there were boards in the product and no screen on
 // which one comes into being, so a first run met an empty list with nothing to press.

@@ -43,13 +43,12 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (13)
+## Open (12)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
-| [B-40](docs/backlog/B-40-dead-controls.md) `[ ]` | Две кнопки не ведут никуда: отправка комментария и фильтр списка | P1 | M | - |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[?]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
 | [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[?]` | Полоса `agent` — цветовой сигнал; проверить на людях | P2 | XS | B-19 |
@@ -61,7 +60,7 @@
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 
-## Closed (27)
+## Closed (28)
 
 **Чем меряем**
 
@@ -98,6 +97,7 @@
 - [B-25](docs/backlog/B-25-interface-copy-ownership.md) `[x]` - У строк интерфейса должен быть владелец и место
 - [B-27](docs/backlog/B-27-last-visit-boundary.md) `[x]` - Что считать «прошлым визитом» в догоняющей ленте
 - [B-34](docs/backlog/B-34-viddik-screenshots.md) `[x]` - Скриншот-тесты клиента на viddik
+- [B-40](docs/backlog/B-40-dead-controls.md) `[x]` - Две кнопки не ведут никуда: отправка комментария и фильтр списка
 
 **Решения, отложенные намеренно**
 

@@ -8,7 +8,13 @@ import (
 	"github.com/youndie/tacku/server/internal/render"
 )
 
-const taskFormID = "task_view"
+// taskFormPrefix names the form of one task.
+//
+// A form identifier is a path here (see the note beside BulkFormID), and this form exists once per
+// task, so the task is part of what it is called: "task-view/TAC-4" submits to
+// /submit/task-view/TAC-4. The subject used to travel in `?task=`, which `submit_form` has no way
+// to set — so the button posted to an address with no task in it, or to no address at all.
+const taskFormPrefix = "task-view/"
 
 // TaskPathPrefix is what a client puts a task identifier after. The graph cannot carry this screen —
 // its endpoint is a literal path and there are no parameters — so the client builds the address, and
@@ -45,7 +51,7 @@ func taskScreen(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		form := forms.New(taskFormID)
+		form := forms.New(taskFormPrefix + string(id))
 
 		comment := render.Column("task-comment-block", 8, nil,
 			form.TextInput("comment", "Comment", "Write a comment…", nil),
@@ -91,13 +97,13 @@ func submitTaskView(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		id := domain.TaskID(r.URL.Query().Get("task"))
+		id := domain.TaskID(r.PathValue("task"))
 		if !id.Valid() {
 			fail(w, domain.ErrInvalidTask)
 			return
 		}
 
-		if status := request.text("status"); status != "" {
+		if status := request.chosen("status"); status != "" {
 			// The other half of the count B-36 waits on: a move that arrived here was made by
 			// somebody who had already opened the task.
 			if _, err := store.MoveTask(r.Context(), id, domain.Status(status), principal.Provenance,

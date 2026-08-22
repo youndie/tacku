@@ -64,13 +64,19 @@ fun main() {
                             "/submit/new-task" to newTaskPayload(),
                             "/submit/new-board" to
                                 submission(
-                                    "board_create",
+                                    "new-board",
                                     // "name", because that is what the form declares. Sending
                                     // "title" produced a 422 and a finding that read like a defect
                                     // in idempotency — the first attempt was refused on its merits,
                                     // so nothing was recorded and the second was refused again.
                                     "name" to textValue("Filed by a conformance walk"),
                                 ),
+                            // Text on both, and correctly so: this is a `perform`, so the values
+                            // are ones the server wrote into the action itself, not ones a person
+                            // chose from a control. Sending an entity here refused the first
+                            // attempt on its merits, and the retry then read as an idempotency
+                            // defect — a finding describing the harness rather than the server, for
+                            // the second time in this file.
                             "/submit/move" to
                                 submission(
                                     "task_move",
@@ -85,7 +91,7 @@ fun main() {
                             "/submit/bulk-move" to
                                 submission(
                                     "bulk-move",
-                                    "status" to textValue("in_progress"),
+                                    "status" to entityValue("in_progress"),
                                     "task-TAC-1" to booleanValue(true),
                                 ),
                         ),
@@ -135,10 +141,10 @@ private fun readSpec(dir: File): Spec {
  */
 private fun newTaskPayload() =
     submission(
-        "task_create",
+        "new-task",
         "title" to textValue("Filed by a conformance walk"),
-        "board" to textValue("Sprint 24"),
-        "status" to textValue("todo"),
+        "board" to entityValue("Sprint 24"),
+        "status" to entityValue("todo"),
     )
 
 /**
@@ -164,6 +170,16 @@ private fun booleanValue(value: Boolean) =
     kotlinx.serialization.json.buildJsonObject {
         put("type", kotlinx.serialization.json.JsonPrimitive("boolean_value"))
         put("value", kotlinx.serialization.json.JsonPrimitive(value))
+    }
+
+// A selection sends an entity, not text. The walk sent text for a while and every select in the
+// product read it as nothing chosen — which the server accepted as "no status given" and refused on
+// grounds that read like the request's fault.
+private fun entityValue(id: String) =
+    kotlinx.serialization.json.buildJsonObject {
+        put("type", kotlinx.serialization.json.JsonPrimitive("entity_value"))
+        put("id", kotlinx.serialization.json.JsonPrimitive(id))
+        put("title", kotlinx.serialization.json.JsonPrimitive(id))
     }
 
 private fun textValue(text: String) =

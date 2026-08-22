@@ -208,6 +208,20 @@ func PaginatedList(id string, items []Component, nextURL string, empty Component
 	return list
 }
 
+// Filtered is a list that reloads from the top when the form around it changes.
+//
+// `reloadUrl` is the only way a field's value reaches a list: the schema says the form's values go
+// to that address as query parameters. Without it a filter is a control that looks like one — the
+// server reads `?status=` and nothing ever sends it, and nothing fails.
+func Filtered(list Component, reloadURL string) Component {
+	value, ok := list.(paginatedList)
+	if !ok {
+		panic("render: only a paginated list reloads")
+	}
+	value.ReloadURL = &reloadURL
+	return value
+}
+
 // PageResponse is the envelope a `page` endpoint answers with.
 type PageResponse struct {
 	Items          []Component `json:"items"`

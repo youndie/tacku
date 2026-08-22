@@ -53,6 +53,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     testImplementation(kotlin("test"))
+
+    // Compose's own test harness, because one thing here cannot be checked from a JSON body: a
+    // filter reaches the server only if the toolkit re-requests when a value changes, and that
+    // behaviour lives in a composition. A body can name the right address and the value still
+    // never travel.
+    @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+    testImplementation(compose.uiTest)
+    testImplementation(compose.desktop.currentOs)
 }
 
 kotlin {

@@ -71,8 +71,8 @@ func OpenAPI(resource string) json.RawMessage {
 				"get": templated(operation("taskScreen", kindForm,
 					ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))),
 			},
-			"/submit/task-view": map[string]any{
-				"post": submitOperation("submitTaskView"),
+			"/submit/task-view/{task}": map[string]any{
+				"post": templated(submitOperation("submitTaskView")),
 			},
 			"/forms/new-board": map[string]any{
 				"get": operation("newBoardForm", kindForm,

@@ -108,7 +108,7 @@ func submitBulkMove(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		status := domain.Status(request.text("status"))
+		status := domain.Status(request.chosen("status"))
 		selected := request.ticked(bulkFieldPrefix)
 
 		// Refused on the merits rather than as a malformed request: the body is a perfectly good

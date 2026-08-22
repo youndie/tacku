@@ -21,8 +21,8 @@ func (r *resource) journalLength(t *testing.T) int {
 func newTaskBody(title string) string {
 	return `{"formId":"task_create","fieldId":"","values":{` +
 		`"title":{"type":"text_value","text":"` + title + `"},` +
-		`"board":{"type":"text_value","text":"Sprint 24"},` +
-		`"status":{"type":"text_value","text":"todo"}}}`
+		`"board":{"type":"entity_value","id":"Sprint 24","title":"Sprint 24"},` +
+		`"status":{"type":"entity_value","id":"todo","title":"todo"}}}`
 }
 
 // The guarantee B-11 is about, stated as the specification states it: not only that the operation

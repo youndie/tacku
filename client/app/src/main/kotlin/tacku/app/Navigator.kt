@@ -152,17 +152,16 @@ class Navigator(
     /**
      * Which address a form submits to.
      *
-     * A form identifier and a submit address are two different things, and nothing on the wire ties
-     * them: `submit_form` carries only the identifier, and the address is the application's own
-     * business. Kept in one place here so that the mapping is visible rather than scattered.
+     * Nothing on the wire ties a form identifier to an address: `submit_form` carries only the
+     * identifier. So the server names each form after the address it submits to, and this is the
+     * whole rule.
+     *
+     * It used to be a table of three exceptions, and the table is what the rule replaces. A form
+     * whose identifier was not in it and did not match its route — the comment box on a task —
+     * posted to an address that does not exist, and a POST into nothing looks exactly like a button
+     * nobody pressed.
      */
-    private fun submitPathFor(formId: String): String =
-        when (formId) {
-            "sign_in" -> "/submit/sign-in"
-            "task_create" -> "/submit/new-task"
-            "board_create" -> "/submit/new-board"
-            else -> "/submit/$formId"
-        }
+    private fun submitPathFor(formId: String): String = "/submit/$formId"
 
     private companion object {
         const val SIGN_IN = "app://sign-in"

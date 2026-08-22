@@ -15,7 +15,7 @@ const (
 	kindSubmit = "submit"
 )
 
-const newTaskFormID = "task_create"
+const newTaskFormID = "new-task"
 
 // newTaskForm serves the form that creates a task.
 //
@@ -110,9 +110,9 @@ func submitNewTask(store domain.Store) http.HandlerFunc {
 		// handler, so nothing it does — including the journal entry inside the store — can happen
 		// twice.
 		task, err := store.CreateTask(r.Context(), domain.Task{
-			Board:  domain.BoardID(request.text("board")),
+			Board:  domain.BoardID(request.chosen("board")),
 			Title:  request.text("title"),
-			Status: domain.Status(request.text("status")),
+			Status: domain.Status(request.chosen("status")),
 			Due:    request.text("due"),
 		}, principal.Provenance)
 		if err != nil {
@@ -152,6 +152,32 @@ func (s submitRequest) text(field string) string {
 		return ""
 	}
 	return strings.TrimSpace(value.Text)
+}
+
+// chosen reads what a selection sends, which is not what a text input sends.
+//
+// A `select_input` carries an `entity_value` — an id and a title — and this server read every value
+// as a `text_value` and quietly got nothing. Every selection in the product was affected: the status
+// on a task, the board of a new task, the filter of a list, the target of a bulk move. Nothing
+// failed: an empty status means "no status was chosen", so the request was refused or ignored on
+// grounds that looked reasonable and were not true.
+//
+// Found by driving the published client rather than by reading the schema — the renderer casts to
+// EntityValue, and a TextValue put there by hand throws. Wire types are cheap to get wrong in the
+// direction that stays silent, and only the other half of the wire says so.
+func (s submitRequest) chosen(field string) string {
+	raw, ok := s.Values[field]
+	if !ok {
+		return ""
+	}
+	var value struct {
+		Type string `json:"type"`
+		ID   string `json:"id"`
+	}
+	if err := json.Unmarshal(raw, &value); err != nil || value.Type != "entity_value" {
+		return ""
+	}
+	return strings.TrimSpace(value.ID)
 }
 
 func unauthenticated(w http.ResponseWriter) {

@@ -33,7 +33,7 @@ func bulkBody(status string, boxes map[string]bool) string {
 
 	values := make([]string, 0, len(boxes)+1)
 	if status != "" {
-		values = append(values, `"status":{"type":"text_value","text":"`+status+`"}`)
+		values = append(values, `"status":{"type":"entity_value","id":"`+status+`","title":"`+status+`"}`)
 	}
 	for _, name := range names {
 		values = append(values,

@@ -11,7 +11,7 @@ import (
 	"github.com/youndie/tacku/server/internal/render"
 )
 
-const loginFormID = "sign_in"
+const loginFormID = "sign-in"
 
 // LoginPath is where a session begins, and the one route of the KOMPOT surface that is public.
 const LoginPath = "/submit/sign-in"

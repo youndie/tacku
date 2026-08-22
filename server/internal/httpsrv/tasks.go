@@ -10,7 +10,7 @@ import (
 	"github.com/youndie/tacku/server/internal/render"
 )
 
-const myTasksFormID = "my_tasks"
+const myTasksFormID = "my-tasks"
 
 // taskPageSize is small on purpose.
 //
@@ -138,8 +138,15 @@ func myTasks(store domain.Store) http.HandlerFunc {
 			[]render.Modifier{render.Padding(32), render.Background(render.ColorSurface)},
 			render.Text("my-tasks-title", "My tasks", render.TextDisplay),
 			status,
-			render.PaginatedList("my-tasks-list", items, next, render.EmptyMyTasks(),
-				render.Weight(1)),
+			// The filter reaches the server through this and through nothing else: the schema says
+			// a reload carries the form's field values as query parameters, and this handler has
+			// read `?status=` since it was written. Without the address the control was a control
+			// in appearance only — the value stayed on the screen it was chosen on.
+			render.Filtered(
+				render.PaginatedList("my-tasks-list", items, next, render.EmptyMyTasks(),
+					render.Weight(1)),
+				tasksPagePath,
+			),
 		)
 
 		respond(w, r, form.Build(screen))

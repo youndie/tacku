@@ -42,15 +42,17 @@ func TestTheJournalSaysWhichSurfaceMovedTheTask(t *testing.T) {
 	response := r.post(t, "/submit/move", token, "move-from-board",
 		`{"formId":"board","fieldId":"","values":{`+
 			`"task":{"type":"text_value","text":"`+string(fromBoard.ID)+`"},`+
+			// Text, and correctly so: a perform carries values the server itself wrote into the
+			// action, not values a person chose from a control.
 			`"status":{"type":"text_value","text":"in_progress"}}}`)
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("the board button answered %d", response.StatusCode)
 	}
 
-	// The task screen's selector: a submit of the task form, with the task in the query string.
-	response = r.post(t, "/submit/task-view?task="+string(fromTask.ID), token, "move-from-task",
-		`{"formId":"task_view","fieldId":"status","values":{`+
-			`"status":{"type":"text_value","text":"in_progress"}}}`)
+	// The task screen's selector: a submit of the task form, the task named by the address.
+	response = r.post(t, "/submit/task-view/"+string(fromTask.ID), token, "move-from-task",
+		`{"formId":"task-view/`+string(fromTask.ID)+`","fieldId":"status","values":{`+
+			`"status":{"type":"entity_value","id":"in_progress","title":"in_progress"}}}`)
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("the task screen answered %d", response.StatusCode)
 	}

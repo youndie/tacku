@@ -557,15 +557,16 @@
         "x-kompot-endpoint-kind": "submit"
       }
     },
-    "/submit/task-view": {
+    "/submit/task-view/{task}": {
       "post": {
         "operationId": "submitTaskView",
         "parameters": [
           {
-            "in": "header",
-            "name": "Idempotency-Key",
+            "in": "path",
+            "name": "task",
             "required": true,
             "schema": {
+              "pattern": "^TAC-[1-9][0-9]*$",
               "type": "string"
             }
           }
