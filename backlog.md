@@ -43,7 +43,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (8)
+## Open (9)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -52,6 +52,7 @@
 | [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[ ]` | Что показывать, когда массовое действие применилось частично | P2 | S | B-23 |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-39](docs/backlog/B-39-wizard-endpoints.md) `[ ]` | Эндпоинты сценария: пакет wizard написан и никем не вызывается | P2 | M | B-33 |
+| [B-42](docs/backlog/B-42-agent-line-replaces-card-meta.md) `[ ]` | Подпись агента съедает метаданные карточки | P2 | S | B-19 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
