@@ -55,6 +55,13 @@ dependencies {
 
     testImplementation(kotlin("test"))
 
+    // The wizard's wire types, for tests only: this deployment has no scenario endpoints yet
+    // (B-39), so the client draws no wizard and the product does not need them. What the tests
+    // need them for is the published shape of `wizard_screen` itself — the subject of B-31 — and
+    // reading it from the artefact rather than from the schema file is the second half of the same
+    // question: a field that is absent from both is absent from the contract.
+    testImplementation("io.github.youndie:kompot-wizard:$kompotVersion")
+
     // Compose's own test harness, because one thing here cannot be checked from a JSON body: a
     // filter reaches the server only if the toolkit re-requests when a value changes, and that
     // behaviour lives in a composition. A body can name the right address and the value still
