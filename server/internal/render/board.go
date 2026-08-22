@@ -116,9 +116,17 @@ func (b Board) card(task domain.Task) Component {
 
 	stripe, metaStyle, meta := mark(b.LastBy[task.ID], cardMeta(task))
 
+	// The part that opens the task, kept apart from the button that moves it. A container carrying
+	// an action can hold a button, and what a click on the overlap does is not something the
+	// specification says — so the two targets are drawn as two, and neither has to win.
 	body := []Component{
-		Text(id+"-title", task.Title, TextBody),
-		Text(id+"-meta", meta, metaStyle),
+		Opens(
+			Column(id+"-open", 6, nil,
+				Text(id+"-title", task.Title, TextBody),
+				Text(id+"-meta", meta, metaStyle),
+			),
+			Navigate(LinkTask+string(task.ID)),
+		),
 	}
 
 	if target, ok := next(task.Status); ok {
@@ -224,13 +232,16 @@ func TaskRow(task domain.Task, by domain.Provenance) Component {
 	// The status stays on the line either way: this list crosses columns, so a row that does not
 	// say where it stands is a row the reader has to open to place.
 	meta += " · " + StatusName(string(task.Status))
-	return Row(id, 0, nil,
-		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
-		Column(id+"-body", 6,
-			[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
-			Text(id+"-title", task.Title, TextBody),
-			Text(id+"-meta", meta, metaStyle),
+	return Opens(
+		Row(id, 0, nil,
+			Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
+			Column(id+"-body", 6,
+				[]Modifier{Weight(1), Padding(12), Background(ColorSurfaceField)},
+				Text(id+"-title", task.Title, TextBody),
+				Text(id+"-meta", meta, metaStyle),
+			),
 		),
+		Navigate(LinkTask+string(task.ID)),
 	)
 }
 

@@ -110,23 +110,17 @@ func ChangeRow(change domain.Change) Component {
 	}
 
 	id := fmt.Sprintf("change-%d", change.Seq)
-	return Row(id, 0, nil,
+	body := Row(id, 0, nil,
 		Column(id+"-stripe", 0, []Modifier{WidthDp(StripeDp), Background(stripe)}),
 		Column(id+"-body", 6,
 			[]Modifier{Weight(1), Padding(16), Background(ColorSurfaceBlock)},
 			Text(id+"-what", Sentence(change), TextBody),
 			Text(id+"-who", Author(change), authorStyle),
-			// The way out of the feed, and a button because the vocabulary has no other way to say
-			// it: no modifier makes a node tappable, a table row is a list of strings, and only a
-			// button carries an action. So "the row opens the task" is spelled as a button on the
-			// row, which is a design decision made by the protocol rather than for it (Q-22).
-			Row(id+"-actions", 0, nil,
-				Button(id+"-open", "Open "+string(change.Task), Navigate(LinkTask+string(change.Task)),
-					PaddingXY(8, 16)),
-				Spacer(id+"-actions-spacer"),
-			),
 		),
 	)
+	// The whole row opens the task, which is what the design drew and what the vocabulary could
+	// not say until kompot 0.15. It was a button per entry for exactly one release (Q-22).
+	return Opens(body, Navigate(LinkTask+string(change.Task)))
 }
 
 // Author is the second half of provenance: who acted, and for whom.

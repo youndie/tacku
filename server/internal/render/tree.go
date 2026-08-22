@@ -79,6 +79,7 @@ type column struct {
 	Modifiers []Modifier  `json:"modifiers,omitempty"`
 	Children  []Component `json:"children"`
 	Spacing   int         `json:"spacing,omitempty"`
+	Action    Action      `json:"action,omitempty"`
 }
 
 type row struct {
@@ -87,6 +88,7 @@ type row struct {
 	Modifiers []Modifier  `json:"modifiers,omitempty"`
 	Children  []Component `json:"children"`
 	Spacing   int         `json:"spacing,omitempty"`
+	Action    Action      `json:"action,omitempty"`
 }
 
 type text struct {
@@ -122,6 +124,30 @@ func Column(id string, spacing int, modifiers []Modifier, children ...Component)
 
 func Row(id string, spacing int, modifiers []Modifier, children ...Component) Component {
 	return row{Type: "row", ID: id, Modifiers: modifiers, Children: nonNil(children), Spacing: spacing}
+}
+
+// Opens is a container the whole of which is one target.
+//
+// It exists as of kompot 0.15. Before it, the vocabulary had no way to say "this row opens that
+// thing" — no modifier made a node tappable, a table row was a list of strings, and only a button
+// carried an action — so a list of openable things had to be drawn as a list of buttons, one per
+// entry. That was written down as a gap rather than worked around, and the answer upstream put an
+// action on the container itself.
+//
+// The button it replaces is gone rather than kept beside it: two ways to open the same thing is one
+// more than a reader can be asked to distinguish.
+func Opens(container Component, action Action) Component {
+	switch value := container.(type) {
+	case row:
+		value.Action = action
+		return value
+	case column:
+		value.Action = action
+		return value
+	}
+	// Silence here would be a row that quietly does nothing, which is the failure this whole
+	// mechanism exists to avoid.
+	panic("render: only a row or a column can carry an action")
 }
 
 func Text(id, body, style string, modifiers ...Modifier) Component {

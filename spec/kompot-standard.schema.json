@@ -153,6 +153,16 @@
         },
         "spacing": {
           "type": "integer"
+        },
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -246,6 +256,16 @@
         },
         "spacing": {
           "type": "integer"
+        },
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

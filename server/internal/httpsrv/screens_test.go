@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -407,9 +408,12 @@ func TestEveryFeedRowLeadsToItsOwnTask(t *testing.T) {
 			return
 		}
 		id, _ := value["id"].(string)
-		if strings.HasPrefix(id, "change-") && strings.HasSuffix(id, "-body") {
+		if feedRow.MatchString(id) {
 			rows++
-			task := taskOfRow(t, value)
+			// Read off the row itself rather than hunted for among its children: as of kompot 0.15
+			// the container carries the action, and a check that keeps looking inside would go on
+			// passing if the row stopped being the target and a stray button remained.
+			task := deeplinkOf(value)
 			if task == "" {
 				t.Errorf("row %q offers no way into a task", id)
 			} else if !strings.HasPrefix(task, render.LinkTask) {
@@ -431,27 +435,71 @@ func TestEveryFeedRowLeadsToItsOwnTask(t *testing.T) {
 	}
 }
 
-func taskOfRow(t *testing.T, row map[string]any) string {
-	t.Helper()
+// Every list of tasks opens what it lists.
+//
+// Three surfaces show tasks and until kompot 0.15 none of them could be opened: the vocabulary had
+// no action on a container, and app://task/<id> existed only as the answer to a submitted form. So
+// the product had a screen per task that a person could reach by filing something and in no other
+// way.
+func TestEveryListOpensWhatItLists(t *testing.T) {
+	r := newResource(t)
+	r.fill(t, 3)
+	token := r.reader(t)
 
-	found := ""
-	var walk func(node any)
-	walk = func(node any) {
-		value, ok := node.(map[string]any)
-		if !ok {
-			return
+	for _, surface := range []struct {
+		path string
+		row  *regexp.Regexp
+	}{
+		{"/screens/board", regexp.MustCompile(`^card-TAC-\d+-open$`)},
+		{"/forms/my-tasks", regexp.MustCompile(`^row-TAC-\d+$`)},
+		{"/screens/catch-up", feedRow},
+	} {
+		_, body := r.get(t, surface.path, token, "")
+		var tree any
+		if err := json.Unmarshal(body, &tree); err != nil {
+			t.Fatal(err)
 		}
-		if action, ok := value["action"].(map[string]any); ok {
-			if deeplink, ok := action["deeplink"].(string); ok && strings.HasPrefix(deeplink, render.LinkTask) {
-				found = deeplink
+
+		found := 0
+		var walk func(node any)
+		walk = func(node any) {
+			value, ok := node.(map[string]any)
+			if !ok {
+				return
 			}
-		}
-		if children, ok := value["children"].([]any); ok {
-			for _, child := range children {
+			if id, _ := value["id"].(string); surface.row.MatchString(id) {
+				found++
+				if deeplink := deeplinkOf(value); !strings.HasPrefix(deeplink, render.LinkTask) {
+					t.Errorf("%s: %q leads to %q, which is not a task", surface.path, id, deeplink)
+				}
+			}
+			for _, field := range []string{"children", "initialItems"} {
+				if children, ok := value[field].([]any); ok {
+					for _, child := range children {
+						walk(child)
+					}
+				}
+			}
+			if child, ok := value["screen"].(map[string]any); ok {
 				walk(child)
 			}
 		}
+		walk(tree)
+
+		if found == 0 {
+			t.Errorf("%s: no row matched %s, so this surface was not checked at all", surface.path, surface.row)
+		}
 	}
-	walk(row)
-	return found
+}
+
+// feedRow matches a row of the feed and nothing inside it.
+var feedRow = regexp.MustCompile(`^change-\d+$`)
+
+func deeplinkOf(node map[string]any) string {
+	action, ok := node["action"].(map[string]any)
+	if !ok {
+		return ""
+	}
+	deeplink, _ := action["deeplink"].(string)
+	return deeplink
 }

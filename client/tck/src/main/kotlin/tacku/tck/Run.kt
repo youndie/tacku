@@ -54,7 +54,33 @@ fun main() {
                     // looks at the header — so it only runs when a payload is given. This walk is
                     // against a throwaway database, which is where the kit's own README says to
                     // run it.
-                    submitPayloads = mapOf("/submit/new-task" to newTaskPayload()),
+                    // One body per submit endpoint the walk can reach. Until 0.15 a missing body
+                    // was a silent skip: the report said "9 of 10 endpoints" and left the reader to
+                    // guess which, so four of these five were being passed over without anybody
+                    // knowing. Two remain unreachable and are recorded as Q-23 rather than papered
+                    // over — the walk has no way to supply anything outside the body.
+                    submitPayloads =
+                        mapOf(
+                            "/submit/new-task" to newTaskPayload(),
+                            "/submit/new-board" to
+                                submission(
+                                    "board_create",
+                                    // "name", because that is what the form declares. Sending
+                                    // "title" produced a 422 and a finding that read like a defect
+                                    // in idempotency — the first attempt was refused on its merits,
+                                    // so nothing was recorded and the second was refused again.
+                                    "name" to textValue("Filed by a conformance walk"),
+                                ),
+                            "/submit/move" to
+                                submission(
+                                    "task_move",
+                                    "task" to textValue("TAC-1"),
+                                    "status" to textValue("in_progress"),
+                                ),
+                            // Nothing to fill in: marking everything seen carries no values, and a
+                            // submit still has to arrive as a submission.
+                            "/submit/seen" to submission("catch_up_seen"),
+                        ),
                 ),
             ).run()
         }
@@ -100,18 +126,31 @@ private fun readSpec(dir: File): Spec {
  * that changed, and on a submit nothing did.
  */
 private fun newTaskPayload() =
-    kotlinx.serialization.json.buildJsonObject {
-        put("formId", kotlinx.serialization.json.JsonPrimitive("task_create"))
-        put("fieldId", kotlinx.serialization.json.JsonPrimitive(""))
-        put(
-            "values",
-            kotlinx.serialization.json.buildJsonObject {
-                put("title", textValue("Filed by a conformance walk"))
-                put("board", textValue("Sprint 24"))
-                put("status", textValue("todo"))
-            },
-        )
-    }
+    submission(
+        "task_create",
+        "title" to textValue("Filed by a conformance walk"),
+        "board" to textValue("Sprint 24"),
+        "status" to textValue("todo"),
+    )
+
+/**
+ * The envelope a submit travels in: a form identifier, the field that changed, and the values.
+ *
+ * `fieldId` is empty on purpose — on a submit nothing changed, which is what §16.4 says it means.
+ */
+private fun submission(
+    formId: String,
+    vararg values: Pair<String, kotlinx.serialization.json.JsonObject>,
+) = kotlinx.serialization.json.buildJsonObject {
+    put("formId", kotlinx.serialization.json.JsonPrimitive(formId))
+    put("fieldId", kotlinx.serialization.json.JsonPrimitive(""))
+    put(
+        "values",
+        kotlinx.serialization.json.buildJsonObject {
+            values.forEach { (name, value) -> put(name, value) }
+        },
+    )
+}
 
 private fun textValue(text: String) =
     kotlinx.serialization.json.buildJsonObject {

@@ -2,6 +2,7 @@ package tacku.tck
 
 import io.github.youndie.kompot.tck.TckFinding
 import io.github.youndie.kompot.tck.TckReport
+import io.github.youndie.kompot.tck.TckSkip
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -13,10 +14,15 @@ import kotlin.test.assertTrue
  * the judging will already have been shown to judge correctly.
  */
 class TckGateTest {
+    // Named rather than positional, and the reason is in the diff that made this necessary: the kit
+    // grew a `skipped` list between two fields this test already passed, so a positional call
+    // silently handed a set of extensions to a list of skips and stopped compiling. The next field
+    // will not do that.
     private fun report(
         exercised: Map<String, Int>,
         findings: List<TckFinding> = emptyList(),
-    ) = TckReport(findings, exercised, emptySet())
+        skipped: List<TckSkip> = emptyList(),
+    ) = TckReport(findings = findings, exercised = exercised, skipped = skipped, declaredExtensions = emptySet())
 
     private val everyCheckBusy = TckGate.expectedChecks.associateWith { 3 }
 
@@ -103,5 +109,33 @@ class TckGateTest {
         val error = kotlin.runCatching { TckGate.require(subject) }.exceptionOrNull()
         assertTrue(error is AssertionError, "require passed a run in which navigation had no target")
         assertTrue(error.message!!.contains("navigation"))
+    }
+
+    /**
+     * A skip is named in the report, because a number is not an answer to "which one".
+     *
+     * The kit could not say this until 0.15, and the run that prompted the question read "9 of 10
+     * endpoints" for weeks — one line that turned out to be hiding five skips, three of which were
+     * holes in our own configuration.
+     */
+    @Test
+    fun `the description names what the walk skipped`() {
+        val skipped =
+            listOf(
+                TckSkip("GET", "/forms/task/{task}", "no value for the path parameters"),
+                TckSkip("POST", "/submit/task-view", "no body for it"),
+            )
+        val described = TckGate.describe(report(everyCheckBusy, skipped = skipped))
+
+        skipped.forEach { skip ->
+            assertTrue(
+                described.contains(skip.path),
+                "the report does not name ${skip.path}, so a reader is left counting: $described",
+            )
+            assertTrue(
+                described.contains(skip.reason),
+                "the report names ${skip.path} without saying why it was skipped: $described",
+            )
+        }
     }
 }

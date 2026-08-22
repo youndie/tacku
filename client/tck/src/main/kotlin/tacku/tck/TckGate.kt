@@ -1,6 +1,7 @@
 package tacku.tck
 
 import io.github.youndie.kompot.tck.TckReport
+import io.github.youndie.kompot.tck.TckSkip
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -52,6 +53,8 @@ object TckGate {
         val exercised: Map<String, Int>,
         val bodiesDeclared: Int = 0,
         val bodiesChecked: Int = 0,
+        /** What the walk decided not to fetch, and why — in the kit's own words, as of 0.15. */
+        val skipped: List<TckSkip> = emptyList(),
     ) {
         val passed: Boolean
             get() =
@@ -85,6 +88,7 @@ object TckGate {
             exercised = exercised.toSortedMap(),
             bodiesDeclared = declared,
             bodiesChecked = exercised["schema"] ?: 0,
+            skipped = report.skipped,
         )
     }
 
@@ -153,6 +157,21 @@ object TckGate {
                         "  an endpoint the walk never fetched is one no check could have failed, " +
                             "and a report cannot say so about an endpoint it skipped",
                     )
+                }
+            }
+
+            // Outside the body count on purpose, and a test says so. The kit reports a skip whether
+            // or not this gate was handed an OpenAPI description to count endpoints in, and nesting
+            // the two together meant a walk that skipped something said nothing about it in every
+            // run that did not also count bodies.
+            //
+            // Named rather than counted, which the kit could not do until 0.15. A number told us
+            // one endpoint was missing and left the reader to work out which — and it was hiding
+            // five, three of them holes in our own configuration.
+            if (verdict.skipped.isNotEmpty()) {
+                appendLine()
+                verdict.skipped.forEach { skip ->
+                    appendLine("  skipped: %s %s — %s".format(skip.method, skip.path, skip.reason))
                 }
             }
 
