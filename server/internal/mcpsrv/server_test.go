@@ -322,3 +322,43 @@ func TestAnUnknownTaskIsRefusedInWords(t *testing.T) {
 		t.Errorf("the refusal reads %q; it must name the task", message)
 	}
 }
+
+// A tool call names a surface of its own, and it is not one of the two people use.
+//
+// The share the board's mechanics depend on is counted over the human surfaces, and agent moves are
+// deliberately out of the denominator: an agent has no screen to have opened. Recorded as its own
+// value rather than left blank, so that "moved by a program" and "nobody wrote down where this came
+// from" cannot be confused for one another when the counting is finally done.
+func TestAToolMoveIsRecordedAsTheAgentSurface(t *testing.T) {
+	h := start(t)
+	board := h.board(t)
+
+	var created struct {
+		Task struct{ ID string } `json:"task"`
+	}
+	h.call(t, "create_task", map[string]any{
+		"board": board, "title": "Retire the legacy webhook", "idempotency_key": "k1",
+	}, &created)
+	h.call(t, "move_task", map[string]any{
+		"task": created.Task.ID, "status": "in_progress", "idempotency_key": "k2",
+	}, nil)
+
+	changes, err := h.store.TaskChanges(h.ctx, domain.TaskID(created.Task.ID))
+	if err != nil {
+		t.Fatal(err)
+	}
+	moves := 0
+	for _, change := range changes {
+		if change.Kind != domain.ChangeStatusMoved {
+			continue
+		}
+		moves++
+		if change.Surface != domain.SurfaceAgent {
+			t.Errorf("a move made by a tool call is recorded as %q, want %q",
+				change.Surface, domain.SurfaceAgent)
+		}
+	}
+	if moves != 1 {
+		t.Fatalf("the task's history holds %d status moves, want the one just made", moves)
+	}
+}

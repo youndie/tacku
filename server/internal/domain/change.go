@@ -21,6 +21,48 @@ const (
 	ChangeCommentPosted ChangeKind = "comment_posted"
 )
 
+// Surface names where a change was made from.
+//
+// It exists for one question and says so: the board's card button and the task screen's selector
+// both move a task, and nothing in the entry told them apart, so "do people move tasks from the
+// board or from inside the task" could not be answered even in principle. The protocol does not
+// carry the originating screen in any request (Q-24), so the surface is what the server knows from
+// the address the call arrived at, and it has to be written down at that moment or it is gone.
+//
+// Recorded only where two surfaces compete for the same change — status moves today. Empty on the
+// other kinds means the question was not asked of them, not that the answer was lost.
+type Surface string
+
+const (
+	// SurfaceNone is the surface of a change nobody asked the question about.
+	SurfaceNone Surface = ""
+	// SurfaceBoard is the button on a board card.
+	SurfaceBoard Surface = "board"
+	// SurfaceTask is the selector on the task screen.
+	SurfaceTask Surface = "task"
+	// SurfaceAgent is a tool call. An agent has no screen at all, which is why it is a surface of
+	// its own rather than a blank: a share computed over "board or task" must be able to leave
+	// agent moves out, and it cannot do that if they are indistinguishable from unrecorded ones.
+	SurfaceAgent Surface = "agent"
+)
+
+// Named reports whether the surface is one this server knows.
+//
+// Checked rather than assumed, because the cost of a wrong answer here is silent: a third way to
+// move a task — bulk change is the next one — would otherwise write blanks, and the share would
+// stay a number, just no longer a true one.
+func (s Surface) Named() bool {
+	switch s {
+	case SurfaceBoard, SurfaceTask, SurfaceAgent:
+		return true
+	default:
+		return false
+	}
+}
+
+// ErrUnnamedSurface is returned when a change that has to name its surface did not.
+var ErrUnnamedSurface = errors.New("domain: the change does not name the surface it came from")
+
 // Change is one entry of the journal.
 //
 // The journal is part of the core rather than an audit trail bolted on top, because three different
@@ -38,6 +80,7 @@ type Change struct {
 	Kind      ChangeKind
 	From      string
 	To        string
+	Surface   Surface
 	By        Provenance
 	CreatedAt time.Time
 }

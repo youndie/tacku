@@ -98,7 +98,10 @@ func submitTaskView(store domain.Store) http.HandlerFunc {
 		}
 
 		if status := request.text("status"); status != "" {
-			if _, err := store.MoveTask(r.Context(), id, domain.Status(status), principal.Provenance); err != nil {
+			// The other half of the count B-36 waits on: a move that arrived here was made by
+			// somebody who had already opened the task.
+			if _, err := store.MoveTask(r.Context(), id, domain.Status(status), principal.Provenance,
+				domain.SurfaceTask); err != nil {
 				fail(w, err)
 				return
 			}

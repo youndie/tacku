@@ -47,7 +47,7 @@ func (s *Store) Changes(ctx context.Context, after domain.Cursor, limit int) ([]
 	}
 
 	rows, err := s.db.QueryContext(ctx,
-		`select seq, task, board, kind, from_value, to_value,
+		`select seq, task, board, kind, from_value, to_value, surface,
 		        actor_kind, actor_member, actor_version, on_behalf_of, created_at
 		 from changes where seq > ? order by seq limit ?`, from, limit)
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *Store) Changes(ctx context.Context, after domain.Cursor, limit int) ([]
 	for rows.Next() {
 		var c domain.Change
 		var created string
-		if err := rows.Scan(&c.Seq, &c.Task, &c.Board, &c.Kind, &c.From, &c.To,
+		if err := rows.Scan(&c.Seq, &c.Task, &c.Board, &c.Kind, &c.From, &c.To, &c.Surface,
 			&c.By.Executor.Kind, &c.By.Executor.Member, &c.By.Executor.Version,
 			&c.By.OnBehalfOf, &created); err != nil {
 			return nil, after, err
@@ -139,7 +139,7 @@ func (s *Store) Latest(ctx context.Context) (domain.Cursor, error) {
 
 func (s *Store) TaskChanges(ctx context.Context, id domain.TaskID) ([]domain.Change, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`select seq, task, board, kind, from_value, to_value,
+		`select seq, task, board, kind, from_value, to_value, surface,
 		        actor_kind, actor_member, actor_version, on_behalf_of, created_at
 		 from changes where task = ? order by seq`, string(id))
 	if err != nil {
@@ -151,7 +151,7 @@ func (s *Store) TaskChanges(ctx context.Context, id domain.TaskID) ([]domain.Cha
 	for rows.Next() {
 		var c domain.Change
 		var created string
-		if err := rows.Scan(&c.Seq, &c.Task, &c.Board, &c.Kind, &c.From, &c.To,
+		if err := rows.Scan(&c.Seq, &c.Task, &c.Board, &c.Kind, &c.From, &c.To, &c.Surface,
 			&c.By.Executor.Kind, &c.By.Executor.Member, &c.By.Executor.Version,
 			&c.By.OnBehalfOf, &created); err != nil {
 			return nil, err
