@@ -297,7 +297,7 @@
        {
         "type": "text",
         "id": "task-meta",
-        "text": "TAC-2 · created 22 Aug",
+        "text": "TAC-2 · created 23 Aug",
         "style": "meta"
        }
       ],
@@ -415,7 +415,7 @@
                    {
                     "type": "text",
                     "id": "history-3-who",
-                    "text": "anna · 23:09",
+                    "text": "anna · 09:00",
                     "style": "meta"
                    }
                   ],

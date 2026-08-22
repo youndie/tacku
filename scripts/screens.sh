@@ -12,6 +12,9 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="$root/client/app/src/test/screens"
 db=/tmp/tacku-screens.db
+# The moment the corpus is stamped at. Changing it rewrites every picture carrying a time, so it is
+# a decision rather than a default: pick one and leave it.
+stamp=2026-08-23T09:00:00Z
 # Overridable, because the refusal above is only useful if there is somewhere else to go: the usual
 # ports are where a stand for looking at the product lives.
 port=${TACKU_SCREENS_PORT:-8477}
@@ -42,7 +45,10 @@ for busy in $port $authport; do
 done
 rm -f "$db"
 cd "$root/server"
-go run ./cmd/tacku seed -db "$db" >/dev/null
+# A fixed instant, so two refreshes of the corpus differ only where the server changed. Without it
+# the journal stamps itself with the wall clock and every refresh rewrote two goldens by the minute
+# — a diff somebody has to triage each time, which is where a real change gets waved through.
+go run ./cmd/tacku seed -db "$db" -at "$stamp" >/dev/null
 go run ./cmd/devauth -addr :$authport >/dev/null 2>&1 &
 started="$started $!"
 sleep 4

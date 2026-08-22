@@ -45,7 +45,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (6)
+## Open (5)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -54,9 +54,8 @@
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
-| [B-44](docs/backlog/B-44-reproducible-screen-corpus.md) `[ ]` | Корпус экранов зависит от часов: обновление всегда переписывает два голдена | P3 | S | - |
 
-## Closed (42)
+## Closed (43)
 
 **Чем меряем**
 
@@ -110,6 +109,7 @@
 - [B-31](docs/backlog/B-31-wizard-submit-label.md) `[x]` - Подпись кнопки завершения сценария — `submitLabel` у `wizard_screen`
 - [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[x]` - Что показывать, когда массовое действие применилось частично
 - [B-33](docs/backlog/B-33-wizard-scenario-state-lifetime.md) `[x]` - Срок жизни состояния сценария: отменить его нечем
+- [B-44](docs/backlog/B-44-reproducible-screen-corpus.md) `[x]` - Корпус экранов зависит от часов: обновление всегда переписывает два голдена
 - [B-45](docs/backlog/B-45-adopt-kompot-0-22.md) `[x]` - Принять kompot 0.22: третий ключ дизайн-системы, вид кнопки, доля у weight
 - [B-46](docs/backlog/B-46-edit-a-task.md) `[x]` - Изменить задачу: после создания заголовок и описание менять нечем
 - [B-47](docs/backlog/B-47-mark-as-done.md) `[x]` - «Отметить сделанной» одним нажатием вместо цепочки статусов

@@ -56,6 +56,18 @@ func Open(path string) (*Store, error) {
 	return &Store{db: db, now: func() time.Time { return time.Now().UTC() }}, nil
 }
 
+// At fixes the clock this store stamps with.
+//
+// For seeding a stand, and for one reason: the screen corpus the pictures are taken from is
+// regenerated from a seeded server, and two runs fourteen minutes apart produced bodies differing
+// only in `anna · 16:24` against `anna · 16:38` — 885 pixels of one golden. A refresh that always
+// dirties two pictures makes somebody decide, every time, whether the diff is noise; that decision
+// is where a real change gets waved through (B-44).
+func (s *Store) At(now time.Time) *Store {
+	s.now = func() time.Time { return now.UTC() }
+	return s
+}
+
 func (s *Store) Close() error { return s.db.Close() }
 
 const stamp = time.RFC3339Nano

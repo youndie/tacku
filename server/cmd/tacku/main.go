@@ -250,6 +250,9 @@ func runOpenAPI(args []string) error {
 func runSeed(args []string) error {
 	flags := flag.NewFlagSet("seed", flag.ContinueOnError)
 	path := flags.String("db", "tacku.db", "path to the database file")
+	// A fixed instant, so that seeding twice produces the same database and the screen corpus taken
+	// from it is the same bytes. Empty means now, which is what a person poking at a stand wants.
+	at := flags.String("at", "", "stamp every entry at this RFC 3339 instant instead of now")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -257,6 +260,13 @@ func runSeed(args []string) error {
 	store, err := sqlite.Open(*path)
 	if err != nil {
 		return err
+	}
+	if *at != "" {
+		moment, err := time.Parse(time.RFC3339, *at)
+		if err != nil {
+			return fmt.Errorf("-at is not an RFC 3339 instant: %w", err)
+		}
+		store = store.At(moment)
 	}
 	defer store.Close()
 
