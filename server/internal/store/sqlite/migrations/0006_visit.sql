@@ -8,7 +8,7 @@
 --
 -- `away` is how long the person had been gone when the current visit began, in seconds, so the
 -- headline can say it without inventing a wall-clock time in a timezone the protocol never carries
--- (Q-25).
+-- (Q-31).
 alter table seen add column pending text not null default 'c0';
 alter table seen add column away integer not null default 0;
 

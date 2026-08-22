@@ -23,7 +23,7 @@ const (
 // catchUp serves the one screen of this product that takes no input.
 //
 // Asking for it is what the server treats as a person arriving, which is an assumption and is
-// recorded as one (Q-24): the protocol has no arrival signal, and §16.2 designs for the client
+// recorded as one (Q-30): the protocol has no arrival signal, and §16.2 designs for the client
 // re-requesting a screen it already holds. Under a client that revalidates on a timer the visit
 // would never end and the feed would only grow — the harmless direction of being wrong, which is
 // why the assumption is allowed to stand.

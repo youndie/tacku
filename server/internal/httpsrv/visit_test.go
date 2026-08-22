@@ -78,7 +78,7 @@ func TestWhatHappenedBetweenTwoVisitsIsShownInTheSecond(t *testing.T) {
 // The headline says how long, and says it as elapsed time.
 //
 // Not the date and time the mockup drew: §14 hands the server the finished text and §16.7 gives it
-// no timezone, so a wall clock here would be the server's own wearing the reader's (Q-25).
+// no timezone, so a wall clock here would be the server's own wearing the reader's (Q-31).
 func TestTheHeadlineNamesHowLongTheReaderWasAway(t *testing.T) {
 	r := newResource(t)
 	board := r.board(t)
