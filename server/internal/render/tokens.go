@@ -41,6 +41,11 @@ const (
 	// says so in weight and colour rather than in a background alone.
 	TextNav        = "nav"
 	TextNavCurrent = "nav_current"
+
+	// The label of a move on a card: a line you press, not a control. The design asked for a link
+	// rather than a button there — a board of six cards is six buttons otherwise, and none of them
+	// is the action of the screen.
+	TextButtonQuiet = "button_quiet"
 )
 
 // StripeDp is the width of the provenance stripe, and it is three in both themes.
@@ -78,6 +83,6 @@ func TypographyTokens() []string {
 		// The two the server never chooses: a button carries no style field, so which of them a
 		// label is set in is decided by the design system from whether the button has a background.
 		// Listed because the client declares them, and an unlisted name would read as drift.
-		"button_primary", "button_quiet",
+		"button_primary", TextButtonQuiet,
 	}
 }

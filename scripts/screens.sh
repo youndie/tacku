@@ -12,8 +12,10 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="$root/client/app/src/test/screens"
 db=/tmp/tacku-screens.db
-port=8477
-authport=8478
+# Overridable, because the refusal above is only useful if there is somewhere else to go: the usual
+# ports are where a stand for looking at the product lives.
+port=${TACKU_SCREENS_PORT:-8477}
+authport=${TACKU_SCREENS_AUTHPORT:-8478}
 
 # Only what this script started.
 #

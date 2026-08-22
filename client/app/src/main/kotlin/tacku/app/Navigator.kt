@@ -37,7 +37,24 @@ class Navigator(
     fun handler(
         controller: FormController,
         formId: String?,
-    ): KompotActionHandler = KompotActionHandler { action -> dispatch(action, controller, formId) }
+    ): KompotActionHandler =
+        KompotActionHandler { action ->
+            trace("intent ${action::class.simpleName}")
+            dispatch(action, controller, formId)
+        }
+
+    /**
+     * What the client did, in order, when `TACKU_TRACE` is set.
+     *
+     * Off by default and one line per step. It exists because a chain whose every link was proved
+     * to work separately still did not work together, and at that point the only measurement left is
+     * the running application saying what it actually did.
+     */
+    private fun trace(what: String) {
+        if (System.getenv("TACKU_TRACE") != null) {
+            System.err.println("tacku: $what")
+        }
+    }
 
     private fun dispatch(
         action: KompotAction,
@@ -64,7 +81,9 @@ class Navigator(
                 }
 
                 is PerformAction -> {
+                    trace("perform ${action.url}")
                     val answer = transport.perform(action.url, action.payload)
+                    trace("answered ${answer::class.simpleName}")
                     dispatchNow(answer, controller, formId)
                 }
 
@@ -121,6 +140,7 @@ class Navigator(
      * one thing this can do is say so in the log, which is more than it used to.
      */
     private suspend fun follow(deeplink: String) {
+        trace("follow $deeplink")
         when (val target = resolve(deeplink)) {
             is Target.Open -> open(target.path, target.kind)
             Target.Start -> start()
@@ -166,6 +186,7 @@ class Navigator(
         path: String,
         kind: String,
     ) {
+        trace("open $path as $kind")
         when (kind) {
             "form" -> {
                 val response = transport.form(path)

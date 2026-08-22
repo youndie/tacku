@@ -10,6 +10,7 @@ import io.github.youndie.kompot.standard.ColumnComponent
 import io.github.youndie.kompot.standard.NavigateAction
 import io.github.youndie.kompot.standard.PaginatedListComponent
 import io.github.youndie.kompot.standard.RowComponent
+import io.github.youndie.kompot.standard.TextComponent
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -74,6 +75,14 @@ fun main() {
 
         val moved = transport.perform(card.moveUrl, card.movePayload)
         println("  moved ${card.taskId}, and the server answered ${moved::class.simpleName}")
+
+        // And then the half a person actually looks at: the answer is a navigate, the client follows
+        // it, and the board it gets back is what the screen becomes. Checked here because "the card
+        // moved but the screen did not change" is a sentence about this fetch, and nothing else in
+        // the client can tell the two apart.
+        val reloaded = transport.screen("/screens/board")
+        val column = columnOf(reloaded, card.taskId)
+        println("  reloaded the board, and ${card.taskId} is now in ${column ?: "no column at all"}")
     }
 }
 
@@ -168,5 +177,50 @@ private fun firstCard(root: KompotComponent): Card? {
     }
 
     walk(root)
+    return found
+}
+
+/** Which column a task is in, read from a board the way a person reads it. */
+private fun columnOf(
+    root: KompotComponent,
+    task: String,
+): String? {
+    var found: String? = null
+
+    fun walk(
+        node: KompotComponent,
+        column: String?,
+    ) {
+        if (found != null) return
+        val here =
+            when (node) {
+                is ColumnComponent ->
+                    node.children
+                        .filterIsInstance<RowComponent>()
+                        .firstNotNullOfOrNull { row ->
+                            row.children
+                                .filterIsInstance<TextComponent>()
+                                .firstOrNull()
+                                ?.text
+                        } ?: column
+                else -> column
+            }
+
+        if (node is TextComponent && node.text.contains(task)) {
+            found = here
+            return
+        }
+
+        val children =
+            when (node) {
+                is ColumnComponent -> node.children
+                is RowComponent -> node.children
+                is PaginatedListComponent -> node.initialItems
+                else -> emptyList()
+            }
+        children.forEach { walk(it, here) }
+    }
+
+    walk(root, null)
     return found
 }

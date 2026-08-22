@@ -56,7 +56,15 @@ private fun App(baseUrl: String) {
     val registry = remember { tackuRegistry() }
 
     var screen by remember { mutableStateOf<Screen>(Screen.Loading) }
-    val navigator = remember { Navigator(transport, scope) { screen = it } }
+    val navigator =
+        remember {
+            Navigator(transport, scope) { state ->
+                if (System.getenv("TACKU_TRACE") != null) {
+                    System.err.println("tacku: showing ${state::class.simpleName}")
+                }
+                screen = state
+            }
+        }
 
     LaunchedEffect(Unit) { navigator.start() }
 

@@ -1,5 +1,6 @@
 package tacku.app
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import io.github.youndie.kompot.ColorToken
 import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.TypographyToken
 
@@ -48,6 +50,14 @@ fun TackuTheme(
         CompositionLocalProvider(
             LocalKompotDesignSystem provides design,
             LocalContentColor provides design.resolveTypography(TypographyToken("body")).color,
+            // Every pressable thing in the product highlights the same way, and highlights all of
+            // itself. Material's ripple is round, which on a design with no corners is wrong twice,
+            // and it arrives in Material's colours rather than these.
+            LocalIndication provides
+                TackuIndication(
+                    hovered = design.resolveColor(ColorToken("surface_selected")).copy(alpha = 0.55f),
+                    pressed = design.resolveColor(ColorToken("surface_selected")),
+                ),
         ) {
             // The window is painted here rather than by whatever happens to be on it.
             //

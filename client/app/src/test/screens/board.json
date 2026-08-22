@@ -367,7 +367,7 @@
         },
         {
          "type": "paginated_list",
-         "id": "column-todo-list",
+         "id": "column-todo-list-fc31e533",
          "modifiers": [
           {
            "type": "size",
@@ -1058,7 +1058,7 @@
         },
         {
          "type": "paginated_list",
-         "id": "column-in_progress-list",
+         "id": "column-in_progress-list-800c286d",
          "modifiers": [
           {
            "type": "size",
@@ -1341,7 +1341,7 @@
         },
         {
          "type": "paginated_list",
-         "id": "column-in_review-list",
+         "id": "column-in_review-list-12a9c895",
          "modifiers": [
           {
            "type": "size",
@@ -1624,7 +1624,7 @@
         },
         {
          "type": "paginated_list",
-         "id": "column-done-list",
+         "id": "column-done-list-53708579",
          "modifiers": [
           {
            "type": "size",
@@ -1786,7 +1786,7 @@
         },
         {
          "type": "paginated_list",
-         "id": "column-blocked-list",
+         "id": "column-blocked-list-2e9b753d",
          "modifiers": [
           {
            "type": "size",

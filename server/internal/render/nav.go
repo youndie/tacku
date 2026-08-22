@@ -25,8 +25,8 @@ func Navigation(person domain.MemberID, current string) Component {
 		Spacer("nav-spacer"),
 		Text("nav-person", string(person), TextMeta, PaddingXY(0, 20)),
 		Opens(
-			Row("nav-signout", 0, []Modifier{FillWidth(), PaddingXY(10, 16)},
-				Text("nav-signout-label", "Sign out", TextNav)),
+			Row("nav-signout", 0, []Modifier{FillWidth()},
+				Text("nav-signout-label", "Sign out", TextNav, PaddingXY(10, 16))),
 			Navigate(LinkSignOut),
 		),
 	)
@@ -44,14 +44,18 @@ func Navigation(person domain.MemberID, current string) Component {
 // box, which is what made the selected item look inflated.
 func navItem(id, link, current string) Component {
 	style := TextNav
-	modifiers := []Modifier{FillWidth(), PaddingXY(10, 16)}
+	modifiers := []Modifier{FillWidth()}
 	if link == current {
 		style = TextNavCurrent
 		modifiers = append(modifiers, Background(ColorSurfaceSelected))
 	}
 
+	// The padding is on the label, not on the row, and that is the difference between an item you
+	// can press and a word you can press. Modifiers apply in order and the click is added last, so
+	// padding on the row insets the clickable area with everything else: the highlight covered the
+	// rail and the target covered the text. The same mistake the button had, one level up.
 	return Opens(
-		Row(id, 0, modifiers, Text(id+"-label", RouteTitle(link), style)),
+		Row(id, 0, modifiers, Text(id+"-label", RouteTitle(link), style, PaddingXY(10, 16))),
 		Navigate(link),
 	)
 }

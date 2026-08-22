@@ -82,7 +82,10 @@ class BoardMoveTest {
 
         runComposeUiTest {
             var screen by mutableStateOf(opening)
-            val scope = CoroutineScope(Dispatchers.Unconfined)
+            // A real dispatcher, not Unconfined: the chain is a request, an answer and a reload, and
+            // `Unconfined` resumes each step inline on whatever thread finished the last one, which
+            // under a test clock is not the arrangement the application runs in.
+            val scope = CoroutineScope(Dispatchers.Default)
             // Failures are kept rather than dropped. The first version of this test watched only
             // `Screen.Tree`, so when the chain refused, the test saw a board that had not changed
             // and reported "pressing move changed nothing" — the true statement that hides the
