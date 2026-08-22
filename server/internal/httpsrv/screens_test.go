@@ -17,6 +17,18 @@ import (
 func (r *resource) get(t *testing.T, path, token, ifNoneMatch string) (*http.Response, []byte) {
 	t.Helper()
 
+	headers := map[string]string{}
+	if ifNoneMatch != "" {
+		headers["If-None-Match"] = ifNoneMatch
+	}
+	return r.getWith(t, path, token, headers)
+}
+
+// getWith is get with headers of the caller's choosing, for the checks that are about the headers
+// themselves rather than about the body.
+func (r *resource) getWith(t *testing.T, path, token string, headers map[string]string) (*http.Response, []byte) {
+	t.Helper()
+
 	request, err := http.NewRequest(http.MethodGet, r.url+path, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -24,8 +36,8 @@ func (r *resource) get(t *testing.T, path, token, ifNoneMatch string) (*http.Res
 	if token != "" {
 		request.Header.Set("Authorization", "Bearer "+token)
 	}
-	if ifNoneMatch != "" {
-		request.Header.Set("If-None-Match", ifNoneMatch)
+	for name, value := range headers {
+		request.Header.Set(name, value)
 	}
 
 	response, err := http.DefaultClient.Do(request)
