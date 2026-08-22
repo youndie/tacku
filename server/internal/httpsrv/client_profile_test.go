@@ -2,7 +2,7 @@
 // both, because they are one decision: SPEC.md §2.2 forbids sending a form type outside "the profile
 // the client is declared for", and nothing in the contract carries that profile — no header in
 // §16.7, and §2.4 says the profile is not the client's runtime contract at all. The question is
-// Q-24 in the journal; what follows is what was decided in its place.
+// Q-26 in the journal; what follows is what was decided in its place.
 package httpsrv_test
 
 import (
