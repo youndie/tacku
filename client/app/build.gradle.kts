@@ -29,6 +29,7 @@ val kompotVersion: String = property("kompot.version").toString()
 // names a reload carries field values, and what a client actually does with a deeplink it does not
 // know.
 dependencies {
+    implementation(project(":fields"))
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
 

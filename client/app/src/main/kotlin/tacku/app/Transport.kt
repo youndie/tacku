@@ -27,6 +27,7 @@ import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.modules.SerializersModule
+import tacku.fields.tackuFieldsSerializersModule
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -39,6 +40,14 @@ import kotlin.uuid.Uuid
  */
 class Transport(
     private val baseUrl: String,
+    /**
+     * Whether this client knows the wire types this deployment added.
+     *
+     * False is what a client released before them looks like, and it exists so that the cost can be
+     * shown rather than asserted: the form does not lose the date, it fails to parse. Nothing in
+     * the product sets it — only the test that demonstrates what §15 ordering is protecting.
+     */
+    private val knowsExtensions: Boolean = true,
 ) {
     private val http = HttpClient(CIO)
 
@@ -68,6 +77,10 @@ class Transport(
                 include(formStandardSerializersModule)
                 include(kompotAuthSerializersModule)
                 include(kompotCommandsSerializersModule)
+                // The two types this deployment adds. Without this line the client would meet its
+                // own server's date and lose the whole form — the hierarchy it belongs to does not
+                // degrade, and the profile declaring the name does not make anything decode it.
+                if (knowsExtensions) include(tackuFieldsSerializersModule)
             },
         )
 

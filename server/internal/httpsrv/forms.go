@@ -19,9 +19,10 @@ const newTaskFormID = "new-task"
 
 // newTaskForm serves the form that creates a task.
 //
-// The due date is a text field with a pattern, because the vocabulary has no date type. It is a
-// compromise recorded rather than hidden: a person types a date instead of picking one, and B-12
-// holds the decision about whether that is worth a field type of our own.
+// The due date is this deployment's own field type, which the vocabulary does not have and now has
+// somewhere to be declared (§2.4). It was a text input with a mask and a regular expression for as
+// long as there was nowhere to declare one — recorded as a compromise rather than hidden, and B-12
+// held the decision until the mechanism existed.
 func newTaskForm(store domain.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if _, err := principalOf(r); err != nil {
@@ -49,11 +50,11 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 
 		status := form.Select("status", "Status", "", statusOptions(), nil)
 
-		// Required first, then the pattern. A regex passes an empty value so that an optional field
-		// can stay blank, so the order is what decides which message a person is shown.
-		due := form.TextInput("due", "Due date", "YYYY-MM-DD",
-			[]forms.Rule{forms.Regex(`^\d{4}-\d{2}-\d{2}$`, "Enter the date as YYYY-MM-DD, for example 2026-08-29.")},
-			forms.Mask("0000-00-00"))
+		// The rule stays. A field type of our own decides what a person does, not what the server
+		// trusts: the value still arrives as text, from a client that may be anything, and a check
+		// dropped because the control looks safe is a check dropped for the wrong reason.
+		due := form.DateInput("due", "Due date", "", "", "", "Leave it empty if there is no deadline.",
+			[]forms.Rule{forms.Regex(`^\d{4}-\d{2}-\d{2}$`, "Enter the date as YYYY-MM-DD, for example 2026-08-29.")})
 
 		agent := form.Checkbox("agent_may_update", "Let my agent keep this task up to date")
 
@@ -63,10 +64,7 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 			title,
 			board,
 			status,
-			render.Column("form-due-block", 4, nil,
-				due,
-				render.Text("form-due-hint", "YYYY-MM-DD", render.TextMeta),
-			),
+			due,
 			agent,
 			render.Text("form-agent-hint",
 				"It may change the status and post comments on your behalf. Every action stays in the history.",

@@ -352,3 +352,25 @@ func ReadOnlyField(id, label, value, helper string, modifiers ...Modifier) Compo
 		Label: label, Value: value, HelperText: helper,
 	}
 }
+
+type dateInput struct {
+	Type          string     `json:"type"`
+	ID            string     `json:"id"`
+	Modifiers     []Modifier `json:"modifiers,omitempty"`
+	FieldID       string     `json:"fieldId"`
+	Label         string     `json:"label"`
+	DisplayFormat string     `json:"displayFormat,omitempty"`
+	Placeholder   string     `json:"placeholder,omitempty"`
+	Hint          string     `json:"hint,omitempty"`
+}
+
+// DateInput is the tree half of the deployment's own field type — see forms.Builder.DateInput.
+//
+// `displayFormat` travels from here because the server owns every string on the screen, and a date
+// the client formatted itself would be the one place it did not.
+func DateInput(id, fieldID, label, hint string, modifiers ...Modifier) Component {
+	return dateInput{
+		Type: "date_input", ID: id, Modifiers: modifiers,
+		FieldID: fieldID, Label: label, DisplayFormat: dayLayoutPattern, Hint: hint,
+	}
+}

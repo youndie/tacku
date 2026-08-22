@@ -14,7 +14,7 @@ import (
 const formWithAnUndeclaredField = `{
   "schema": {"formId": "task_create", "fields": [
     {"type": "text_field", "fieldId": "title", "rules": [{"type": "required", "errorMessage": "no"}]},
-    {"type": "date_field", "fieldId": "due", "rules": []}
+    {"type": "colour_field", "fieldId": "due", "rules": []}
   ]},
   "screen": {"type": "column", "id": "root", "children": [
     {"type": "text_input", "id": "field-title", "fieldId": "title", "label": "Title"}
@@ -35,8 +35,8 @@ func TestTheWalkFindsAFieldTypeTheProfileDoesNotDeclare(t *testing.T) {
 		t.Fatalf("found %v, want exactly the invented field", result.Undeclared)
 	}
 	found := result.Undeclared[0]
-	if found.WireType != "date_field" || found.Hierarchy != "FormFieldDefinition" {
-		t.Errorf("found %+v, want date_field in FormFieldDefinition", found)
+	if found.WireType != "colour_field" || found.Hierarchy != "FormFieldDefinition" {
+		t.Errorf("found %+v, want colour_field in FormFieldDefinition", found)
 	}
 	if found.Degrades {
 		t.Error("a form field was reported as degrading; §2.2 says an unknown one costs the whole response")
@@ -51,8 +51,8 @@ func TestTheWalkAcceptsAResponseMadeOfDeclaredTypesOnly(t *testing.T) {
 	s := load(t)
 
 	clean := strings.Replace(formWithAnUndeclaredField,
-		`{"type": "date_field", "fieldId": "due", "rules": []}`,
-		`{"type": "text_field", "fieldId": "due", "rules": []}`, 1)
+		`{"type": "colour_field", "fieldId": "due", "rules": []}`,
+		`{"type": "date_field", "fieldId": "due", "rules": []}`, 1)
 
 	result, err := s.Scan(formResponse, []byte(clean))
 	if err != nil {
@@ -94,7 +94,7 @@ func TestTheWalkSeparatesTheHalvesOfTheProtocol(t *testing.T) {
 	if degrades, found := costs["tabs"]; !found || !degrades {
 		t.Errorf("an undeclared component was reported as %v; §2.1 gives it a fallback", costs)
 	}
-	if degrades, found := costs["date_field"]; !found || degrades {
+	if degrades, found := costs["colour_field"]; !found || degrades {
 		t.Errorf("an undeclared field was reported as %v; §2.2 gives it none", costs)
 	}
 }

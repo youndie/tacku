@@ -231,9 +231,15 @@ func (sc *scanner) hierarchy(instance any, file, name string, n node, path strin
 	// Which mapping closes this hierarchy depends on who owns the closing. The open ones (§2.1,
 	// §2.2) are closed by the build, so the list is in the profile; KompotModifierNode is closed by
 	// the protocol itself (§2.3) and carries its list in the module schema.
+	// Where the mapping came from decides what a relative reference in it means. Until this
+	// deployment declared a type of its own, every entry named a file, so resolving them against
+	// the module file happened to work; an extension points at a definition inside the profile
+	// itself, and resolving that against the module looks for it in the wrong document.
 	mapping := sc.profileMapping(name)
+	owner := ProfileFileName
 	if mapping == nil && n.Discriminator != nil {
 		mapping = n.Discriminator.Mapping
+		owner = file
 	}
 	if len(mapping) == 0 {
 		return fmt.Errorf("spec: hierarchy %s is closed neither by the profile nor by %s, so nothing can be checked against it", name, file)
@@ -246,7 +252,7 @@ func (sc *scanner) hierarchy(instance any, file, name string, n node, path strin
 		return nil
 	}
 
-	nextFile, nextName, err := split(file, target)
+	nextFile, nextName, err := split(owner, target)
 	if err != nil {
 		return err
 	}
@@ -306,6 +312,9 @@ func (sc *scanner) definition(file, name string) (json.RawMessage, error) {
 	defs, ok := sc.defs[file]
 	if !ok {
 		document, held := sc.spec.Schemas[file]
+		if !held && file == ProfileFileName {
+			document, held = sc.spec.Profile, true
+		}
 		if !held {
 			return nil, fmt.Errorf("spec: %s is referenced but the profile does not name it", file)
 		}

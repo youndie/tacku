@@ -69,6 +69,9 @@
     "FormFieldDefinition": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-extensions": [
+        "date_field"
+      ],
       "oneOf": [
         {
           "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionAmountField"
@@ -84,6 +87,9 @@
         },
         {
           "$ref": "form-standard.schema.json#/$defs/FormFieldDefinitionTextField"
+        },
+        {
+          "$ref": "#/$defs/FormFieldDefinitionExtension"
         }
       ],
       "discriminator": {
@@ -93,9 +99,25 @@
           "autocomplete_field": "form-standard.schema.json#/$defs/FormFieldDefinitionAutocompleteField",
           "checkbox_field": "form-standard.schema.json#/$defs/FormFieldDefinitionCheckboxField",
           "selection_field": "form-standard.schema.json#/$defs/FormFieldDefinitionSelectionField",
-          "text_field": "form-standard.schema.json#/$defs/FormFieldDefinitionTextField"
+          "text_field": "form-standard.schema.json#/$defs/FormFieldDefinitionTextField",
+          "date_field": "#/$defs/FormFieldDefinitionExtension"
         }
       }
+    },
+    "FormFieldDefinitionExtension": {
+      "x-kompot-kind": "extension",
+      "description": "A wire type this deployment adds on top of its modules. Its NAME is declared, its shape is not: there is no schema for it here, and that is safe only because an unfamiliar type degrades by protocol (see x-kompot-degrades). A type in neither the mapping above nor this list is a violation",
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "date_field"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ]
     },
     "KompotAction": {
       "x-kompot-kind": "hierarchy",
@@ -155,6 +177,9 @@
     "KompotComponent": {
       "x-kompot-kind": "hierarchy",
       "x-kompot-open": false,
+      "x-kompot-extensions": [
+        "date_input"
+      ],
       "oneOf": [
         {
           "$ref": "kompot-forms.schema.json#/$defs/KompotComponentAmountInput"
@@ -200,6 +225,9 @@
         },
         {
           "$ref": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen"
+        },
+        {
+          "$ref": "#/$defs/KompotComponentExtension"
         }
       ],
       "discriminator": {
@@ -219,9 +247,25 @@
           "table": "kompot-standard.schema.json#/$defs/KompotComponentTable",
           "text": "kompot-standard.schema.json#/$defs/KompotComponentText",
           "text_input": "kompot-forms.schema.json#/$defs/KompotComponentTextInput",
-          "wizard_screen": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen"
+          "wizard_screen": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen",
+          "date_input": "#/$defs/KompotComponentExtension"
         }
       }
+    },
+    "KompotComponentExtension": {
+      "x-kompot-kind": "extension",
+      "description": "A wire type this deployment adds on top of its modules. Its NAME is declared, its shape is not: there is no schema for it here, and that is safe only because an unfamiliar type degrades by protocol (see x-kompot-degrades). A type in neither the mapping above nor this list is a violation",
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "date_input"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ]
     },
     "ValidationRule": {
       "x-kompot-kind": "hierarchy",

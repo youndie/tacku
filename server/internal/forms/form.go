@@ -165,3 +165,34 @@ func nonNilRules(rules []Rule) []Rule {
 	}
 	return rules
 }
+
+// dateField is the schema half of the deployment's own field type.
+//
+// Its wire name is declared in the profile as an extension (§2.4) rather than in a module of the
+// toolkit, which is what makes it legal to send at all: a validator on any stack accepts a declared
+// name and refuses an undeclared one. The mechanism arrived in kompot 0.17; before it, a type of
+// our own was either invisible to every check or cost writing a Kotlin module of the protocol.
+type dateField struct {
+	Type    string `json:"type"`
+	FieldID string `json:"fieldId"`
+	Rules   []Rule `json:"rules"`
+	Value   string `json:"value,omitempty"`
+	Min     string `json:"min,omitempty"`
+	Max     string `json:"max,omitempty"`
+}
+
+func (dateField) isField() {}
+
+// DateInput declares a date and returns the node that draws it.
+//
+// The value on the wire stays a `text_value` holding an ISO date, so nothing downstream changes:
+// the handler reads it exactly as it read the masked text box. What changes is what a person does —
+// picking a day they can name instead of composing an ISO string in their head, which is the
+// scenario the design named and the reason this type exists.
+func (b *Builder) DateInput(fieldID, label, value, min, max, hint string, rules []Rule) render.Component {
+	b.declare(fieldID, dateField{
+		Type: "date_field", FieldID: fieldID, Rules: nonNilRules(rules),
+		Value: value, Min: min, Max: max,
+	})
+	return render.DateInput(componentID(fieldID), fieldID, label, hint)
+}

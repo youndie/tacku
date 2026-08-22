@@ -57,7 +57,10 @@ private fun App(baseUrl: String) {
     // client disagreeing with the toolkit about what a component looks like.
     val registry =
         remember {
-            KompotRegistry(kompotCoreRenderers + kompotStandardRenderers + generatedFormsClientRenderers)
+            KompotRegistry(
+                kompotCoreRenderers + kompotStandardRenderers + generatedFormsClientRenderers +
+                    tackuRenderers(),
+            )
         }
 
     var screen by remember { mutableStateOf<Screen>(Screen.Loading) }

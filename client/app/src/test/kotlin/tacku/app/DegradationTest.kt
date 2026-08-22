@@ -46,15 +46,20 @@ class DegradationTest {
      */
     @Test
     fun `an unknown field type loses the whole form`() {
+        // The example used to be `date_field`, picked because it was the most plausible type the
+        // vocabulary was missing — and then this deployment added it, and the test passed by
+        // decoding rather than by failing. Third fixture in this repository to be caught by the
+        // same thing on the same day, which is what makes it worth a sentence: a negative example
+        // chosen for how real it looks is one somebody eventually makes real.
         val form =
             """
-            {"schema":{"formId":"f","fields":[{"type":"date_field","fieldId":"due","rules":[]}]},
+            {"schema":{"formId":"f","fields":[{"type":"colour_field","fieldId":"due","rules":[]}]},
              "screen":{"type":"text","id":"a","text":"hello"}}
             """.trimIndent()
 
         val failure = assertFailsWith<SerializationException> { transport.decodeForm(form) }
         assertTrue(
-            failure.message.orEmpty().contains("date_field"),
+            failure.message.orEmpty().contains("colour_field"),
             "the refusal reads ${failure.message}; it must name the type nobody declared",
         )
     }

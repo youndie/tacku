@@ -26,9 +26,29 @@ object TackuSpec {
     // the version moved.
     val modules: List<KompotSpecModule> = KompotToolkitSpec.modules
 
+    /**
+     * What this deployment adds to the vocabulary, by hierarchy and by name.
+     *
+     * Names and no shapes, which is what §2.4 allows and all it allows: a schema for a product type
+     * would make the protocol depend on product modules. What the names buy is exactly the thing
+     * that was missing until 0.17 — an ordinary JSON Schema library accepts a declared type and
+     * refuses an undeclared one, with no Kotlin and no code of the toolkit's involved. Before that,
+     * a deployment on another stack could send its own type and no artefact anywhere said it was
+     * allowed to.
+     *
+     * `date_input` degrades to a placeholder; `date_field` does not degrade at all, and a client
+     * that does not know it loses the whole form. That is why the pair ships by deployment order
+     * (§15) and not behind a flag — there is no flag, which is the answer B-26 recorded.
+     */
+    val extensions: Map<String, Set<String>> =
+        mapOf(
+            "KompotComponent" to setOf("date_input"),
+            "FormFieldDefinition" to setOf("date_field"),
+        )
+
     fun generate(): List<GeneratedSchema> = KompotSpec.generateAll(modules)
 
-    fun profile(schemas: List<GeneratedSchema>): JsonObject = KompotSpec.profile(schemas)
+    fun profile(schemas: List<GeneratedSchema>): JsonObject = KompotSpec.profile(schemas, extensions)
 }
 
 /**

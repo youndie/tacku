@@ -85,8 +85,11 @@ func TestTheValidatorRefusesTypesNobodyDeclared(t *testing.T) {
 
 	refused := map[string]string{
 		"a component outside the profile": `{"type":"tabs","id":"x"}`,
-		"a plausible field type":          `{"type":"date_field","fieldId":"due"}`,
-		"a plausible value type":          `{"type":"date_value","date":"2026-08-29"}`,
+		// Not `date_field` any more: this deployment declares it, so it is now the positive case
+		// below rather than a negative one. A plausible name is a good negative fixture right up
+		// until somebody makes it real.
+		"a plausible field type": `{"type":"colour_field","fieldId":"due"}`,
+		"a plausible value type": `{"type":"date_value","date":"2026-08-29"}`,
 	}
 	references := map[string]string{
 		"a component outside the profile": spec.Profile("KompotComponent"),
@@ -98,6 +101,14 @@ func TestTheValidatorRefusesTypesNobodyDeclared(t *testing.T) {
 		if err := v.Validate(references[name], []byte(body)); err == nil {
 			t.Errorf("%s was accepted; the profile is not closed and the check above proves nothing", name)
 		}
+	}
+
+	// And the other direction for the extension itself: a name this deployment declared is accepted
+	// by the same validator, with no code of ours between the profile and the answer. That pair is
+	// the whole of what §2.4 bought — before it, a type of our own was either invisible to every
+	// check or cost writing a module of the protocol.
+	if err := v.Validate(spec.Profile("FormFieldDefinition"), []byte(`{"type":"date_field","fieldId":"due","rules":[]}`)); err != nil {
+		t.Errorf("this deployment's own field type was refused by its own profile: %v", err)
 	}
 
 	// And the other direction, so a validator that refuses everything cannot pass this file either.

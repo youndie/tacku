@@ -60,10 +60,13 @@ func TestLoadReadsEveryModuleTheProfileNames(t *testing.T) {
 func TestProfileCarriesEveryHierarchy(t *testing.T) {
 	s := load(t)
 
+	// Sixteen and six rather than fifteen and five: this deployment declares two wire types of its
+	// own, and the profile counts them alongside the toolkit's because that is what a profile is
+	// for — what THIS BUILD serves, not what the protocol defines.
 	want := map[string]int{
-		"KompotComponent":     15,
+		"KompotComponent":     16,
 		"KompotAction":        11,
-		"FormFieldDefinition": 5,
+		"FormFieldDefinition": 6,
 		"ValidationRule":      4,
 		"FieldValue":          4,
 		"FormCondition":       2,
@@ -85,8 +88,14 @@ func TestProfileIsClosed(t *testing.T) {
 	if !s.Declares("FormFieldDefinition", "text_field") {
 		t.Error("text_field is declared by this build and must be in the profile")
 	}
-	if s.Declares("FormFieldDefinition", "date_field") {
-		t.Error("date_field is not part of this build; the profile accepted a type nobody declared")
+	// `date_field` used to stand here, chosen because it was shaped like a real name — and then it
+	// became one. A negative fixture picked for plausibility is a fixture that can stop being
+	// negative, which is worth knowing before the day it does so quietly.
+	if !s.Declares("FormFieldDefinition", "date_field") {
+		t.Error("date_field is this deployment's own field type and must be declared as an extension")
+	}
+	if s.Declares("FormFieldDefinition", "colour_field") {
+		t.Error("colour_field is not part of this build; the profile accepted a type nobody declared")
 	}
 	if s.Declares("KompotComponent", "tabs") {
 		t.Error("tabs is not in the vocabulary; the profile accepted a type nobody declared")

@@ -49,6 +49,14 @@ const commentLimit = 120
 // the smallest version of the drift this file exists to prevent.
 const dayLayout = "2 Jan"
 
+// dayLayoutPattern is the same day in the spelling a client understands.
+//
+// Go says a date by example and everyone else by pattern letters, so one rendering needs two
+// spellings. They sit together because the failure of letting them drift is a date shown two ways
+// on two screens — the drift this file exists to prevent, in the one place the file cannot prevent
+// it by holding a single string.
+const dayLayoutPattern = "d MMM"
+
 // AgentWord is the provenance signal written out, and it is the one channel that survives every way
 // of not seeing a colour.
 //
