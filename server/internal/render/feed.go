@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 )
@@ -24,6 +25,10 @@ type Feed struct {
 	// because a plausible number beside a list of twenty rows looks like a count of that list.
 	Total  int
 	Boards int
+
+	// Away is how long this reader had been gone when this visit began; zero for somebody who has
+	// never been here, and the headline then says nothing about a previous visit.
+	Away time.Duration
 }
 
 // Screen renders the tree.
@@ -69,7 +74,7 @@ func (f Feed) header() Component {
 	return Row("feed-header", 0, nil,
 		Column("feed-heading", 6, nil,
 			Text("feed-title", "Since your last visit", TextDisplay),
-			Text("feed-count", FeedSummary(f.Total, f.Boards), TextBodyMuted),
+			Text("feed-count", FeedSummary(f.Total, f.Boards, f.Away), TextBodyMuted),
 		),
 		Spacer("feed-header-spacer"),
 		// A perform and not a navigate: marking everything seen changes state, and it used to be a

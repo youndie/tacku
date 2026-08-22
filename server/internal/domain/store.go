@@ -80,8 +80,24 @@ type Attempts interface {
 // Seen is where a person had read up to.
 //
 // A cursor and not a timestamp, so that "what changed since" is one question with one answer for
-// both readers: an agent asks it of its own cursor, a person of theirs.
+// both readers: an agent asks it of its own cursor, a person of theirs. The extra fields of Visit
+// are how the person's cursor moves on its own; the agent moves its own by naming it.
 type Seen interface {
-	SeenAt(ctx context.Context, member MemberID) (Cursor, error)
-	MarkSeen(ctx context.Context, member MemberID, cursor Cursor) error
+	// Visit is everything remembered about this person's reading. A person who has never been
+	// here has a visit at the start of the journal rather than an error.
+	Visit(ctx context.Context, member MemberID) (Visit, error)
+
+	// RecordVisit stores it back, and it is the only way the row is written — the explicit "mark
+	// all as seen" goes through Dismiss and lands here too.
+	//
+	// Read-then-write rather than one statement, because the rule that decides the new value is
+	// Arrive, and it belongs to the domain rather than to SQL: storage that computed the boundary
+	// would put the answer to B-27 in a place where no test can see it in isolation.
+	//
+	// One write path rather than two, and that is not tidiness. A second statement of its own
+	// stamped the time from the storage clock while the arrival compared against the caller's, and
+	// two clocks that are compared to each other are one clock with a bug in it: an explicit mark
+	// timed from somewhere else could put the next arrival either side of the gap for reasons
+	// nothing in the request explains.
+	RecordVisit(ctx context.Context, member MemberID, visit Visit) error
 }

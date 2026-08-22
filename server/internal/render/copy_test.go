@@ -241,8 +241,12 @@ func TestACountCarriesItsPlural(t *testing.T) {
 	cases := []struct {
 		got, want string
 	}{
-		{render.FeedSummary(1, 1), "1 change across 1 board"},
-		{render.FeedSummary(25, 2), "25 changes across 2 boards"},
+		{render.FeedSummary(1, 1, 0), "1 change across 1 board"},
+		{render.FeedSummary(25, 2, 0), "25 changes across 2 boards"},
+		// Away is part of the same sentence, so it agrees in the same place.
+		{render.FeedSummary(25, 2, 90*time.Minute), "25 changes across 2 boards · you were last here 2 hours ago"},
+		{render.FeedSummary(1, 1, 61*time.Minute), "1 change across 1 board · you were last here 1 hour ago"},
+		{render.FeedSummary(1, 1, 30*time.Minute), "1 change across 1 board · you were last here under an hour ago"},
 		{render.BoardSummary(1, 0), "1 open task · 0 changed since your last visit"},
 		{render.BoardSummary(4, 3), "4 open tasks · 3 changed since your last visit"},
 	}

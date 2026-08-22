@@ -171,10 +171,43 @@ func agentMeta(by domain.Provenance) string {
 //
 // The server resolves the language and the plural because the client never assembles text, so
 // "1 change" and "14 changes" are decided here.
-func FeedSummary(total, boards int) string {
-	return fmt.Sprintf("%d %s across %d %s",
+func FeedSummary(total, boards int, away time.Duration) string {
+	line := fmt.Sprintf("%d %s across %d %s",
 		total, plural(total, "change", "changes"),
 		boards, plural(boards, "board", "boards"))
+	if since := lastVisit(away); since != "" {
+		line += " · " + since
+	}
+	return line
+}
+
+// lastVisit says when the reader was last here, and says it as an elapsed duration rather than as
+// the date and time the design drew.
+//
+// Not a compromise on the design but the only sentence that can be true. §14 hands the server the
+// finished text, and nothing in the contract carries the reader's timezone — so "on 20 Aug at
+// 18:40" would be the server's own wall clock wearing the reader's: plausible, unfalsifiable from
+// the screen, and wrong by however many hours separate them (Q-31). How long ago it was is the same
+// number everywhere.
+//
+// Rounded to the nearest hour or day rather than truncated: "9 hours ago" for eight hours and
+// fifty-five minutes is the answer a person would give, and truncation would say eight.
+func lastVisit(away time.Duration) string {
+	switch {
+	case away <= 0:
+		return ""
+	case away < time.Hour:
+		return "you were last here under an hour ago"
+	case away < 48*time.Hour:
+		return "you were last here " + count(int((away+30*time.Minute)/time.Hour), "hour", "hours") + " ago"
+	default:
+		return "you were last here " + count(int((away+12*time.Hour)/(24*time.Hour)), "day", "days") + " ago"
+	}
+}
+
+// count is a number with its unit agreed, which is the other half of what plural does.
+func count(value int, one, many string) string {
+	return fmt.Sprintf("%d %s", value, plural(value, one, many))
 }
 
 // BoardSummary is the line under a board's name.

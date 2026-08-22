@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/store/sqlite"
@@ -401,7 +402,7 @@ func TestTheReadBoundarySurvivesAReopen(t *testing.T) {
 	if latest == domain.Start {
 		t.Fatal("nothing was written, so a boundary at the end proves nothing")
 	}
-	if err := first.MarkSeen(ctx, anna, latest); err != nil {
+	if err := first.RecordVisit(ctx, anna, domain.Dismiss(time.Now().UTC(), latest)); err != nil {
 		t.Fatal(err)
 	}
 	if err := first.Close(); err != nil {
@@ -414,12 +415,19 @@ func TestTheReadBoundarySurvivesAReopen(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = second.Close() })
 
-	after, err := second.SeenAt(ctx, anna)
+	reopened, err := second.Visit(ctx, anna)
 	if err != nil {
 		t.Fatal(err)
 	}
+	after := reopened.Boundary
 	if after != latest {
 		t.Fatalf("the boundary came back as %q, not %q", after, latest)
+	}
+	// Both halves, and the second one is the half a reopen can lose quietly: a `pending` that came
+	// back at the start of the journal would rewind the boundary on the next arrival and hand back
+	// the whole history as news — after the button had already been pressed.
+	if reopened.Pending != latest {
+		t.Fatalf("the next visit would start at %q, not %q", reopened.Pending, latest)
 	}
 
 	// And it means what it says: nothing stands after it until something new happens, and then

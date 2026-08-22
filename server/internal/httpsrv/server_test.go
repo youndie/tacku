@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -118,6 +119,29 @@ type resource struct {
 	url   string
 	store *sqlite.Store
 	as    *authServer
+	clock *testClock
+}
+
+// testClock is the clock the visit boundary is measured against.
+//
+// A test has to be able to be away for nine hours, and waiting nine hours is not a test. Guarded by
+// a mutex because the handler reads it on the server's goroutine while the test moves it on its
+// own.
+type testClock struct {
+	mu sync.Mutex
+	at time.Time
+}
+
+func (c *testClock) now() time.Time {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.at
+}
+
+func (c *testClock) pass(d time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.at = c.at.Add(d)
 }
 
 func newResource(t *testing.T) *resource {
@@ -138,10 +162,13 @@ func newResource(t *testing.T) *resource {
 	served := httptest.NewUnstartedServer(nil)
 	base := "http://" + served.Listener.Addr().String()
 
+	clock := &testClock{at: time.Date(2026, 8, 20, 18, 40, 0, 0, time.UTC)}
+
 	handler, err := httpsrv.New(httpsrv.Config{
 		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: "0.1.0"},
 		Members:    store,
 		Seen:       store,
+		Now:        clock.now,
 		SessionKey: []byte("a key of at least thirty-two bytes"),
 		Verifier: auth.VerifierConfig{
 			Issuer:   as.issuer,
@@ -157,7 +184,7 @@ func newResource(t *testing.T) *resource {
 	served.Start()
 	t.Cleanup(served.Close)
 
-	return &resource{url: served.URL, store: store, as: as}
+	return &resource{url: served.URL, store: store, as: as, clock: clock}
 }
 
 func (r *resource) audience() string { return r.url + httpsrv.MCPPath }
