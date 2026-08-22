@@ -43,24 +43,25 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (12)
+## Open (13)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-12](docs/backlog/B-12-date-field-module.md) `[?]` | Свой элемент `date_input` вместо текстового поля с маской | P1 | L | B-09, B-26 |
-| [B-27](docs/backlog/B-27-last-visit-boundary.md) `[?]` | Что считать «прошлым визитом» в догоняющей ленте | P1 | S | B-20 |
 | [B-29](docs/backlog/B-29-multiline-text-input.md) `[ ]` | Многострочный ввод: описание задачи и комментарий | P1 | M | B-26 |
+| [B-40](docs/backlog/B-40-dead-controls.md) `[ ]` | Две кнопки не ведут никуда: отправка комментария и фильтр списка | P1 | M | - |
 | [B-16](docs/backlog/B-16-elicitation-to-kompot-form.md) `[?]` | Разворачивать опасное действие агента в KOMPOT-форму подтверждения | P2 | L | B-09, B-15 |
 | [B-22](docs/backlog/B-22-icon-component.md) `[?]` | Элемент `icon`: иконка по имени из набора дизайн-системы | P2 | M | - |
-| [B-23](docs/backlog/B-23-bulk-status-change.md) `[ ]` | Массовая смена статуса вместо перетаскивания | P2 | M | B-09 |
-| [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[ ]` | Полоса `agent` — цветовой сигнал; проверить на людях | P2 | XS | B-19 |
+| [B-28](docs/backlog/B-28-agent-stripe-accessibility.md) `[?]` | Полоса `agent` — цветовой сигнал; проверить на людях | P2 | XS | B-19 |
 | [B-31](docs/backlog/B-31-wizard-submit-label.md) `[ ]` | Подпись кнопки завершения сценария — `submitLabel` у `wizard_screen` | P2 | S | B-26 |
 | [B-32](docs/backlog/B-32-bulk-apply-partial-result.md) `[ ]` | Что показывать, когда массовое действие применилось частично | P2 | S | B-23 |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[?]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
+| [B-39](docs/backlog/B-39-wizard-endpoints.md) `[ ]` | Эндпоинты сценария: пакет wizard написан и никем не вызывается | P2 | M | B-33 |
 | [B-21](docs/backlog/B-21-realtime-updates.md) `[?]` | Канал живых обновлений: делать ли его на прототипе | P3 | M | B-14 |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
+| [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 
-## Closed (25)
+## Closed (27)
 
 **Чем меряем**
 
@@ -95,10 +96,12 @@
 - [B-20](docs/backlog/B-20-catch-up-feed.md) `[x]` - Догоняющая лента: что изменилось с прошлого визита
 - [B-24](docs/backlog/B-24-design-tokens-artifact.md) `[x]` - Набор токенов как публикуемый артефакт клиента
 - [B-25](docs/backlog/B-25-interface-copy-ownership.md) `[x]` - У строк интерфейса должен быть владелец и место
+- [B-27](docs/backlog/B-27-last-visit-boundary.md) `[x]` - Что считать «прошлым визитом» в догоняющей ленте
 - [B-34](docs/backlog/B-34-viddik-screenshots.md) `[x]` - Скриншот-тесты клиента на viddik
 
 **Решения, отложенные намеренно**
 
+- [B-23](docs/backlog/B-23-bulk-status-change.md) `[x]` - Массовая смена статуса вместо перетаскивания
 - [B-26](docs/backlog/B-26-client-capability-flag.md) `[x]` - Флаг возможностей клиента: может ли сервер узнать версию словаря
 - [B-33](docs/backlog/B-33-wizard-scenario-state-lifetime.md) `[x]` - Срок жизни состояния сценария: отменить его нечем
 

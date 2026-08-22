@@ -80,6 +80,14 @@ fun main() {
                             // Nothing to fill in: marking everything seen carries no values, and a
                             // submit still has to arrive as a submission.
                             "/submit/seen" to submission("catch_up_seen"),
+                            // A checkbox per task and one selector. The identifier is hyphenated
+                            // where its neighbours are not, which the form itself explains.
+                            "/submit/bulk-move" to
+                                submission(
+                                    "bulk-move",
+                                    "status" to textValue("in_progress"),
+                                    "task-TAC-1" to booleanValue(true),
+                                ),
                         ),
                 ),
             ).run()
@@ -151,6 +159,12 @@ private fun submission(
         },
     )
 }
+
+private fun booleanValue(value: Boolean) =
+    kotlinx.serialization.json.buildJsonObject {
+        put("type", kotlinx.serialization.json.JsonPrimitive("boolean_value"))
+        put("value", kotlinx.serialization.json.JsonPrimitive(value))
+    }
 
 private fun textValue(text: String) =
     kotlinx.serialization.json.buildJsonObject {
