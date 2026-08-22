@@ -63,6 +63,8 @@ func run(args []string) error {
 		return runMCP(args[1:])
 	case "serve":
 		return runServe(args[1:])
+	case "measure":
+		return runMeasure(args[1:])
 	case "openapi":
 		return runOpenAPI(args[1:])
 	case "seed":

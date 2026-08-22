@@ -18,7 +18,7 @@ BACKLOG ?= backlog.md
 REPOS ?= ..
 PY ?= python3
 
-.PHONY: check gate docs server client spec tck probe shots format report probes fix help
+.PHONY: measure check gate docs server client spec tck probe shots format report probes fix help
 
 help:
 	@echo "make check   - the gate: blocking checks, exactly what CI runs"
@@ -92,6 +92,14 @@ tck:
 		rm -f /tmp/tacku-tck.token; exit $$status
 
 # Rewrites the goldens. The gate compares them; only this rewrites them.
+# Both numbers the backlog is waiting on, from a real database. Not in the gate: it answers a
+# question about people, and there are none yet — what it does today is refuse to divide, which is
+# the behaviour worth having ready before there is data rather than after.
+measure:
+	cd server && go run ./cmd/tacku measure -db $(DB)
+
+DB ?= tacku.db
+
 shots:
 	cd client && ./gradlew --quiet :app:viddikRecord
 
