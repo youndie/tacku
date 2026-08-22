@@ -262,8 +262,17 @@ func CardUpdate(task domain.Task, by domain.Provenance, moveURL string) UpdateCo
 	// right and its button posted to the empty string — a control that works on the screen it was
 	// drawn with and stops working on the one it was sent to.
 	board := Board{MoveURL: moveURL, LastBy: map[domain.TaskID]domain.Provenance{task.ID: by}}
+	card := board.card(task)
+
+	// The identifier is taken from the component being sent rather than spelled again.
+	//
+	// It was spelled again, and then a card grew an outer node for the gap between items: the frame
+	// went on naming the inner node while carrying the outer one — a replacement containing a node
+	// with the identifier it was replacing. Applied on every draw, that nests the card inside itself
+	// without end. The symptom was not a wrong picture: it was `StackOverflowError` inside
+	// recomposition, on the one screen that shows cards, the moment anything moved.
 	return UpdateComponent{
-		ComponentID: "card-" + string(task.ID),
-		Component:   board.card(task),
+		ComponentID: idOf(card),
+		Component:   card,
 	}
 }

@@ -276,6 +276,26 @@ func Marked(id, token string, body Component) Component {
 	return Column(id, 0, []Modifier{Background(token), FillWidth(), PaddingStart(StripeDp)}, body)
 }
 
+// idOf is the identifier a node carries, which is what an update frame has to name.
+//
+// Every component of this vocabulary has one, so a node with no identifier is a node this package
+// did not build — and the panic says so rather than sending a frame that names nothing.
+func idOf(component Component) string {
+	switch value := component.(type) {
+	case column:
+		return value.ID
+	case row:
+		return value.ID
+	case text:
+		return value.ID
+	case button:
+		return value.ID
+	case paginatedList:
+		return value.ID
+	}
+	panic("render: this component carries no identifier, so nothing can address it")
+}
+
 // Spaced puts a gap around a list item, and it is a whole extra node because there is nowhere else
 // to put one.
 //

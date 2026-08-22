@@ -175,7 +175,7 @@ class Navigator(
         }
     }
 
-    private suspend fun loadGraph() {
+    internal suspend fun loadGraph() {
         routes = transport.graph().routes
     }
 
