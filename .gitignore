@@ -11,3 +11,6 @@ local.properties
 
 # The generated spec in /spec IS committed: the Go half cannot run the generator, so it reads
 # finished JSON. Drift is caught by client/spec-gen's golden test, not by ignoring the files.
+
+# Worktrees of parallel agents: working copies of this same repository, not content of it.
+.claude/worktrees/
