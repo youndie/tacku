@@ -29,7 +29,7 @@ type BulkMove struct {
 
 	// Hidden is how many tasks did not fit and why there is a limit at all: every field a form draws
 	// is declared in the envelope that carries it, and a continuation arrives as a page, which
-	// carries no schema (Q-25). So the list cannot be paged, and a bounded list that says it is
+	// carries no schema (Q-34). So the list cannot be paged, and a bounded list that says it is
 	// bounded beats one that stops without saying so.
 	Hidden int
 }
@@ -71,7 +71,7 @@ func (b BulkMove) Screen(status Component) Component {
 // carries the identifier alone, and the navigation graph maps deeplinks to endpoints that are read
 // rather than written. The mapping therefore lives in the client, and the only way for a server to
 // add a form without a client release is to make the address derivable — so the route is
-// `/submit/` followed by this string, exactly. Recorded as Q-24.
+// `/submit/` followed by this string, exactly. Recorded as Q-33.
 const BulkFormID = "bulk-move"
 
 func (b BulkMove) heading() Component {

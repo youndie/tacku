@@ -20,9 +20,9 @@ import (
 // Three things about the shape are decided elsewhere and only carried out here:
 //
 //   - the route is `/submit/` plus the form identifier, because nothing on the wire says where a
-//     form submits (Q-24);
-//   - the list does not page, because an input arriving as a page declares no field (Q-25);
-//   - the move is all-or-nothing, because a repeat under one key must reproduce one outcome (Q-26).
+//     form submits (Q-33);
+//   - the list does not page, because an input arriving as a page declares no field (Q-34);
+//   - the move is all-or-nothing, because a repeat under one key must reproduce one outcome (Q-35).
 const (
 	bulkFormPath   = "/forms/bulk-move"
 	bulkSubmitPath = "/submit/" + render.BulkFormID
@@ -39,7 +39,7 @@ const bulkFieldPrefix = "task-"
 //
 // A limit exists because a form declares every field it draws in the envelope that carries it, and
 // the continuation of a list arrives as a page, which carries no schema — so a checkbox on page two
-// would name a field nobody declared (Q-25). The number is a choice and not a measurement: it is
+// would name a field nobody declared (Q-34). The number is a choice and not a measurement: it is
 // large enough for the "sort out a sprint's worth" the design named, and small enough that the
 // envelope stays a screenful. What is not a choice is saying out loud how many are not shown.
 const bulkLimit = 25
@@ -160,7 +160,7 @@ func submitBulkMove(store domain.Store) http.HandlerFunc {
 //
 // It is here rather than absent because the alternative is worse than useless: the ten actions of
 // the profile carry no way to say anything, so an outcome that is not simply "everything moved" has
-// nowhere at all to live (Q-26). This is the place B-32 will read from, and a repeat under the same
+// nowhere at all to live (Q-35). This is the place B-32 will read from, and a repeat under the same
 // key is answered with it again — which is the other half of what B-32 needs. The same JSON rather
 // than the same bytes: the recorded outcome is stored as a raw message and marshalling one compacts
 // it, so the replay loses the newline the first answer ended with. Nothing reads the bytes.
