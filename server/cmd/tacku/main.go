@@ -35,10 +35,14 @@ func usage() error {
 	return fmt.Errorf("usage: tacku mcp [-db path]\n" +
 		"       tacku serve [-db path] [-addr :8080]\n\n" +
 		"       tacku openapi [-resource URL]\n" +
+		"       tacku add-member -id ID -email ADDRESS -name NAME [-db path]\n" +
+		"       tacku measure [-db path] [-least N]\n" +
 		"       tacku seed [-db path]\n\n" +
 		"  mcp       serve the Model Context Protocol on stdin and stdout\n" +
 		"  serve     serve it over HTTP as an OAuth 2.1 resource server\n" +
 		"  openapi   print the description of the HTTP layer\n" +
+		"  add-member  create one person who can sign in, printing their password once\n" +
+		"  measure   print the two numbers the backlog is waiting on, or say why it will not\n" +
 		"  seed      fill a fresh database with a demo board, for local work\n\n" +
 		"stdio takes identity from the environment, which is what MCP asks of it:\n" +
 		"  TACKU_AGENT_ID        the agent's own member identifier\n" +
@@ -67,6 +71,8 @@ func run(args []string) error {
 		return runMeasure(args[1:])
 	case "openapi":
 		return runOpenAPI(args[1:])
+	case "add-member":
+		return runAddMember(args[1:])
 	case "seed":
 		return runSeed(args[1:])
 	default:
