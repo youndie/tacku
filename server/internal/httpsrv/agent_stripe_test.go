@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/youndie/tacku/server/internal/domain"
@@ -50,6 +51,120 @@ func TestTheAgentColourOnlyEverPaintsAStripe(t *testing.T) {
 				path)
 		}
 	}
+}
+
+// The stripe is a colour, and a colour is one channel. This is the check that it is never the only
+// one.
+//
+// Three ways this product says "a program did this", and two of them are colour: the stripe
+// (`agent`) and the byline set in `meta_agent`. Counted rather than assumed
+// (scripts/token_contrast.py) — `meta_agent` against `meta`, which is the byline a reader compares
+// it with, is 1.23:1 in the dark theme and 1.04:1 in the light one, so on a greyscale screen the
+// two bylines are the same grey and the second colour is no second channel at all.
+//
+// What is left is the word. So: wherever a tree carries the stripe, the container holding it must
+// also carry text that names the agent — and the container, not the screen, because a byline three
+// rows away from the stripe it explains is not a second channel, it is a coincidence.
+//
+// The one thing this cannot check is whether people read it that way. That half is a test with
+// people and is named as a boundary in B-28, not simulated here.
+func TestNoAgentStripeIsTheOnlyCarrierOfItsMeaning(t *testing.T) {
+	r := newResource(t)
+	r.fill(t, 4)
+	r.agentTouch(t)
+	token := r.reader(t)
+
+	for _, path := range []string{
+		"/screens/catch-up",
+		"/screens/board",
+		"/forms/my-tasks",
+		"/forms/task/TAC-1",
+	} {
+		response, body := r.get(t, path, token, "")
+		if response.StatusCode != http.StatusOK {
+			t.Fatalf("%s answered %d", path, response.StatusCode)
+		}
+		var tree any
+		if err := json.Unmarshal(body, &tree); err != nil {
+			t.Fatal(err)
+		}
+
+		// Per screen and not summed, for the reason the check above it was written down: four
+		// screens keeping the promise cover for the fifth that does not, and the total says nothing
+		// about which is which.
+		if found := checkStripesAreNamed(t, path, tree); found == 0 {
+			t.Errorf("%s: an agent has touched this data and no container on this screen holds a stripe — either the signal is missing here or this check has nothing to look at",
+				path)
+		}
+	}
+}
+
+// checkStripesAreNamed returns the number of containers holding an agent stripe, complaining about
+// each one whose subtree says nothing in words.
+func checkStripesAreNamed(t *testing.T, path string, node any) int {
+	t.Helper()
+
+	value, ok := node.(map[string]any)
+	if !ok {
+		return 0
+	}
+
+	found := 0
+	children := descend(value)
+	for _, child := range children {
+		painted, ok := child.(map[string]any)
+		if !ok || !paintedWith(painted, render.ColorAgent) {
+			continue
+		}
+		found++
+		if !namesTheAgent(value) {
+			id, _ := value["id"].(string)
+			t.Errorf("%s: node %q holds a stripe in the agent colour and no text under it contains %q — on this screen provenance is carried by colour alone",
+				path, id, render.AgentWord)
+		}
+		break
+	}
+
+	for _, child := range children {
+		found += checkStripesAreNamed(t, path, child)
+	}
+	return found
+}
+
+// namesTheAgent looks for the word anywhere under one container.
+func namesTheAgent(node any) bool {
+	value, ok := node.(map[string]any)
+	if !ok {
+		return false
+	}
+	if value["type"] == "text" {
+		if body, ok := value["text"].(string); ok && strings.Contains(body, render.AgentWord) {
+			return true
+		}
+	}
+	for _, child := range descend(value) {
+		if namesTheAgent(child) {
+			return true
+		}
+	}
+	return false
+}
+
+// descend is every child a node can have, whatever the field is called. "screen" is in the list
+// because a form answers `{schema, screen}` and everything worth walking hangs off the second half.
+func descend(node map[string]any) []any {
+	children := make([]any, 0, 4)
+	for _, field := range []string{"children", "initialItems"} {
+		if list, ok := node[field].([]any); ok {
+			children = append(children, list...)
+		}
+	}
+	for _, field := range []string{"emptyState", "screen"} {
+		if child, ok := node[field].(map[string]any); ok {
+			children = append(children, child)
+		}
+	}
+	return children
 }
 
 func checkStripes(t *testing.T, path string, node any) int {

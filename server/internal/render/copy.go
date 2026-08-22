@@ -49,6 +49,22 @@ const commentLimit = 120
 // the smallest version of the drift this file exists to prevent.
 const dayLayout = "2 Jan"
 
+// AgentWord is the provenance signal written out, and it is the one channel that survives every way
+// of not seeing a colour.
+//
+// Three marks say "a program did this": the stripe, the colour of the byline, the word. Measured
+// rather than assumed (scripts/token_contrast.py): the stripe holds up — 4.9:1 against the human
+// placeholder in the dark theme and 3.8:1 in the light one, against a threshold of 3:1, and a wide
+// colour difference under both dichromat simulations. The colour of the byline does not hold up on
+// its own — `meta_agent` against `meta` is 1.23:1 and 1.04:1, so on a greyscale screen the two
+// bylines are the same grey; it survives protanopia and deuteranopia only because orange against
+// grey lies on the blue-yellow axis, which those two leave alone.
+//
+// The word survives all of it and costs nothing. It is a constant rather than a literal in two
+// files so that the check which guards it (TestNoAgentStripeIsTheOnlyCarrierOfItsMeaning) is
+// looking at what the screens actually send.
+const AgentWord = "Agent"
+
 // Sentence is the feed line: the event, naming the task.
 func Sentence(change domain.Change) string {
 	switch change.Kind {
@@ -138,7 +154,7 @@ func HistoryLine(change domain.Change) string {
 func Author(change domain.Change) string {
 	at := change.CreatedAt.Format("15:04")
 	if change.By.ByAgent() {
-		return fmt.Sprintf("Agent · on behalf of %s · %s", change.By.OnBehalfOf, at)
+		return fmt.Sprintf("%s · on behalf of %s · %s", AgentWord, change.By.OnBehalfOf, at)
 	}
 	return fmt.Sprintf("%s · %s", change.By.Executor.Member, at)
 }
@@ -148,7 +164,7 @@ func Author(change domain.Change) string {
 // One phrasing shared with Author on purpose: a reader who learns what "on behalf of" means in the
 // feed should not have to learn it again on a board.
 func agentMeta(by domain.Provenance) string {
-	return fmt.Sprintf("Agent · on behalf of %s", by.OnBehalfOf)
+	return fmt.Sprintf("%s · on behalf of %s", AgentWord, by.OnBehalfOf)
 }
 
 // FeedSummary is the catch-up headline: a finished sentence, not a template.
