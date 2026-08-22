@@ -76,7 +76,12 @@ class TokensTest {
     @Test
     fun `the set is small enough to have been thought about`() {
         val total = TackuDesignSystem.colorTokens.size + TackuDesignSystem.typographyTokens.size
-        assertEquals(25, total, "the set is $total names; every extra one is a place the two sides can disagree")
+        // 25 until the navigation stopped being made of buttons. `nav` and `nav_current` were added
+        // together and on purpose: a button carries no style field, so the current destination could
+        // not be made heavier than its neighbours, and a highlight with no change of weight reads as
+        // decoration rather than as "you are here". Two names, one distinction — and this assertion
+        // is what made that a decision instead of a drift.
+        assertEquals(27, total, "the set is $total names; every extra one is a place the two sides can disagree")
 
         val overlap = TackuDesignSystem.colorTokens.intersect(TackuDesignSystem.typographyTokens.toSet())
         assertEquals(

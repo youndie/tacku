@@ -31,7 +31,7 @@ import ru.workinprogress.viddik.core.viddikTypography
  * path it went down: the toolkit decodes and the toolkit draws, so the screenshot is of the same
  * machinery the product uses rather than of a Compose function written to look like it.
  */
-private val transport = Transport("http://localhost:0")
+internal val transport = Transport("http://localhost:0")
 
 private val registry = tackuRegistry()
 

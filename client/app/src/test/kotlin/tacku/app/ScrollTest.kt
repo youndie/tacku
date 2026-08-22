@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollToNode
@@ -53,5 +54,35 @@ class ScrollTest {
     private companion object {
         /** The last line of the new-task form, and the one a person has to reach to submit. */
         const val BOTTOM_OF_THE_FORM = "Every action stays in the history"
+
+        /** The sixth card of TO DO on the seeded board, well below a 420-point window. */
+        const val LAST_CARD_IN_TODO = "Measure where people change status"
     }
+
+    /**
+     * A board column is a list of its own, and it has to scroll inside its column.
+     *
+     * The screen-level scroll cannot help here: the board's root is a row, so the whole board is one
+     * item, and a column taller than the window has to move its own cards.
+     */
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun `a board column scrolls to its last card`() =
+        runComposeUiTest {
+            setContent {
+                val design = TackuDesignSystem()
+                TackuTheme(design) {
+                    Box(Modifier.size(1200.dp, 420.dp)) {
+                        Inner(screenOf("board"))
+                    }
+                }
+            }
+
+            // Counted before anything is scrolled, because "the scroll did not work" and "there is
+            // nothing here that scrolls" are different findings and only one of them is ours.
+            val scrollables = onAllNodes(hasScrollAction()).fetchSemanticsNodes().size
+            println("board: $scrollables scrollable nodes")
+
+            onNode(hasText(LAST_CARD_IN_TODO, substring = true)).assertIsNotDisplayed()
+        }
 }

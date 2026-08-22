@@ -57,8 +57,8 @@
      "style": "title"
     },
     {
-     "type": "column",
-     "id": "nav-catchup-current",
+     "type": "row",
+     "id": "nav-catchup",
      "modifiers": [
       {
        "type": "background",
@@ -67,35 +67,30 @@
       {
        "type": "size",
        "width": "Fill"
+      },
+      {
+       "type": "padding",
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
      "children": [
       {
-       "type": "button",
-       "id": "nav-catchup",
-       "modifiers": [
-        {
-         "type": "size",
-         "width": "Fill"
-        },
-        {
-         "type": "padding",
-         "top": 12,
-         "bottom": 12,
-         "start": 20,
-         "end": 20
-        }
-       ],
+       "type": "text",
+       "id": "nav-catchup-label",
        "text": "Catch-up",
-       "action": {
-        "type": "navigate",
-        "deeplink": "app://catch-up"
-       }
+       "style": "nav_current"
       }
-     ]
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://catch-up"
+     }
     },
     {
-     "type": "button",
+     "type": "row",
      "id": "nav-boards",
      "modifiers": [
       {
@@ -104,20 +99,27 @@
       },
       {
        "type": "padding",
-       "top": 12,
-       "bottom": 12,
-       "start": 20,
-       "end": 20
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
-     "text": "Board",
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-boards-label",
+       "text": "Board",
+       "style": "nav"
+      }
+     ],
      "action": {
       "type": "navigate",
       "deeplink": "app://board"
      }
     },
     {
-     "type": "button",
+     "type": "row",
      "id": "nav-mine",
      "modifiers": [
       {
@@ -126,13 +128,20 @@
       },
       {
        "type": "padding",
-       "top": 12,
-       "bottom": 12,
-       "start": 20,
-       "end": 20
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
-     "text": "My tasks",
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-mine-label",
+       "text": "My tasks",
+       "style": "nav"
+      }
+     ],
      "action": {
       "type": "navigate",
       "deeplink": "app://my-tasks"
@@ -165,7 +174,7 @@
      "style": "meta"
     },
     {
-     "type": "button",
+     "type": "row",
      "id": "nav-signout",
      "modifiers": [
       {
@@ -174,13 +183,20 @@
       },
       {
        "type": "padding",
-       "top": 12,
-       "bottom": 12,
-       "start": 20,
-       "end": 20
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
-     "text": "Sign out",
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-signout-label",
+       "text": "Sign out",
+       "style": "nav"
+      }
+     ],
      "action": {
       "type": "navigate",
       "deeplink": "app://sign-out"
@@ -344,7 +360,7 @@
             {
              "type": "text",
              "id": "change-1-who",
-             "text": "Agent · on behalf of anna · 19:30",
+             "text": "Agent · on behalf of anna · 19:56",
              "style": "meta_agent"
             }
            ],
@@ -420,7 +436,7 @@
             {
              "type": "text",
              "id": "change-2-who",
-             "text": "Agent · on behalf of anna · 19:30",
+             "text": "Agent · on behalf of anna · 19:56",
              "style": "meta_agent"
             }
            ],
@@ -496,7 +512,7 @@
             {
              "type": "text",
              "id": "change-3-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -572,7 +588,7 @@
             {
              "type": "text",
              "id": "change-4-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -648,7 +664,7 @@
             {
              "type": "text",
              "id": "change-5-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -724,7 +740,7 @@
             {
              "type": "text",
              "id": "change-6-who",
-             "text": "Agent · on behalf of anna · 19:30",
+             "text": "Agent · on behalf of anna · 19:56",
              "style": "meta_agent"
             }
            ],
@@ -800,7 +816,7 @@
             {
              "type": "text",
              "id": "change-7-who",
-             "text": "Agent · on behalf of anna · 19:30",
+             "text": "Agent · on behalf of anna · 19:56",
              "style": "meta_agent"
             }
            ],
@@ -876,7 +892,7 @@
             {
              "type": "text",
              "id": "change-8-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -952,7 +968,7 @@
             {
              "type": "text",
              "id": "change-9-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -1028,7 +1044,7 @@
             {
              "type": "text",
              "id": "change-10-who",
-             "text": "Agent · on behalf of anna · 19:30",
+             "text": "Agent · on behalf of anna · 19:56",
              "style": "meta_agent"
             }
            ],
@@ -1104,7 +1120,7 @@
             {
              "type": "text",
              "id": "change-11-who",
-             "text": "Agent · on behalf of anna · 19:30",
+             "text": "Agent · on behalf of anna · 19:56",
              "style": "meta_agent"
             }
            ],
@@ -1180,7 +1196,7 @@
             {
              "type": "text",
              "id": "change-12-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -1256,7 +1272,7 @@
             {
              "type": "text",
              "id": "change-13-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],
@@ -1332,7 +1348,7 @@
             {
              "type": "text",
              "id": "change-14-who",
-             "text": "anna · 19:30",
+             "text": "anna · 19:56",
              "style": "meta"
             }
            ],

@@ -216,6 +216,10 @@ class TackuDesignSystem(
             "button_quiet" to style(14, FontWeight.Medium, if (dark) 0xFFA9B6E8 else 0xFF3B57C4),
             "error" to style(13, FontWeight.Normal, if (dark) 0xFFF0908C else 0xFFB3261E),
             "notice" to style(13, FontWeight.Medium, if (dark) 0xFFE3B665 else 0xFF7A5205),
+            // The rail. The current item is heavier and brighter than its neighbours, because a
+            // background alone was not enough to say "you are here" — it read as a decoration.
+            "nav" to style(14, FontWeight.Normal, if (dark) 0xFFA8B0BC else 0xFF4F5766),
+            "nav_current" to style(14, FontWeight.SemiBold, if (dark) 0xFFFFFFFF else 0xFF14161A),
         )
 
     private fun style(

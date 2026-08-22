@@ -24,19 +24,34 @@ func Navigation(person domain.MemberID, current string) Component {
 		navItem("nav-mine", LinkMyTasks, current),
 		Spacer("nav-spacer"),
 		Text("nav-person", string(person), TextMeta, PaddingXY(0, 20)),
-		Button("nav-signout", "Sign out", Navigate(LinkSignOut), FillWidth(), PaddingXY(12, 20)),
+		Opens(
+			Row("nav-signout", 0, []Modifier{FillWidth(), PaddingXY(10, 16)},
+				Text("nav-signout-label", "Sign out", TextNav)),
+			Navigate(LinkSignOut),
+		),
 	)
 }
 
-// navItem is one destination, and the highlight behind the current one spans the rail.
+// navItem is one destination: a line of text with a background behind the one you are standing on.
 //
-// It used to be as wide as the word: the selected block hugged its own text, so "Catch-up" carried a
-// short grey tab instead of a highlighted row. Everything in this rail says `Fill` now, and that was
-// available all along (Q-59).
+// A row of text rather than a button, and each half of that is a fix. A button centres its label and
+// there is no alignment modifier to say otherwise, so a full-width one put every destination in the
+// middle of the rail. A button also carries no style field, so its label could not be made heavier
+// for the current item — and a highlight with no change of weight reads as decoration rather than as
+// "you are here". Text takes a typography token, which carries both weight and colour.
+//
+// The padding is the item's own, and the highlight is that same node: one box, not a box inside a
+// box, which is what made the selected item look inflated.
 func navItem(id, link, current string) Component {
-	item := Button(id, RouteTitle(link), Navigate(link), FillWidth(), PaddingXY(12, 20))
-	if link != current {
-		return item
+	style := TextNav
+	modifiers := []Modifier{FillWidth(), PaddingXY(10, 16)}
+	if link == current {
+		style = TextNavCurrent
+		modifiers = append(modifiers, Background(ColorSurfaceSelected))
 	}
-	return Column(id+"-current", 0, []Modifier{FillWidth(), Background(ColorSurfaceSelected)}, item)
+
+	return Opens(
+		Row(id, 0, modifiers, Text(id+"-label", RouteTitle(link), style)),
+		Navigate(link),
+	)
 }

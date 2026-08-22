@@ -1,10 +1,15 @@
 package tacku.app
 
 import io.github.youndie.kompot.KompotComponent
+import io.github.youndie.kompot.commands.PerformAction
 import io.github.youndie.kompot.form.FieldValue
 import io.github.youndie.kompot.form.standard.TextValue
 import io.github.youndie.kompot.forms.KompotFormResponse
+import io.github.youndie.kompot.standard.ButtonComponent
+import io.github.youndie.kompot.standard.ColumnComponent
+import io.github.youndie.kompot.standard.NavigateAction
 import io.github.youndie.kompot.standard.PaginatedListComponent
+import io.github.youndie.kompot.standard.RowComponent
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -52,6 +57,23 @@ fun main() {
         }
 
         println("probe: every route decoded")
+
+        // Decoding is not doing. Every check before this one asked whether a body parses and whether
+        // a picture matches; none pressed anything, and two of the product's three verbs — open a
+        // card, move a card — turned out to be dead in the running application while every check was
+        // green. So the probe now walks the two intents a board is for, through the same client code
+        // the application runs.
+        val board = transport.screen("/screens/board")
+        val card = firstCard(board) ?: error("the board carries no card, so this probe pressed nothing")
+
+        val opened =
+            Navigator.resolveTaskPath(card.deeplink)
+                ?: error("nothing in this client resolves \"${card.deeplink}\": opening a card does nothing")
+        report(opened, transport.form(opened))
+        println("  opened ${card.deeplink} through $opened")
+
+        val moved = transport.perform(card.moveUrl, card.movePayload)
+        println("  moved ${card.taskId}, and the server answered ${moved::class.simpleName}")
     }
 }
 
@@ -96,3 +118,55 @@ private fun children(component: KompotComponent): List<KompotComponent> =
         is PaginatedListComponent -> component.initialItems
         else -> emptyList()
     }
+
+/** What a card offers: where it opens, and where its move posts. */
+private data class Card(
+    val taskId: String,
+    val deeplink: String,
+    val moveUrl: String,
+    val movePayload: Map<String, FieldValue>,
+)
+
+/**
+ * The first card on the board that offers both, found by walking the tree the server sent.
+ *
+ * Read from the response rather than written down here on purpose: a probe that knows the addresses
+ * in advance keeps passing after the server stops sending them.
+ */
+private fun firstCard(root: KompotComponent): Card? {
+    var found: Card? = null
+
+    fun walk(node: KompotComponent) {
+        if (found != null) return
+        val children =
+            when (node) {
+                is RowComponent -> node.children
+                is ColumnComponent -> node.children
+                is PaginatedListComponent -> node.initialItems
+                else -> emptyList()
+            }
+
+        val deeplink =
+            children
+                .filterIsInstance<ColumnComponent>()
+                .firstNotNullOfOrNull { (it.action as? NavigateAction)?.deeplink }
+                ?.takeIf { it.startsWith(Navigator.TASK_PREFIX) }
+        val move = children.filterIsInstance<ButtonComponent>().firstNotNullOfOrNull { it.action as? PerformAction }
+
+        if (deeplink != null && move != null) {
+            found =
+                Card(
+                    taskId = deeplink.removePrefix(Navigator.TASK_PREFIX),
+                    deeplink = deeplink,
+                    moveUrl = move.url,
+                    movePayload = move.payload,
+                )
+            return
+        }
+
+        children.forEach(::walk)
+    }
+
+    walk(root)
+    return found
+}

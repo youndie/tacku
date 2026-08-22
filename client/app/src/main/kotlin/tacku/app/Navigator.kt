@@ -117,19 +117,49 @@ class Navigator(
      *
      * A deeplink the graph does not carry and this client does not know is **ignored** rather than
      * reported (§12.2). That is the rule, and it is also why the server has a test asserting every
-     * deeplink it emits resolves somewhere: on this side the failure is silent by design.
+     * deeplink it emits resolves somewhere: on this side the failure is silent by design — so the
+     * one thing this can do is say so in the log, which is more than it used to.
      */
     private suspend fun follow(deeplink: String) {
-        val route = routes.firstOrNull { it.deeplink == deeplink }
-        if (route != null) {
-            open(route.endpoint, route.kind ?: "screen")
-            return
+        when (val target = resolve(deeplink)) {
+            is Target.Open -> open(target.path, target.kind)
+            Target.Start -> start()
+            null -> System.err.println("tacku: nothing resolves \"$deeplink\"; the tap did nothing")
         }
-        when (deeplink) {
-            SIGN_IN -> open(SIGN_IN_PATH, kind = "form")
-            SIGN_OUT -> start()
-            else -> Unit
+    }
+
+    /**
+     * Where a deeplink leads, or null when nothing here knows.
+     *
+     * Separate from following it so that a test can ask the question without a server on the other
+     * end — and there is a test, because this is the half where the failure is silent. The server
+     * already checks that every deeplink it emits is either in the graph or on one of two lists it
+     * keeps of what the client resolves natively. That check passed for a year while this function
+     * had `else -> Unit` and no branch for the task prefix at all: the server's list said the client
+     * knew it, and nobody asked the client. Opening a card did nothing, on every screen that has one.
+     */
+    internal fun resolve(deeplink: String): Target? {
+        routes.firstOrNull { it.deeplink == deeplink }?.let {
+            return Target.Open(it.endpoint, it.kind ?: "screen")
         }
+        return when {
+            deeplink == SIGN_IN -> Target.Open(SIGN_IN_PATH, "form")
+            deeplink == SIGN_OUT -> Target.Start
+
+            // The one destination the graph cannot carry: its endpoints are literal paths, so a
+            // screen addressed by naming a thing is assembled here from a prefix and an identifier.
+            else -> resolveTaskPath(deeplink)?.let { Target.Open(it, "form") }
+        }
+    }
+
+    /** Where a deeplink leads. */
+    internal sealed interface Target {
+        data class Open(
+            val path: String,
+            val kind: String,
+        ) : Target
+
+        data object Start : Target
     }
 
     private suspend fun open(
@@ -163,10 +193,26 @@ class Navigator(
      */
     private fun submitPathFor(formId: String): String = "/submit/$formId"
 
-    private companion object {
+    internal companion object {
         const val SIGN_IN = "app://sign-in"
         const val SIGN_OUT = "app://sign-out"
         const val SIGN_IN_PATH = "/forms/sign-in"
         const val DEFAULT_SCREEN = "app://catch-up"
+        const val TASK_PREFIX = "app://task/"
+        const val TASK_PATH = "/forms/task/"
+
+        /**
+         * The one address this client assembles instead of looking up.
+         *
+         * In the companion so that the probe can ask the same function the application asks. A probe
+         * that spells the address itself keeps passing after the client stops resolving it — which
+         * is exactly the failure this exists to catch.
+         */
+        internal fun resolveTaskPath(deeplink: String): String? =
+            if (deeplink.startsWith(TASK_PREFIX) && deeplink.length > TASK_PREFIX.length) {
+                TASK_PATH + deeplink.removePrefix(TASK_PREFIX)
+            } else {
+                null
+            }
     }
 }

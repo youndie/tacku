@@ -33,6 +33,14 @@ const (
 	TextMetaAgent = "meta_agent"
 	TextError     = "error"
 	TextNotice    = "notice"
+
+	// The rail, and the one item of it a person is standing on.
+	//
+	// Two tokens rather than one style with a flag: the difference is what the screen is for.
+	// Everything else on the rail is a way out; this one is where you already are, and the design
+	// says so in weight and colour rather than in a background alone.
+	TextNav        = "nav"
+	TextNavCurrent = "nav_current"
 )
 
 // StripeDp is the width of the provenance stripe, and it is three in both themes.
@@ -66,6 +74,7 @@ func TypographyTokens() []string {
 	return []string{
 		TextDisplay, TextTitle, TextSubtitle, TextBody, TextBodyMuted, TextValue,
 		TextLabel, TextMeta, TextMetaAgent, TextError, TextNotice,
+		TextNav, TextNavCurrent,
 		// The two the server never chooses: a button carries no style field, so which of them a
 		// label is set in is decided by the design system from whether the button has a background.
 		// Listed because the client declares them, and an unlisted name would read as drift.

@@ -57,7 +57,7 @@
      "style": "title"
     },
     {
-     "type": "button",
+     "type": "row",
      "id": "nav-catchup",
      "modifiers": [
       {
@@ -66,21 +66,28 @@
       },
       {
        "type": "padding",
-       "top": 12,
-       "bottom": 12,
-       "start": 20,
-       "end": 20
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
-     "text": "Catch-up",
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-catchup-label",
+       "text": "Catch-up",
+       "style": "nav"
+      }
+     ],
      "action": {
       "type": "navigate",
       "deeplink": "app://catch-up"
      }
     },
     {
-     "type": "column",
-     "id": "nav-boards-current",
+     "type": "row",
+     "id": "nav-boards",
      "modifiers": [
       {
        "type": "background",
@@ -89,35 +96,30 @@
       {
        "type": "size",
        "width": "Fill"
+      },
+      {
+       "type": "padding",
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
      "children": [
       {
-       "type": "button",
-       "id": "nav-boards",
-       "modifiers": [
-        {
-         "type": "size",
-         "width": "Fill"
-        },
-        {
-         "type": "padding",
-         "top": 12,
-         "bottom": 12,
-         "start": 20,
-         "end": 20
-        }
-       ],
+       "type": "text",
+       "id": "nav-boards-label",
        "text": "Board",
-       "action": {
-        "type": "navigate",
-        "deeplink": "app://board"
-       }
+       "style": "nav_current"
       }
-     ]
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://board"
+     }
     },
     {
-     "type": "button",
+     "type": "row",
      "id": "nav-mine",
      "modifiers": [
       {
@@ -126,13 +128,20 @@
       },
       {
        "type": "padding",
-       "top": 12,
-       "bottom": 12,
-       "start": 20,
-       "end": 20
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
-     "text": "My tasks",
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-mine-label",
+       "text": "My tasks",
+       "style": "nav"
+      }
+     ],
      "action": {
       "type": "navigate",
       "deeplink": "app://my-tasks"
@@ -165,7 +174,7 @@
      "style": "meta"
     },
     {
-     "type": "button",
+     "type": "row",
      "id": "nav-signout",
      "modifiers": [
       {
@@ -174,13 +183,20 @@
       },
       {
        "type": "padding",
-       "top": 12,
-       "bottom": 12,
-       "start": 20,
-       "end": 20
+       "top": 10,
+       "bottom": 10,
+       "start": 16,
+       "end": 16
       }
      ],
-     "text": "Sign out",
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-signout-label",
+       "text": "Sign out",
+       "style": "nav"
+      }
+     ],
      "action": {
       "type": "navigate",
       "deeplink": "app://sign-out"
