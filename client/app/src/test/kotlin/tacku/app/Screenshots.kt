@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -13,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import io.github.youndie.kompot.KompotScreen
-import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
@@ -60,12 +58,8 @@ private val viddikBase = TextStyle(fontFamily = ViddikFontFamily, platformStyle 
 private val design = TackuDesignSystem(base = viddikBase)
 
 @Composable
-private fun Shot(body: String) {
-    MaterialTheme(
-        colorScheme = design.materialColors(),
-        shapes = design.materialShapes(),
-        typography = viddikTypography(Typography()),
-    ) {
+internal fun Shot(body: String) {
+    TackuTheme(design, typography = viddikTypography(Typography())) {
         Inner(body)
     }
 }
@@ -73,7 +67,6 @@ private fun Shot(body: String) {
 @Composable
 private fun Inner(body: String) {
     CompositionLocalProvider(
-        LocalKompotDesignSystem provides design,
         LocalKompotPageLoader provides transport.pageLoader(),
     ) {
         Box(Modifier.fillMaxSize().background(Color(0xFF101114)).padding(16.dp)) {

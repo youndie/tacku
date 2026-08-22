@@ -1,6 +1,7 @@
 package tacku.app
 
 import java.io.File
+import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,6 +29,12 @@ class SnapshotCoverageTest {
             "States_Provenance___agent_beside_a_person.png",
             "States_Refused_on_the_merits.png",
             "States_Unknown_component.png",
+            "Screens_Board.png",
+            "Screens_Catch_up.png",
+            "Screens_My_tasks.png",
+            "Screens_New_task.png",
+            "Screens_Sign_in.png",
+            "Screens_Task.png",
         )
 
     @Test
@@ -54,6 +61,7 @@ class SnapshotCoverageTest {
      * The threshold is deliberately crude. It is not measuring quality; it is asking whether
      * anything happened.
      */
+
     @Test
     fun `no screenshot is a blank rectangle`() {
         val files = snapshots.listFiles { f -> f.name.endsWith(".png") }.orEmpty()
@@ -71,6 +79,40 @@ class SnapshotCoverageTest {
             assertTrue(
                 colours.size > 12,
                 "${file.name} holds ${colours.size} distinct colours: a valid image of almost nothing",
+            )
+        }
+    }
+
+    /**
+     * Nothing in this product is black.
+     *
+     * The palette has no `#000000` in either theme, so a black pixel is not a dark colour — it is a
+     * control that drew text without saying what colour, taking `LocalContentColor`, whose default
+     * is black outside a Material `Surface`. That is how the consent checkbox on the new-task form
+     * came to say "Let my agent keep this task up to date" at 1.06:1 against the background: present
+     * in the tree, correct on the wire, and unreadable.
+     *
+     * Zero rather than a threshold, because zero is what was measured across all twelve goldens once
+     * the content colour was provided.
+     */
+    @Test
+    fun `no screenshot draws in black`() {
+        val files = snapshots.listFiles { f -> f.name.endsWith(".png") }.orEmpty()
+        assertTrue(files.isNotEmpty(), "nothing to look at")
+
+        for (file in files) {
+            val image = ImageIO.read(file)
+            var black = 0
+            for (y in 0 until image.height) {
+                for (x in 0 until image.width) {
+                    if (image.getRGB(x, y) and 0xFFFFFF == 0) black++
+                }
+            }
+            assertEquals(
+                0,
+                black,
+                "${file.name} has $black black pixels: a control drew its own text and got the" +
+                    " default content colour rather than this product's",
             )
         }
     }

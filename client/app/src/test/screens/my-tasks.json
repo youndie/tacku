@@ -1,0 +1,437 @@
+{
+ "schema": {
+  "formId": "my-tasks",
+  "fields": [
+   {
+    "type": "selection_field",
+    "fieldId": "status"
+   }
+  ]
+ },
+ "screen": {
+  "type": "column",
+  "id": "screen-my-tasks",
+  "modifiers": [
+   {
+    "type": "padding",
+    "all": 32
+   },
+   {
+    "type": "background",
+    "color": "surface"
+   }
+  ],
+  "children": [
+   {
+    "type": "text",
+    "id": "my-tasks-title",
+    "text": "My tasks",
+    "style": "display"
+   },
+   {
+    "type": "select_input",
+    "id": "field-status",
+    "fieldId": "status",
+    "label": "Status",
+    "options": [
+     {
+      "id": "",
+      "label": "Any status"
+     },
+     {
+      "id": "todo",
+      "label": "To do"
+     },
+     {
+      "id": "in_progress",
+      "label": "In progress"
+     },
+     {
+      "id": "in_review",
+      "label": "In review"
+     },
+     {
+      "id": "done",
+      "label": "Done"
+     },
+     {
+      "id": "blocked",
+      "label": "Blocked"
+     }
+    ],
+    "placeholder": "Any status"
+   },
+   {
+    "type": "paginated_list",
+    "id": "my-tasks-list",
+    "modifiers": [
+     {
+      "type": "weight",
+      "value": 1
+     }
+    ],
+    "initialItems": [
+     {
+      "type": "row",
+      "id": "row-TAC-1",
+      "children": [
+       {
+        "type": "column",
+        "id": "row-TAC-1-stripe",
+        "modifiers": [
+         {
+          "type": "size",
+          "widthDp": 3
+         },
+         {
+          "type": "background",
+          "color": "agent"
+         }
+        ],
+        "children": []
+       },
+       {
+        "type": "column",
+        "id": "row-TAC-1-body",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         },
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "children": [
+         {
+          "type": "text",
+          "id": "row-TAC-1-title",
+          "text": "Fix login redirect loop",
+          "style": "body"
+         },
+         {
+          "type": "text",
+          "id": "row-TAC-1-meta",
+          "text": "Agent · TAC-1 · anna · due 28 Aug · In review",
+          "style": "meta_agent"
+         }
+        ],
+        "spacing": 6
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://task/TAC-1"
+      }
+     },
+     {
+      "type": "row",
+      "id": "row-TAC-6",
+      "children": [
+       {
+        "type": "column",
+        "id": "row-TAC-6-stripe",
+        "modifiers": [
+         {
+          "type": "size",
+          "widthDp": 3
+         },
+         {
+          "type": "background",
+          "color": "agent"
+         }
+        ],
+        "children": []
+       },
+       {
+        "type": "column",
+        "id": "row-TAC-6-body",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         },
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "children": [
+         {
+          "type": "text",
+          "id": "row-TAC-6-title",
+          "text": "Write the migration note for the auth change",
+          "style": "body"
+         },
+         {
+          "type": "text",
+          "id": "row-TAC-6-meta",
+          "text": "Agent · TAC-6 · anna · To do",
+          "style": "meta_agent"
+         }
+        ],
+        "spacing": 6
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://task/TAC-6"
+      }
+     },
+     {
+      "type": "row",
+      "id": "row-TAC-9",
+      "children": [
+       {
+        "type": "column",
+        "id": "row-TAC-9-stripe",
+        "modifiers": [
+         {
+          "type": "size",
+          "widthDp": 3
+         },
+         {
+          "type": "background",
+          "color": "agent"
+         }
+        ],
+        "children": []
+       },
+       {
+        "type": "column",
+        "id": "row-TAC-9-body",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         },
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "children": [
+         {
+          "type": "text",
+          "id": "row-TAC-9-title",
+          "text": "Check the staging redirect trace",
+          "style": "body"
+         },
+         {
+          "type": "text",
+          "id": "row-TAC-9-meta",
+          "text": "Agent · TAC-9 · anna · due 1 Sep · To do",
+          "style": "meta_agent"
+         }
+        ],
+        "spacing": 6
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://task/TAC-9"
+      }
+     },
+     {
+      "type": "row",
+      "id": "row-TAC-10",
+      "children": [
+       {
+        "type": "column",
+        "id": "row-TAC-10-stripe",
+        "modifiers": [
+         {
+          "type": "size",
+          "widthDp": 3
+         },
+         {
+          "type": "background",
+          "color": "divider"
+         }
+        ],
+        "children": []
+       },
+       {
+        "type": "column",
+        "id": "row-TAC-10-body",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         },
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "children": [
+         {
+          "type": "text",
+          "id": "row-TAC-10-title",
+          "text": "Rotate the SSO signing keys",
+          "style": "body"
+         },
+         {
+          "type": "text",
+          "id": "row-TAC-10-meta",
+          "text": "TAC-10 · anna · To do",
+          "style": "meta"
+         }
+        ],
+        "spacing": 6
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://task/TAC-10"
+      }
+     },
+     {
+      "type": "row",
+      "id": "row-TAC-12",
+      "children": [
+       {
+        "type": "column",
+        "id": "row-TAC-12-stripe",
+        "modifiers": [
+         {
+          "type": "size",
+          "widthDp": 3
+         },
+         {
+          "type": "background",
+          "color": "divider"
+         }
+        ],
+        "children": []
+       },
+       {
+        "type": "column",
+        "id": "row-TAC-12-body",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         },
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "children": [
+         {
+          "type": "text",
+          "id": "row-TAC-12-title",
+          "text": "Measure where people change status",
+          "style": "body"
+         },
+         {
+          "type": "text",
+          "id": "row-TAC-12-meta",
+          "text": "TAC-12 · anna · To do",
+          "style": "meta"
+         }
+        ],
+        "spacing": 6
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://task/TAC-12"
+      }
+     }
+    ],
+    "loadMoreAction": {
+     "url": "/pages/tasks?after=12&assignee=anna"
+    },
+    "reloadUrl": "/pages/tasks",
+    "emptyState": {
+     "type": "column",
+     "id": "my-tasks-empty",
+     "modifiers": [
+      {
+       "type": "padding",
+       "all": 32
+      },
+      {
+       "type": "background",
+       "color": "surface_block"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "id": "my-tasks-empty-title",
+       "text": "Nothing is assigned to you",
+       "style": "title"
+      },
+      {
+       "type": "text",
+       "id": "my-tasks-empty-body",
+       "text": "Tasks show up here when someone assigns them to you — or when your agent picks work up on your behalf.",
+       "style": "body_muted"
+      },
+      {
+       "type": "row",
+       "id": "my-tasks-empty-actions",
+       "children": [
+        {
+         "type": "button",
+         "id": "my-tasks-empty-go",
+         "modifiers": [
+          {
+           "type": "padding",
+           "top": 12,
+           "bottom": 12,
+           "start": 20,
+           "end": 20
+          }
+         ],
+         "text": "Go to the board",
+         "action": {
+          "type": "navigate",
+          "deeplink": "app://board"
+         }
+        },
+        {
+         "type": "column",
+         "id": "my-tasks-empty-spacer",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          }
+         ],
+         "children": []
+        }
+       ]
+      }
+     ],
+     "spacing": 8
+    }
+   }
+  ],
+  "spacing": 20
+ }
+}

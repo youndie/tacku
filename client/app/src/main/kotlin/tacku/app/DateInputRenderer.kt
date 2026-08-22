@@ -2,15 +2,16 @@ package tacku.app
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.youndie.kompot.ColorToken
 import io.github.youndie.kompot.KompotActionHandler
 import io.github.youndie.kompot.KompotComponentRenderer
 import io.github.youndie.kompot.LocalKompotDesignSystem
@@ -59,9 +60,14 @@ class DateInputRenderer(
             Text(component.label, style = design.resolveTypography(TypographyToken("label")))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 offers.forEach { offer ->
-                    Button(onClick = { formController.onValueChanged(component.fieldId, TextValue(offer.iso)) }) {
-                        Text(offer.label)
-                    }
+                    // The same button the rest of the product draws. Material's own was here until a
+                    // photograph of the real form showed four pills on the one screen this client
+                    // extends: the design's rule about corners applies first of all to what we add.
+                    SquareButton(
+                        text = offer.label,
+                        fill = design.resolveColor(ColorToken("accent")),
+                        padding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                    ) { formController.onValueChanged(component.fieldId, TextValue(offer.iso)) }
                 }
             }
             val shown =

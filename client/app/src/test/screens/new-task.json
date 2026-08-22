@@ -1,0 +1,189 @@
+{
+ "schema": {
+  "formId": "new-task",
+  "fields": [
+   {
+    "type": "text_field",
+    "fieldId": "title",
+    "rules": [
+     {
+      "type": "required",
+      "errorMessage": "Give the task a title."
+     }
+    ]
+   },
+   {
+    "type": "text_field",
+    "fieldId": "description",
+    "rules": []
+   },
+   {
+    "type": "selection_field",
+    "fieldId": "board",
+    "rules": [
+     {
+      "type": "required",
+      "errorMessage": "Every task belongs to a board."
+     }
+    ]
+   },
+   {
+    "type": "selection_field",
+    "fieldId": "status"
+   },
+   {
+    "type": "date_field",
+    "fieldId": "due",
+    "rules": [
+     {
+      "type": "regex",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "errorMessage": "Enter the date as YYYY-MM-DD, for example 2026-08-29."
+     }
+    ]
+   },
+   {
+    "type": "checkbox_field",
+    "fieldId": "agent_may_update"
+   }
+  ]
+ },
+ "screen": {
+  "type": "column",
+  "id": "form-new-task",
+  "modifiers": [
+   {
+    "type": "padding",
+    "all": 32
+   },
+   {
+    "type": "background",
+    "color": "surface"
+   }
+  ],
+  "children": [
+   {
+    "type": "text",
+    "id": "form-new-task-title",
+    "text": "New task",
+    "style": "display"
+   },
+   {
+    "type": "text_input",
+    "id": "field-title",
+    "fieldId": "title",
+    "label": "Title",
+    "placeholder": "What needs to be done?"
+   },
+   {
+    "type": "text_input",
+    "id": "field-description",
+    "fieldId": "description",
+    "label": "Description",
+    "placeholder": "What does done look like?",
+    "multiline": true
+   },
+   {
+    "type": "select_input",
+    "id": "field-board",
+    "fieldId": "board",
+    "label": "Board",
+    "options": [
+     {
+      "id": "Sprint 24",
+      "label": "Sprint 24"
+     }
+    ],
+    "placeholder": "Choose a board"
+   },
+   {
+    "type": "select_input",
+    "id": "field-status",
+    "fieldId": "status",
+    "label": "Status",
+    "options": [
+     {
+      "id": "todo",
+      "label": "To do"
+     },
+     {
+      "id": "in_progress",
+      "label": "In progress"
+     },
+     {
+      "id": "in_review",
+      "label": "In review"
+     },
+     {
+      "id": "done",
+      "label": "Done"
+     },
+     {
+      "id": "blocked",
+      "label": "Blocked"
+     }
+    ]
+   },
+   {
+    "type": "date_input",
+    "id": "field-due",
+    "fieldId": "due",
+    "label": "Due date",
+    "displayFormat": "d MMM",
+    "hint": "Leave it empty if there is no deadline."
+   },
+   {
+    "type": "checkbox_input",
+    "id": "field-agent_may_update",
+    "fieldId": "agent_may_update",
+    "label": "Let my agent keep this task up to date"
+   },
+   {
+    "type": "text",
+    "id": "form-agent-hint",
+    "text": "It may change the status and post comments on your behalf. Every action stays in the history.",
+    "style": "meta"
+   },
+   {
+    "type": "row",
+    "id": "form-actions",
+    "children": [
+     {
+      "type": "button",
+      "id": "form-submit",
+      "modifiers": [
+       {
+        "type": "padding",
+        "top": 14,
+        "bottom": 14,
+        "start": 24,
+        "end": 24
+       },
+       {
+        "type": "background",
+        "color": "accent"
+       }
+      ],
+      "text": "Create task",
+      "action": {
+       "type": "submit_form",
+       "formId": "new-task"
+      }
+     },
+     {
+      "type": "column",
+      "id": "form-actions-spacer",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": []
+     }
+    ]
+   }
+  ],
+  "spacing": 20
+ }
+}

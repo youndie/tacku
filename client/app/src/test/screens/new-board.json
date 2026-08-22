@@ -1,0 +1,106 @@
+{
+ "schema": {
+  "formId": "new-board",
+  "fields": [
+   {
+    "type": "text_field",
+    "fieldId": "name",
+    "rules": [
+     {
+      "type": "required",
+      "errorMessage": "Give the board a name."
+     }
+    ]
+   }
+  ]
+ },
+ "screen": {
+  "type": "column",
+  "id": "screen-new-board",
+  "modifiers": [
+   {
+    "type": "padding",
+    "all": 32
+   },
+   {
+    "type": "background",
+    "color": "surface"
+   }
+  ],
+  "children": [
+   {
+    "type": "column",
+    "id": "new-board-heading",
+    "children": [
+     {
+      "type": "text",
+      "id": "new-board-title",
+      "text": "New board",
+      "style": "display"
+     },
+     {
+      "type": "text",
+      "id": "new-board-note",
+      "text": "Boards are created by people. Your agent can fill one with tasks, but it cannot make one.",
+      "style": "body_muted"
+     }
+    ],
+    "spacing": 6
+   },
+   {
+    "type": "text_input",
+    "id": "field-name",
+    "fieldId": "name",
+    "label": "Name",
+    "placeholder": "Platform hardening"
+   },
+   {
+    "type": "read_only_field",
+    "id": "board-columns",
+    "label": "Columns",
+    "value": "To do · In progress · In review · Done · Blocked",
+    "helperText": "Every board starts with these five. Renaming them comes later."
+   },
+   {
+    "type": "row",
+    "id": "new-board-actions",
+    "children": [
+     {
+      "type": "button",
+      "id": "new-board-submit",
+      "modifiers": [
+       {
+        "type": "padding",
+        "top": 14,
+        "bottom": 14,
+        "start": 24,
+        "end": 24
+       },
+       {
+        "type": "background",
+        "color": "accent"
+       }
+      ],
+      "text": "Create board",
+      "action": {
+       "type": "submit_form",
+       "formId": "new-board"
+      }
+     },
+     {
+      "type": "column",
+      "id": "new-board-actions-spacer",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": []
+     }
+    ]
+   }
+  ],
+  "spacing": 24
+ }
+}

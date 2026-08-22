@@ -1,0 +1,394 @@
+{
+ "schema": {
+  "formId": "task-view/TAC-2",
+  "fields": [
+   {
+    "type": "text_field",
+    "fieldId": "comment",
+    "rules": []
+   },
+   {
+    "type": "selection_field",
+    "fieldId": "status"
+   }
+  ]
+ },
+ "screen": {
+  "type": "column",
+  "id": "screen-task",
+  "modifiers": [
+   {
+    "type": "padding",
+    "all": 32
+   },
+   {
+    "type": "background",
+    "color": "surface"
+   }
+  ],
+  "children": [
+   {
+    "type": "row",
+    "id": "task-back-row",
+    "children": [
+     {
+      "type": "button",
+      "id": "task-back",
+      "modifiers": [
+       {
+        "type": "padding",
+        "top": 12,
+        "bottom": 12,
+        "start": 20,
+        "end": 20
+       }
+      ],
+      "text": "← Sprint 24",
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://board"
+      }
+     },
+     {
+      "type": "column",
+      "id": "task-back-spacer",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": []
+     }
+    ]
+   },
+   {
+    "type": "column",
+    "id": "task-heading",
+    "children": [
+     {
+      "type": "text",
+      "id": "task-title",
+      "text": "Add rate limit to the auth endpoint",
+      "style": "display"
+     },
+     {
+      "type": "text",
+      "id": "task-meta",
+      "text": "TAC-2 · created 22 Aug",
+      "style": "meta"
+     }
+    ],
+    "spacing": 6
+   },
+   {
+    "type": "row",
+    "id": "task-body",
+    "modifiers": [
+     {
+      "type": "weight",
+      "value": 1
+     }
+    ],
+    "children": [
+     {
+      "type": "column",
+      "id": "task-left",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": [
+       {
+        "type": "column",
+        "id": "task-description",
+        "children": [
+         {
+          "type": "text",
+          "id": "task-description-label",
+          "text": "DESCRIPTION",
+          "style": "subtitle"
+         },
+         {
+          "type": "text",
+          "id": "task-description-body",
+          "text": "No description yet.",
+          "style": "body"
+         }
+        ],
+        "spacing": 8
+       },
+       {
+        "type": "column",
+        "id": "task-activity",
+        "children": [
+         {
+          "type": "text",
+          "id": "task-activity-label",
+          "text": "ACTIVITY",
+          "style": "subtitle"
+         },
+         {
+          "type": "column",
+          "id": "task-activity-list",
+          "children": [
+           {
+            "type": "row",
+            "id": "history-3",
+            "children": [
+             {
+              "type": "column",
+              "id": "history-3-stripe",
+              "modifiers": [
+               {
+                "type": "size",
+                "widthDp": 3
+               },
+               {
+                "type": "background",
+                "color": "divider"
+               }
+              ],
+              "children": []
+             },
+             {
+              "type": "column",
+              "id": "history-3-body",
+              "modifiers": [
+               {
+                "type": "weight",
+                "value": 1
+               },
+               {
+                "type": "padding",
+                "all": 14
+               },
+               {
+                "type": "background",
+                "color": "surface_block"
+               }
+              ],
+              "children": [
+               {
+                "type": "text",
+                "id": "history-3-what",
+                "text": "Created",
+                "style": "body"
+               },
+               {
+                "type": "text",
+                "id": "history-3-who",
+                "text": "anna · 16:38",
+                "style": "meta"
+               }
+              ],
+              "spacing": 6
+             }
+            ]
+           }
+          ],
+          "spacing": 8
+         }
+        ],
+        "spacing": 8
+       },
+       {
+        "type": "column",
+        "id": "task-comment-block",
+        "children": [
+         {
+          "type": "text_input",
+          "id": "field-comment",
+          "fieldId": "comment",
+          "label": "Comment",
+          "placeholder": "Write a comment…",
+          "multiline": true
+         },
+         {
+          "type": "row",
+          "id": "task-comment-actions",
+          "children": [
+           {
+            "type": "text",
+            "id": "task-comment-as",
+            "text": "Posted as you",
+            "style": "meta"
+           },
+           {
+            "type": "column",
+            "id": "task-comment-spacer",
+            "modifiers": [
+             {
+              "type": "weight",
+              "value": 1
+             }
+            ],
+            "children": []
+           },
+           {
+            "type": "button",
+            "id": "task-comment-post",
+            "modifiers": [
+             {
+              "type": "padding",
+              "top": 10,
+              "bottom": 10,
+              "start": 18,
+              "end": 18
+             },
+             {
+              "type": "background",
+              "color": "accent"
+             }
+            ],
+            "text": "Post",
+            "action": {
+             "type": "submit_form",
+             "formId": "task-view/TAC-2"
+            }
+           }
+          ]
+         }
+        ],
+        "spacing": 8
+       },
+       {
+        "type": "column",
+        "id": "task-left-tail",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         }
+        ],
+        "children": []
+       }
+      ],
+      "spacing": 24
+     },
+     {
+      "type": "column",
+      "id": "task-sidebar",
+      "modifiers": [
+       {
+        "type": "size",
+        "widthDp": 320
+       }
+      ],
+      "children": [
+       {
+        "type": "read_only_field",
+        "id": "task-status",
+        "modifiers": [
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "label": "Status",
+        "value": "To do"
+       },
+       {
+        "type": "read_only_field",
+        "id": "task-assignee",
+        "modifiers": [
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "label": "Assignee",
+        "value": "ivan"
+       },
+       {
+        "type": "read_only_field",
+        "id": "task-due",
+        "modifiers": [
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "label": "Due",
+        "value": "29 Aug"
+       },
+       {
+        "type": "read_only_field",
+        "id": "task-board",
+        "modifiers": [
+         {
+          "type": "padding",
+          "all": 12
+         },
+         {
+          "type": "background",
+          "color": "surface_field"
+         }
+        ],
+        "label": "Board",
+        "value": "Sprint 24"
+       },
+       {
+        "type": "select_input",
+        "id": "field-status",
+        "fieldId": "status",
+        "label": "Move to",
+        "options": [
+         {
+          "id": "todo",
+          "label": "To do"
+         },
+         {
+          "id": "in_progress",
+          "label": "In progress"
+         },
+         {
+          "id": "in_review",
+          "label": "In review"
+         },
+         {
+          "id": "done",
+          "label": "Done"
+         },
+         {
+          "id": "blocked",
+          "label": "Blocked"
+         }
+        ],
+        "placeholder": "Choose a status…"
+       },
+       {
+        "type": "column",
+        "id": "task-sidebar-tail",
+        "modifiers": [
+         {
+          "type": "weight",
+          "value": 1
+         }
+        ],
+        "children": []
+       }
+      ],
+      "spacing": 12
+     }
+    ],
+    "spacing": 32
+   }
+  ],
+  "spacing": 24
+ }
+}

@@ -1,0 +1,1135 @@
+{
+ "type": "row",
+ "id": "screen-catchup",
+ "modifiers": [
+  {
+   "type": "background",
+   "color": "surface"
+  }
+ ],
+ "children": [
+  {
+   "type": "column",
+   "id": "nav",
+   "modifiers": [
+    {
+     "type": "size",
+     "widthDp": 240
+    },
+    {
+     "type": "background",
+     "color": "surface_block"
+    },
+    {
+     "type": "padding",
+     "top": 20,
+     "bottom": 20,
+     "start": 0,
+     "end": 0
+    }
+   ],
+   "children": [
+    {
+     "type": "text",
+     "id": "nav-brand",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 0,
+       "bottom": 0,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "tacku",
+     "style": "title"
+    },
+    {
+     "type": "column",
+     "id": "nav-current",
+     "modifiers": [
+      {
+       "type": "background",
+       "color": "surface_selected"
+      }
+     ],
+     "children": [
+      {
+       "type": "button",
+       "id": "nav-catchup",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Catch-up",
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://catch-up"
+       }
+      }
+     ]
+    },
+    {
+     "type": "button",
+     "id": "nav-boards",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "Board",
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://board"
+     }
+    },
+    {
+     "type": "button",
+     "id": "nav-mine",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "My tasks",
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://my-tasks"
+     }
+    },
+    {
+     "type": "column",
+     "id": "nav-spacer",
+     "modifiers": [
+      {
+       "type": "weight",
+       "value": 1
+      }
+     ],
+     "children": []
+    },
+    {
+     "type": "text",
+     "id": "nav-person",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 0,
+       "bottom": 0,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "anna",
+     "style": "meta"
+    },
+    {
+     "type": "button",
+     "id": "nav-signout",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "Sign out",
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://sign-out"
+     }
+    }
+   ],
+   "spacing": 4
+  },
+  {
+   "type": "column",
+   "id": "nav-rule",
+   "modifiers": [
+    {
+     "type": "size",
+     "widthDp": 1
+    },
+    {
+     "type": "background",
+     "color": "divider"
+    }
+   ],
+   "children": []
+  },
+  {
+   "type": "column",
+   "id": "feed",
+   "modifiers": [
+    {
+     "type": "weight",
+     "value": 1
+    },
+    {
+     "type": "padding",
+     "all": 32
+    }
+   ],
+   "children": [
+    {
+     "type": "row",
+     "id": "feed-header",
+     "children": [
+      {
+       "type": "column",
+       "id": "feed-heading",
+       "children": [
+        {
+         "type": "text",
+         "id": "feed-title",
+         "text": "Since your last visit",
+         "style": "display"
+        },
+        {
+         "type": "text",
+         "id": "feed-count",
+         "text": "14 changes across 1 board",
+         "style": "body_muted"
+        }
+       ],
+       "spacing": 6
+      },
+      {
+       "type": "column",
+       "id": "feed-header-spacer",
+       "modifiers": [
+        {
+         "type": "weight",
+         "value": 1
+        }
+       ],
+       "children": []
+      },
+      {
+       "type": "button",
+       "id": "feed-seen",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Mark all as seen",
+       "action": {
+        "type": "perform",
+        "url": "/submit/seen"
+       }
+      }
+     ]
+    },
+    {
+     "type": "paginated_list",
+     "id": "feed-list",
+     "modifiers": [
+      {
+       "type": "weight",
+       "value": 1
+      }
+     ],
+     "initialItems": [
+      {
+       "type": "row",
+       "id": "change-1",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-1-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "agent"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-1-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-1-what",
+           "text": "Created “Fix login redirect loop”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-1-who",
+           "text": "Agent · on behalf of anna · 16:38",
+           "style": "meta_agent"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-1"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-2",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-2-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "agent"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-2-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-2-what",
+           "text": "Commented on “TAC-1”: “Reproduced on staging.”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-2-who",
+           "text": "Agent · on behalf of anna · 16:38",
+           "style": "meta_agent"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-1"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-3",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-3-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-3-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-3-what",
+           "text": "Created “Add rate limit to the auth endpoint”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-3-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-2"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-4",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-4-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-4-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-4-what",
+           "text": "Created “Audit the session cookie flags”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-4-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-3"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-5",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-5-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-5-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-5-what",
+           "text": "Created “Ship the settings redesign”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-5-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-4"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-6",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-6-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "agent"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-6-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-6-what",
+           "text": "Created “Update the onboarding copy”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-6-who",
+           "text": "Agent · on behalf of anna · 16:38",
+           "style": "meta_agent"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-5"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-7",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-7-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "agent"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-7-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-7-what",
+           "text": "Created “Write the migration note for the auth change”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-7-who",
+           "text": "Agent · on behalf of anna · 16:38",
+           "style": "meta_agent"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-6"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-8",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-8-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-8-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-8-what",
+           "text": "Created “Replace the deploy script”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-8-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-7"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-9",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-9-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-9-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-9-what",
+           "text": "Created “Tighten the empty states copy”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-9-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-8"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-10",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-10-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "agent"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-10-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-10-what",
+           "text": "Commented on “TAC-8”: “Reproduced on staging.”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-10-who",
+           "text": "Agent · on behalf of anna · 16:38",
+           "style": "meta_agent"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-8"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-11",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-11-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "agent"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-11-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-11-what",
+           "text": "Created “Check the staging redirect trace”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-11-who",
+           "text": "Agent · on behalf of anna · 16:38",
+           "style": "meta_agent"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-9"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-12",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-12-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-12-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-12-what",
+           "text": "Created “Rotate the SSO signing keys”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-12-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-10"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-13",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-13-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-13-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-13-what",
+           "text": "Created “Drop the unused feature flag”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-13-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-11"
+       }
+      },
+      {
+       "type": "row",
+       "id": "change-14",
+       "children": [
+        {
+         "type": "column",
+         "id": "change-14-stripe",
+         "modifiers": [
+          {
+           "type": "size",
+           "widthDp": 3
+          },
+          {
+           "type": "background",
+           "color": "divider"
+          }
+         ],
+         "children": []
+        },
+        {
+         "type": "column",
+         "id": "change-14-body",
+         "modifiers": [
+          {
+           "type": "weight",
+           "value": 1
+          },
+          {
+           "type": "padding",
+           "all": 16
+          },
+          {
+           "type": "background",
+           "color": "surface_block"
+          }
+         ],
+         "children": [
+          {
+           "type": "text",
+           "id": "change-14-what",
+           "text": "Created “Measure where people change status”",
+           "style": "body"
+          },
+          {
+           "type": "text",
+           "id": "change-14-who",
+           "text": "anna · 16:38",
+           "style": "meta"
+          }
+         ],
+         "spacing": 6
+        }
+       ],
+       "action": {
+        "type": "navigate",
+        "deeplink": "app://task/TAC-12"
+       }
+      }
+     ],
+     "emptyState": {
+      "type": "column",
+      "id": "feed-empty",
+      "modifiers": [
+       {
+        "type": "padding",
+        "all": 32
+       },
+       {
+        "type": "background",
+        "color": "surface_block"
+       }
+      ],
+      "children": [
+       {
+        "type": "text",
+        "id": "feed-empty-title",
+        "text": "Nothing changed while you were away",
+        "style": "title"
+       },
+       {
+        "type": "text",
+        "id": "feed-empty-body",
+        "text": "You are up to date. Anything your agent does on your behalf will show up here first.",
+        "style": "body_muted"
+       },
+       {
+        "type": "row",
+        "id": "feed-empty-actions",
+        "children": [
+         {
+          "type": "button",
+          "id": "feed-empty-go",
+          "modifiers": [
+           {
+            "type": "padding",
+            "top": 12,
+            "bottom": 12,
+            "start": 20,
+            "end": 20
+           }
+          ],
+          "text": "Go to your boards",
+          "action": {
+           "type": "navigate",
+           "deeplink": "app://board"
+          }
+         },
+         {
+          "type": "column",
+          "id": "feed-empty-spacer",
+          "modifiers": [
+           {
+            "type": "weight",
+            "value": 1
+           }
+          ],
+          "children": []
+         }
+        ]
+       }
+      ],
+      "spacing": 8
+     }
+    }
+   ],
+   "spacing": 24
+  }
+ ]
+}

@@ -22,7 +22,6 @@ import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.KompotRealtimeProvider
 import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.KompotScreen
-import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
@@ -66,18 +65,13 @@ private fun App(baseUrl: String) {
     // Material's own colours and shapes come from the same tokens the server names, and that is the
     // point rather than a nicety: a control the toolkit draws for itself would otherwise use the
     // baseline scheme, so the product would have two palettes and only one of them its own.
-    val design = remember { TackuDesignSystem() }
+    val design = rememberTackuDesignSystem()
 
-    MaterialTheme(colorScheme = design.materialColors(), shapes = design.materialShapes()) {
-        // Ours, not the toolkit's Material default. The token names on the wire are this product's
-        // — surface_block, agent, meta_agent — and a design system that does not know them resolves
-        // every one to a default with a warning: a screen that renders, in the wrong colours, and
-        // says so only in a log nobody is reading.
+    // Colours, shapes and the colour a control uses when it names none — the same wrapper the
+    // screenshots draw through, because two copies of this is how the pictures stopped being of
+    // the product.
+    TackuTheme(design) {
         CompositionLocalProvider(
-            LocalKompotDesignSystem provides design,
-            // Required rather than optional: the list renderer reads it and throws when it is
-            // absent, so a screen with a list dies at render. Missing here until a screenshot of an
-            // empty column said so.
             LocalKompotPageLoader provides remember(transport) { transport.pageLoader() },
         ) {
             // Everything drawn sits inside the live channel rather than the board alone: the

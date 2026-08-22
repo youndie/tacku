@@ -103,6 +103,11 @@ DB ?= tacku.db
 shots:
 	cd client && ./gradlew --quiet :app:viddikRecord
 
+# The bodies those shots are taken from, from a seeded server. Deliberate rather than automatic:
+# see the header of the script.
+screens:
+	./scripts/screens.sh
+
 # The client as a measuring instrument: a response can satisfy the schema and still not decode, and
 # only the code that will actually draw the screen can say so.
 probe:

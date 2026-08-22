@@ -62,28 +62,39 @@ class ButtonRenderer : KompotComponentRenderer<ButtonComponent> {
                 )
             }
 
-        Box(
-            Modifier
-                .background(fill?.let { design.resolveColor(it.color) } ?: Color.Transparent)
-                .clickable { actionHandler.handle(component.action) }
-                .padding(padding.toPaddingValues()),
-        ) {
-            Text(
-                component.text,
-                style =
-                    design.resolveTypography(
-                        TypographyToken(
-                            if (fill !=
-                                null
-                            ) {
-                                "button_primary"
-                            } else {
-                                "button_quiet"
-                            },
-                        ),
-                    ),
-            )
-        }
+        SquareButton(
+            text = component.text,
+            fill = fill?.let { design.resolveColor(it.color) },
+            padding = padding.toPaddingValues(),
+        ) { actionHandler.handle(component.action) }
+    }
+}
+
+/**
+ * The shape of every button in this product, in one place.
+ *
+ * Shared with the date extension rather than copied. That renderer drew four Material buttons of its
+ * own, so the single screen where this client adds a component of its own was also the last one
+ * still showing pills after the standard button was fixed — a rule that lives in one renderer is a
+ * rule about one component.
+ */
+@Composable
+fun SquareButton(
+    text: String,
+    fill: Color?,
+    padding: PaddingValues,
+    onClick: () -> Unit,
+) {
+    val design = LocalKompotDesignSystem.current
+    val style = if (fill != null) "button_primary" else "button_quiet"
+
+    Box(
+        Modifier
+            .background(fill ?: Color.Transparent)
+            .clickable { onClick() }
+            .padding(padding),
+    ) {
+        Text(text, style = design.resolveTypography(TypographyToken(style)))
     }
 }
 

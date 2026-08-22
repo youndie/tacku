@@ -45,7 +45,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (5)
+## Open (6)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -54,6 +54,7 @@
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
+| [B-44](docs/backlog/B-44-reproducible-screen-corpus.md) `[ ]` | Корпус экранов зависит от часов: обновление всегда переписывает два голдена | P3 | S | - |
 
 ## Closed (38)
 

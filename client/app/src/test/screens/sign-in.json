@@ -1,0 +1,181 @@
+{
+ "schema": {
+  "formId": "sign-in",
+  "fields": [
+   {
+    "type": "text_field",
+    "fieldId": "email",
+    "rules": [
+     {
+      "type": "required",
+      "errorMessage": "Enter the email you signed up with."
+     }
+    ],
+    "keyboardType": "EMAIL"
+   },
+   {
+    "type": "text_field",
+    "fieldId": "password",
+    "rules": [
+     {
+      "type": "required",
+      "errorMessage": "Enter your password."
+     }
+    ]
+   }
+  ]
+ },
+ "screen": {
+  "type": "column",
+  "id": "screen-sign-in",
+  "modifiers": [
+   {
+    "type": "background",
+    "color": "surface"
+   }
+  ],
+  "children": [
+   {
+    "type": "column",
+    "id": "sign-in-top",
+    "modifiers": [
+     {
+      "type": "weight",
+      "value": 1
+     }
+    ],
+    "children": []
+   },
+   {
+    "type": "row",
+    "id": "sign-in-row",
+    "children": [
+     {
+      "type": "column",
+      "id": "sign-in-left",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": []
+     },
+     {
+      "type": "column",
+      "id": "sign-in-card",
+      "modifiers": [
+       {
+        "type": "size",
+        "widthDp": 420
+       }
+      ],
+      "children": [
+       {
+        "type": "column",
+        "id": "sign-in-heading",
+        "children": [
+         {
+          "type": "text",
+          "id": "sign-in-brand",
+          "text": "tacku",
+          "style": "display"
+         },
+         {
+          "type": "text",
+          "id": "sign-in-title",
+          "text": "Sign in to your workspace",
+          "style": "body_muted"
+         }
+        ],
+        "spacing": 4
+       },
+       {
+        "type": "text_input",
+        "id": "field-email",
+        "fieldId": "email",
+        "label": "Email",
+        "placeholder": "you@company.com"
+       },
+       {
+        "type": "text_input",
+        "id": "field-password",
+        "fieldId": "password",
+        "label": "Password",
+        "secret": true
+       },
+       {
+        "type": "row",
+        "id": "sign-in-actions",
+        "children": [
+         {
+          "type": "button",
+          "id": "sign-in-submit",
+          "modifiers": [
+           {
+            "type": "padding",
+            "top": 14,
+            "bottom": 14,
+            "start": 24,
+            "end": 24
+           },
+           {
+            "type": "background",
+            "color": "accent"
+           }
+          ],
+          "text": "Sign in",
+          "action": {
+           "type": "submit_form",
+           "formId": "sign-in"
+          }
+         },
+         {
+          "type": "column",
+          "id": "sign-in-actions-spacer",
+          "modifiers": [
+           {
+            "type": "weight",
+            "value": 1
+           }
+          ],
+          "children": []
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "id": "sign-in-note",
+        "text": "Your agent signs in with its own credentials. Every action it takes is recorded on your behalf.",
+        "style": "meta"
+       }
+      ],
+      "spacing": 24
+     },
+     {
+      "type": "column",
+      "id": "sign-in-right",
+      "modifiers": [
+       {
+        "type": "weight",
+        "value": 1
+       }
+      ],
+      "children": []
+     }
+    ]
+   },
+   {
+    "type": "column",
+    "id": "sign-in-bottom",
+    "modifiers": [
+     {
+      "type": "weight",
+      "value": 1
+     }
+    ],
+    "children": []
+   }
+  ]
+ }
+}
