@@ -67,54 +67,6 @@
   ],
   "children": [
    {
-    "type": "row",
-    "id": "app://board-back-row",
-    "modifiers": [
-     {
-      "type": "size",
-      "width": "Fill"
-     }
-    ],
-    "children": [
-     {
-      "type": "row",
-      "id": "app://board-back",
-      "children": [
-       {
-        "type": "text",
-        "id": "app://board-back-label",
-        "modifiers": [
-         {
-          "type": "padding",
-          "top": 6,
-          "bottom": 6,
-          "start": 0,
-          "end": 0
-         }
-        ],
-        "text": "← Board",
-        "style": "button_quiet"
-       }
-      ],
-      "action": {
-       "type": "navigate",
-       "deeplink": "app://board"
-      }
-     },
-     {
-      "type": "column",
-      "id": "app://board-back-spacer",
-      "modifiers": [
-       {
-        "type": "weight",
-        "value": 1
-       }
-      ],
-      "children": []
-     }
-    ]
-   },
-   {
     "type": "text",
     "id": "form-new-task-title",
     "text": "New task",
@@ -201,13 +153,38 @@
     "id": "form-actions",
     "children": [
      {
+      "type": "row",
+      "id": "app://board-back",
+      "children": [
+       {
+        "type": "text",
+        "id": "app://board-back-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 12,
+          "bottom": 12,
+          "start": 18,
+          "end": 18
+         }
+        ],
+        "text": "← Board",
+        "style": "button_quiet"
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://board"
+      }
+     },
+     {
       "type": "button",
       "id": "form-submit",
       "modifiers": [
        {
         "type": "padding",
-        "top": 14,
-        "bottom": 14,
+        "top": 12,
+        "bottom": 12,
         "start": 24,
         "end": 24
        }
@@ -230,7 +207,8 @@
       ],
       "children": []
      }
-    ]
+    ],
+    "spacing": 12
    }
   ],
   "spacing": 20

@@ -1,8 +1,6 @@
 package render
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 
 	"github.com/youndie/tacku/server/internal/domain"
@@ -119,17 +117,7 @@ func (b Board) column(status domain.Status) Component {
 			Spacer(id+"-head-spacer"),
 			Text(id+"-count", fmt.Sprint(len(cards)), TextMeta),
 		),
-		// The identifier carries what is in the column, and that is a workaround rather than a name.
-		//
-		// A list shows the items it was first given: hand the same list a new `initialItems` and the
-		// old ones stay on screen (Q-65, kompot#40). Every card of this board lives in one, so a
-		// move landed on the server, the client re-opened the board, the new tree arrived correct —
-		// and nothing changed in front of the person who pressed the button.
-		//
-		// Changing the identifier when the contents change makes it a different node, so no state
-		// applies to it. It costs the scroll position, and it is deliberately not done to the two
-		// lists that paginate: renaming those on every load would break loading the next page.
-		PaginatedList(id+"-list-"+fingerprint(cards), cards, "",
+		PaginatedList(id+"-list", cards, "",
 			Text(id+"-empty", EmptyColumnLine(status), TextBodyMuted), FillWidth()),
 		Spacer(id+"-tail"),
 	)
@@ -171,20 +159,6 @@ func (b Board) card(task domain.Task) Component {
 			[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
 			body...),
 	))
-}
-
-// fingerprint is a short, stable digest of what a column holds.
-//
-// Stable so that a board which has not changed keeps its ETag — a digest over identifiers and their
-// order, not over anything that moves on its own. Short because it ends up in an identifier a person
-// may read in a log.
-func fingerprint(cards []Component) string {
-	digest := sha256.New()
-	for _, card := range cards {
-		digest.Write([]byte(idOf(card)))
-		digest.Write([]byte{0})
-	}
-	return hex.EncodeToString(digest.Sum(nil))[:8]
 }
 
 // EmptyWorkspace is the board screen before there is a board.

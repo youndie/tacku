@@ -88,14 +88,13 @@ class RefreshTest {
      * board arrives with the card in its new column. If the list holds the items it was first given,
      * none of that reaches the screen: the tree is new, the list is not.
      *
-     * **Ignored, and deliberately kept.** It fails, and what it describes is the toolkit's
-     * (kompot#40). Deleting it would delete the reproduction; leaving it red would make the gate
-     * mean nothing. Un-ignore it when a release claims to fix this — it is the check, not a
-     * formality.
+     * It was ignored and kept while kompot#40 was open, because deleting it would have deleted the
+     * reproduction and leaving it red would have made the gate mean nothing. 0.23.1 fixed it —
+     * the remember that holds a list's state was keyed on the component's id, which does not change
+     * when a whole new tree arrives under the same one — so it runs again, and it is the check.
      */
     @OptIn(ExperimentalTestApi::class)
     @Test
-    @kotlin.test.Ignore
     fun `a paginated list shows the items of a new tree`() =
         runComposeUiTest {
             var body by mutableStateOf(LIST_BEFORE)

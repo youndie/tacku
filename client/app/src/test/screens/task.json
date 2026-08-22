@@ -32,54 +32,6 @@
   ],
   "children": [
    {
-    "type": "row",
-    "id": "app://board-back-row",
-    "modifiers": [
-     {
-      "type": "size",
-      "width": "Fill"
-     }
-    ],
-    "children": [
-     {
-      "type": "row",
-      "id": "app://board-back",
-      "children": [
-       {
-        "type": "text",
-        "id": "app://board-back-label",
-        "modifiers": [
-         {
-          "type": "padding",
-          "top": 6,
-          "bottom": 6,
-          "start": 0,
-          "end": 0
-         }
-        ],
-        "text": "← Board",
-        "style": "button_quiet"
-       }
-      ],
-      "action": {
-       "type": "navigate",
-       "deeplink": "app://board"
-      }
-     },
-     {
-      "type": "column",
-      "id": "app://board-back-spacer",
-      "modifiers": [
-       {
-        "type": "weight",
-        "value": 1
-       }
-      ],
-      "children": []
-     }
-    ]
-   },
-   {
     "type": "column",
     "id": "task-heading",
     "children": [
@@ -196,7 +148,7 @@
                {
                 "type": "text",
                 "id": "history-3-who",
-                "text": "anna · 21:19",
+                "text": "anna · 21:42",
                 "style": "meta"
                }
               ],
