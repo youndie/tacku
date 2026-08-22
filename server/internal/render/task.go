@@ -16,29 +16,46 @@ type Task struct {
 	History  []domain.Change
 	Comments []domain.Comment
 	Statuses []SelectOption
+
+	// Who is looking, for the rail. Needed here for the same reason it is needed on the board: the
+	// navigation names the person at its foot, and a screen without it is one you cannot leave.
+	Person domain.MemberID
 }
 
 // Screen renders the tree; the caller supplies the schema half through the form builder.
 //
-// A column at the root, and nothing among its children carries a weight — the two go together. The
-// client lays a column root's children out as separate items so that a screen taller than the window
-// can be scrolled, which is what this screen needs: a description, a history and a comment box add
-// up past the fold on any window worth using. The price is that a `weight` among those children
-// divides nothing, so the body takes the height of its content instead of the height of the screen.
+// The rail is here because the design puts it here: 3.4 draws the same navigation beside the task
+// as beside the board, and a screen you can only leave backwards is a screen you are stuck on. It
+// was dropped for one build in exchange for scrolling — the projection that scrolls a screen only
+// applies to a column root — and that trade was wrong twice: the rail is what the design asked for,
+// and the scroll can be had another way.
 //
-// It was the other way round for a few hours — a row at the root so that `task-body` could be
-// weighted — and the result was a task you could not scroll. Height that fills the window is worth
-// less here than reaching the button at the bottom.
+// The other way is the section list. There is no scroll container in the vocabulary; a
+// `paginated_list` inside a bounded box moves its own content (kompot 0.23), so the body is a list
+// of blocks rather than a column of them. That is a workaround wearing a component's name, and it
+// is written down as one (Q-66).
 func (t Task) Screen(comment, status Component) Component {
-	return Column("screen-task", 24,
-		[]Modifier{FillWidth(), Padding(32), Background(ColorSurface)},
-		Column("task-heading", 6, nil,
-			Text("task-title", t.Task.Title, TextDisplay),
-			Text("task-meta", TaskMeta(t.Task), TextMeta),
-		),
-		Row("task-body", 32, []Modifier{FillWidth()},
-			t.left(comment),
-			t.sidebar(status),
+	return Row("screen-task", 0,
+		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
+		Navigation(t.Person, LinkBoard),
+		Rule("task-nav-rule", RuleDp, ColorDivider, false),
+		Column("screen-task-body", 24,
+			[]Modifier{Weight(1), FillHeight(), Padding(32), Background(ColorSurface)},
+			BackTo(LinkBoard, string(t.Task.Board)),
+			Column("task-heading", 6, nil,
+				Text("task-title", t.Task.Title, TextDisplay),
+				Text("task-meta", TaskMeta(t.Task), TextMeta),
+			),
+			PaginatedList("task-sections",
+				[]Component{
+					Row("task-body", 32, []Modifier{FillWidth()},
+						t.left(comment),
+						t.sidebar(status),
+					),
+				},
+				"",
+				Text("task-sections-empty", "", TextBody),
+				FillWidth(), Weight(1)),
 		),
 	)
 }

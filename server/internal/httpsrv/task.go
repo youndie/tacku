@@ -28,7 +28,8 @@ const TaskPathPrefix = "/forms/task/"
 // the screen most likely to be stale.
 func taskScreen(store domain.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, err := principalOf(r); err != nil {
+		principal, err := principalOf(r)
+		if err != nil {
 			unauthenticated(w)
 			return
 		}
@@ -76,6 +77,7 @@ func taskScreen(store domain.Store) http.HandlerFunc {
 			Task:     task,
 			History:  history,
 			Comments: comments,
+			Person:   principal.Provenance.OnBehalfOf,
 		}.Screen(comment, status)
 
 		respond(w, r, form.Build(screen))

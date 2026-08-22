@@ -74,10 +74,17 @@ func navItem(id, link, current string) Component {
 // The caption comes from the graph, like every other destination's. Spelled here as well it had
 // already parted once — the graph said "Board" and the button beside it "Boards" — and a way back
 // whose word is invented is a second name for the same place.
-func Back(to string) Component {
+func Back(to string) Component { return BackTo(to, RouteTitle(to)) }
+
+// BackTo is the same, naming the destination itself rather than the route.
+//
+// The task screen says "← Sprint 24" and not "← Board", because what a person left was that board
+// and there may be several. The route's title is the right word everywhere the destination is the
+// only one of its kind.
+func BackTo(to, destination string) Component {
 	return Opens(
 		Row(to+"-back", 0, nil,
-			Text(to+"-back-label", BackLabel(RouteTitle(to)), TextButtonQuiet, PaddingXY(12, 18))),
+			Text(to+"-back-label", BackLabel(destination), TextButtonQuiet, PaddingXY(12, 18))),
 		Navigate(to),
 	)
 }

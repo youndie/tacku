@@ -103,6 +103,14 @@ DB ?= tacku.db
 shots:
 	cd client && ./gradlew --quiet :app:viddikRecord
 
+# Сверка с макетом: значения токенов числами, словарь и токены — структурой. Вне гейта, потому что
+# требует экспортированного макета, а не рабочего дерева, и потому что расхождение здесь — находка,
+# которую читают, а не поломка сборки.
+#
+#   make design DESIGN=~/Downloads/tacku\ Design\ Spec.dc.html
+design:
+	python3 scripts/design_check.py --design "$(DESIGN)"
+
 # The bodies those shots are taken from, from a seeded server. Deliberate rather than automatic:
 # see the header of the script.
 screens:
