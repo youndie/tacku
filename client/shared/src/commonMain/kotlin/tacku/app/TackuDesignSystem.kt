@@ -220,7 +220,7 @@ class TackuDesignSystem(
             "label" to style(12, FontWeight.Medium, if (dark) 0xFF9AA1AC else 0xFF4F5766),
             "meta" to style(12, FontWeight.Normal, if (dark) 0xFF949BA6 else 0xFF5A6270),
             "meta_agent" to style(12, FontWeight.Medium, if (dark) 0xFFC7A6E6 else 0xFF6B45A8),
-            "button_primary" to style(14, FontWeight.SemiBold, 0xFFFFFFFF),
+            BUTTON_PRIMARY_STYLE to style(14, FontWeight.SemiBold, 0xFFFFFFFF),
             "button_quiet" to style(14, FontWeight.Medium, if (dark) 0xFFA9B6E8 else 0xFF3B57C4),
             "error" to style(13, FontWeight.Normal, if (dark) 0xFFF0908C else 0xFFB3261E),
             "notice" to style(13, FontWeight.Medium, if (dark) 0xFFE3B665 else 0xFF7A5205),
@@ -251,6 +251,9 @@ class TackuDesignSystem(
     companion object {
         /** The variant this server sends for the one button on a screen that is the action. */
         const val VARIANT_PRIMARY = "primary"
+
+        /** The typography token a primary button's label is set in — named so that a caller can ask for it. */
+        const val BUTTON_PRIMARY_STYLE = "button_primary"
 
         /** The names, which are the half the server has to agree with. */
         val colorTokens: List<String> = TackuDesignSystem().colors.keys.sorted()

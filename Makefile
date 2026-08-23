@@ -44,6 +44,7 @@ docs:
 	$(PY) scripts/questions_check.py
 	$(PY) scripts/no_private_names.py
 	$(PY) scripts/no_reflective_decode.py
+	$(PY) scripts/no_fontless_text_style.py
 	$(PY) scripts/reports_check.py
 
 # Guards the committed spec against the generator: a kompot upgrade that changes the wire must not
