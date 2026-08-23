@@ -74,6 +74,11 @@ dependencies {
 
     testImplementation(kotlin("test"))
 
+    // An engine that answers for the server, so a refusal can be made to happen on purpose. The
+    // session this product hands out lives five minutes; what happens at minute six is not
+    // observable any other way without waiting five.
+    testImplementation("io.ktor:ktor-client-mock:3.5.2")
+
     // The wizard's wire types, for tests only: this deployment has no scenario endpoints yet
     // (B-39), so the client draws no wizard and the product does not need them. What the tests
     // need them for is the published shape of `wizard_screen` itself — the subject of B-31 — and

@@ -2,5 +2,5 @@ apiVersion: v2
 name: tacku
 description: tacku — a team task tracker with two surfaces, screens for people and MCP tools for agents
 type: application
-version: 0.2.1
-appVersion: "0.2.1"
+version: 0.2.2
+appVersion: "0.2.2"

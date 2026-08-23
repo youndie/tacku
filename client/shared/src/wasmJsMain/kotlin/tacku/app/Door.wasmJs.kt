@@ -70,22 +70,63 @@ private class RedirectDoor(
                         },
                 ).bodyAsText()
 
-        val token =
-            json
-                .parseToJsonElement(answer)
-                .jsonObject["access_token"]
-                ?.jsonPrimitive
-                ?.content
+        val token = keep(answer)
         clean()
         if (token == null) {
             println("tacku: the provider did not hand over a token: $answer")
             return null
         }
 
-        window.sessionStorage[TOKEN] = token
         // The code is spent, so the address bar should stop carrying it: a reload would otherwise
         // try to spend it again and be refused for a reason that reads like a broken sign-in.
         window.history.replaceState(null, "", window.location.pathname)
+        return token
+    }
+
+    /**
+     * Trade the refresh token for a new pair.
+     *
+     * The resource is named again: an audience is a property of a token, not of a session, and a
+     * renewed token that named nothing would be refused by the very server it was renewed for.
+     *
+     * A refusal here is not reported as a failure — a refresh token expires or is revoked, and both
+     * mean "sign in again" rather than "something is broken". The caller reads null as that.
+     */
+    override suspend fun renew(): String? {
+        val refresh = window.sessionStorage[REFRESH] ?: return null
+        val config = config()
+        val discovery = discovery(config.issuer)
+
+        val answer =
+            runCatching {
+                http
+                    .submitForm(
+                        url = discovery.tokenEndpoint,
+                        formParameters =
+                            Parameters.build {
+                                append("grant_type", "refresh_token")
+                                append("refresh_token", refresh)
+                                append("client_id", config.clientId)
+                                append("resource", config.audience)
+                            },
+                    ).bodyAsText()
+            }.getOrNull() ?: return null
+
+        return keep(answer)
+    }
+
+    /**
+     * Store what the provider handed over, and hand back the access token.
+     *
+     * The refresh token is stored **every time**, because a provider that rotates them hands back a
+     * new one with each renewal and keeps the old one only long enough to notice it being reused.
+     */
+    private fun keep(answer: String): String? {
+        val fields = runCatching { json.parseToJsonElement(answer).jsonObject }.getOrNull() ?: return null
+        val token = fields["access_token"]?.jsonPrimitive?.content ?: return null
+
+        window.sessionStorage[TOKEN] = token
+        fields["refresh_token"]?.jsonPrimitive?.content?.let { window.sessionStorage[REFRESH] = it }
         return token
     }
 
@@ -107,7 +148,10 @@ private class RedirectDoor(
                 "&state=" + encode(state) +
                 "&code_challenge=" + encode(challenge) +
                 "&code_challenge_method=S256" +
-                "&scope=" + encode("tasks:read tasks:write") +
+                // `offline_access` is what asks for a refresh token, and without it the provider
+                // is right not to issue one: a long-lived credential for somebody who did not ask
+                // is risk without benefit. Asking is what turns a five-minute page into a session.
+                "&scope=" + encode("openid tasks:read tasks:write offline_access") +
                 // RFC 8707: which resource the token is for. Without it a provider that binds
                 // audiences hands back a token addressed to everything this client may reach, and
                 // this server would rather be named than included.
@@ -147,6 +191,7 @@ private class RedirectDoor(
 
     override fun close() {
         window.sessionStorage.removeItem(TOKEN)
+        window.sessionStorage.removeItem(REFRESH)
         clean()
     }
 
@@ -169,6 +214,7 @@ private class RedirectDoor(
 
     private companion object {
         const val TOKEN = "tacku.token"
+        const val REFRESH = "tacku.refresh"
         const val VERIFIER = "tacku.verifier"
         const val STATE = "tacku.state"
     }

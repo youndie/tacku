@@ -26,6 +26,15 @@ interface Door {
     suspend fun open()
 
     /**
+     * A fresh token for the same person, without asking them anything.
+     *
+     * Null means there is nothing to renew with, and the caller then has to send them back to the
+     * provider. It exists because a token from a provider lives minutes: a page open longer than
+     * that answers 401 to everything and looks broken, while nobody signed out and nothing failed.
+     */
+    suspend fun renew(): String?
+
+    /**
      * Forget whoever was signed in.
      *
      * Signing out means starting again, and starting again asks [resume] first — so without this the

@@ -51,6 +51,19 @@ fun App(baseUrl: String) {
             Navigator(transport, scope, door) { state -> screen = state }
         }
 
+    LaunchedEffect(door) {
+        // Renewing is the door's, and so is the answer when it cannot: the transport knows a
+        // request was refused, and only the door knows what a way back in looks like here. Without
+        // this second half a page whose refresh token has expired shows a refusal instead of a
+        // sign-in, which reads as the product being broken rather than the session being over.
+        transport.renew = {
+            door?.renew() ?: run {
+                door?.open()
+                null
+            }
+        }
+    }
+
     LaunchedEffect(Unit) { navigator.start(door) }
 
     // The theme is Material 3 in the dark, and the token names the server sends resolve through the
