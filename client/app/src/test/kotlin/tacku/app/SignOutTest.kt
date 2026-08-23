@@ -31,6 +31,8 @@ class SignOutTest {
             opened = true
         }
 
+        override suspend fun renew(): String? = null
+
         override fun close() {
             token = null
         }

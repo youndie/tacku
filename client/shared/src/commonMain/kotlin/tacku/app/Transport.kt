@@ -14,6 +14,7 @@ import io.github.youndie.kompot.navigation.NavigationGraph
 import io.github.youndie.kompot.standard.KompotPageLoader
 import io.github.youndie.kompot.standard.KompotPageResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -48,11 +49,17 @@ class Transport(
      * the product sets it — only the test that demonstrates what §15 ordering is protecting.
      */
     private val knowsExtensions: Boolean = true,
+    /**
+     * An engine, for a test that needs to answer for the server.
+     *
+     * Null in the product, and that is the point of the default: each platform then brings its own
+     * off the classpath — CIO on the desktop, the browser's fetch in a page — and naming one here
+     * would be a line duplicated per target for no gain. A test that has to make the server refuse
+     * once and accept afterwards has no other way to say so.
+     */
+    engine: HttpClientEngine? = null,
 ) {
-    // No engine named, so each platform brings its own off the classpath: CIO on the desktop, the
-    // browser's fetch in a page. The alternative — naming one — is the line that would have to be
-    // duplicated per target for no gain.
-    private val http = HttpClient()
+    private val http = engine?.let { HttpClient(it) } ?: HttpClient()
 
     /**
      * The engine's serialisers **plus the field plug-in's**, and the second half is not optional.
@@ -100,6 +107,19 @@ class Transport(
     fun useSession(access: String) {
         accessToken = access
     }
+
+    /**
+     * How a stale session is renewed, and what happens when it cannot be.
+     *
+     * A token from the provider lives five minutes — measured, not assumed — so a page left open
+     * outlives its session within one coffee. Until this existed, everything after that minute
+     * answered 401 and the screen simply stopped working, with no way back short of a reload.
+     *
+     * Returning null means "there is no renewing this", and the refusal then travels on to be shown.
+     * What sends the person to sign in again is the door behind this lambda, not the transport: the
+     * transport knows a request failed, and only the door knows what a way in looks like here.
+     */
+    var renew: (suspend () -> String?)? = null
 
     /** Drop the pair. What the door remembers is the door's to drop. */
     fun forgetSession() {
@@ -160,13 +180,32 @@ class Transport(
     ): KompotAction {
         val body = json.encodeToString(FormPatchRequest(formId = formId, fieldId = "", values = values))
         val response =
-            http.post(baseUrl + path) {
-                contentType(ContentType.Application.Json)
-                header("Idempotency-Key", Uuid.random().toString())
-                accessToken?.let { header("Authorization", "Bearer $it") }
-                setBody(body)
+            attempting {
+                http.post(baseUrl + path) {
+                    contentType(ContentType.Application.Json)
+                    header("Idempotency-Key", Uuid.random().toString())
+                    accessToken?.let { header("Authorization", "Bearer $it") }
+                    setBody(body)
+                }
             }
         return json.decodeFromString(readBody(response, path))
+    }
+
+    /**
+     * One request, and a second one if the first said the session is over.
+     *
+     * Once, deliberately: a renewal that hands back a token the server also refuses would otherwise
+     * spin, and the loop would look like a slow server rather than a wrong audience. The lambda is
+     * re-run rather than the response reused, so the retry carries the new token and a fresh
+     * idempotency key — the same request, not a replay of one the server may already have seen.
+     */
+    private suspend fun attempting(request: suspend () -> HttpResponse): HttpResponse {
+        val first = request()
+        if (first.status.value != 401) return first
+
+        val renewed = renew?.invoke() ?: return first
+        accessToken = renewed
+        return request()
     }
 
     /** What a `perform` button does: act on one item of a list. */
@@ -177,19 +216,23 @@ class Transport(
     ): KompotAction {
         val body = json.encodeToString(FormPatchRequest(formId = "", fieldId = "", values = payload))
         val response =
-            http.post(baseUrl + url) {
-                contentType(ContentType.Application.Json)
-                header("Idempotency-Key", Uuid.random().toString())
-                accessToken?.let { header("Authorization", "Bearer $it") }
-                setBody(body)
+            attempting {
+                http.post(baseUrl + url) {
+                    contentType(ContentType.Application.Json)
+                    header("Idempotency-Key", Uuid.random().toString())
+                    accessToken?.let { header("Authorization", "Bearer $it") }
+                    setBody(body)
+                }
             }
         return json.decodeFromString(readBody(response, url))
     }
 
     private suspend fun get(path: String): String {
         val response =
-            http.get(baseUrl + path) {
-                accessToken?.let { header("Authorization", "Bearer $it") }
+            attempting {
+                http.get(baseUrl + path) {
+                    accessToken?.let { header("Authorization", "Bearer $it") }
+                }
             }
         return readBody(response, path)
     }
