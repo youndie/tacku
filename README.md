@@ -17,25 +17,31 @@ Two things make tacku different from the other small trackers:
 ## Status
 
 A Go server serves screens, forms, pages, a navigation graph, a multi-step scenario, a live update
-channel and ten MCP tools.
+channel and nine MCP tools, and hands out the page that draws them.
 
-The two surfaces this product ships are **a browser and MCP**. MCP works. The browser does not exist
-yet, and cannot: none of the toolkit modules publishes a `wasmJs` variant
-([kompot#42](https://github.com/youndie/kompot/issues/42)), so the screens have nowhere to be drawn
-where a person has installed nothing. Until that lands, the human half of the product is unshipped —
-not partly shipped.
+The two surfaces this product ships are **a browser and MCP**, and both of them work. A person signs
+in through an identity provider by the same redirect an agent uses, the screens are drawn by a
+Kotlin/Wasm page the server hands out beside the API, and the address bar names the screen — so a
+reload stays put and a link opens what it names. An agent authenticates with a token bound to this
+server's MCP endpoint and calls the tools.
 
-What renders the screens today is a **Compose Desktop client, and it is an instrument rather than a
-surface**: the most exercised implementation on hand, used to find out whether the server is right.
-That is why it is allowed shortcuts a product is not, and why "it works in the desktop client" says
-something about the server and nothing about what a person can use.
+Both halves are deployed, and "deployed" is not the claim being made: each was verified by being
+used. The page was signed into through a real provider; the agent surface was opened with a real
+token, which turned out to matter — it had been answering `401` to everybody for weeks, and a
+surface nobody has authenticated against looks exactly like one that works.
+
+There is also a **Compose Desktop client, and it is an instrument rather than a surface**: the most
+exercised implementation on hand, used to find out whether the server is right. It signs in through
+a form that only a stand serves — a release build has no such door — which is why "it works in the
+desktop client" says something about the server and nothing about what a person can use.
 
 The conformance walk passes with every declared endpoint checked and every check having found
 something to check — see below for why that second half is the part worth stating.
 
-Four items are open, and none of them is waiting on work: two are measurements that need people
-using the product, one needs a dangerous operation to exist before there is anything to put behind
-a confirmation, and one is deferred on purpose. The order of work, and what each closed item cost,
+Six items are open and none of them is waiting on somebody to start: two are measurements that need
+people using the product, one needs a dangerous operation to exist before there is anything to put
+behind a confirmation, one is deferred on purpose, one waits on a fix upstream, and one is inviting
+a person, which changes where members come from. The order of work, and what each closed item cost,
 is in [backlog.md](backlog.md).
 
 Start with [docs/research/research-architecture.md](docs/research/research-architecture.md): it
