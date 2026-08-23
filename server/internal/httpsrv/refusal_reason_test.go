@@ -4,6 +4,8 @@ package httpsrv_test
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -48,6 +50,31 @@ func TestARefusalSaysWhatWasWrong(t *testing.T) {
 		challenge := answer.Header.Get("WWW-Authenticate")
 		if !strings.Contains(challenge, "somebody-elses.example") {
 			t.Fatalf("the refusal does not say which audience the token names: %q", challenge)
+		}
+	})
+
+	t.Run("the reason is in the body, where a person looks", func(t *testing.T) {
+		// The header is where the specification puts it and where a library reads it. A developer
+		// with a failing request in front of them sees the body, and a body saying only
+		// "unauthenticated" sent somebody looking in the wrong place for an afternoon.
+		answer := ask(t, resource.url+"/graph", resource.as.token(t, claims{
+			subject:  "anna@tacku.team",
+			audience: "https://somebody-elses.example/",
+		}))
+
+		body, err := io.ReadAll(answer.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var refusal struct {
+			Error  string `json:"error"`
+			Reason string `json:"reason"`
+		}
+		if err := json.Unmarshal(body, &refusal); err != nil {
+			t.Fatalf("the refusal is not JSON: %s", body)
+		}
+		if !strings.Contains(refusal.Reason, "somebody-elses.example") {
+			t.Fatalf("the body does not say why: %s", body)
 		}
 	})
 

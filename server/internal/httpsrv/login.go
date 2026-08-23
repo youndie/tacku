@@ -177,5 +177,13 @@ func refuseWithReason(w http.ResponseWriter, refusal error) {
 		"WWW-Authenticate",
 		fmt.Sprintf(`Bearer realm="tacku", error="invalid_token", error_description="%s"`, description),
 	)
-	unauthenticated(w)
+
+	// And in the body, because that is where a person looks. The header is where the specification
+	// puts it and where a client library reads it; a developer with a failing request open in front
+	// of them sees `{"error":"unauthenticated"}` and has no reason to suspect a header carries the
+	// answer. Asking somebody to know that is asking them to know what I know.
+	writeJSON(w, http.StatusUnauthorized, map[string]string{
+		"error":  "unauthenticated",
+		"reason": description,
+	})
 }

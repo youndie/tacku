@@ -32,13 +32,30 @@ private class RedirectDoor(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun resume(): String? {
-        // A token already held survives a reload. It does not survive a closed tab, which is the
-        // right trade for a product where signing in costs one redirect: a token in local storage
-        // outlives the person's intention to be signed in.
-        window.sessionStorage[TOKEN]?.let { return it }
+        // A code in the address bar means the person has just come back from the provider, and it
+        // wins over anything already stored. The other order cost a day: a token that had expired
+        // stayed in storage, was handed back on every start, and the code that arrived to replace it
+        // was never spent — so the provider signed the person in again and again while every
+        // request was refused for a token five minutes dead.
+        val code = parameter("code")
 
-        val code = parameter("code") ?: return null
-        val verifier = window.sessionStorage[VERIFIER] ?: return null
+        if (code == null) {
+            // A token already held survives a reload. It does not survive a closed tab, which is the
+            // right trade for a product where signing in costs one redirect: a token in local
+            // storage outlives the person's intention to be signed in.
+            val held = window.sessionStorage[TOKEN]
+            if (held != null && !TokenLife.isSpent(held, nowSeconds())) return held
+
+            // Held and spent: renewing is silent when there is a refresh token and null when there
+            // is not, and null is what sends the person to the provider. Presenting the dead one
+            // instead would buy a refusal the page would then have to interpret.
+            if (held != null) return renew()
+
+            return null
+        }
+
+        val verifierOrNull = window.sessionStorage[VERIFIER]
+        val verifier = verifierOrNull ?: return null
         val state = window.sessionStorage[STATE]
 
         // The state is checked before the code is spent. Without it a page will happily finish a
@@ -195,6 +212,9 @@ private class RedirectDoor(
         clean()
     }
 
+    /** Now, in seconds, which is the unit `exp` is in. */
+    private fun nowSeconds(): Long = (jsNow() / 1000).toLong()
+
     private fun clean() {
         window.sessionStorage.removeItem(VERIFIER)
         window.sessionStorage.removeItem(STATE)
@@ -226,6 +246,9 @@ private fun randomString(): String {
     val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
     return (1..64).map { alphabet[Random.nextInt(alphabet.length)] }.joinToString("")
 }
+
+/** The clock, from the page's own runtime: `exp` is measured against it and not against ours. */
+private fun jsNow(): Double = js("Date.now()")
 
 private fun encode(value: String): String = js("encodeURIComponent(value)")
 
