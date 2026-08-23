@@ -32,10 +32,23 @@ WORKDIR /app
 
 COPY --from=build /out/tacku /app/tacku
 
+# The page, built before this ran rather than inside it.
+#
+# It is a Kotlin/Wasm bundle, and building it here would mean a JDK, a Gradle distribution and a
+# Node toolchain downloaded on every image build — where the workflow that builds this already keeps
+# a warm Gradle cache from the check job. So the bundle is produced beside the context and copied.
+#
+# The cost of that choice is that `docker build` without a prior Gradle build fails on this line.
+# That is the intended half: the alternative — an optional copy — would produce an image that starts,
+# serves the API and has no product in it. The server refuses to start when this directory carries no
+# index.html, so a bundle that is empty rather than absent is caught too, at startup, while somebody
+# is watching the rollout.
+COPY client/web/build/dist/wasmJs/productionExecutable /app/web
+
 # The database lives here, on a volume. Named rather than left to the working directory so that the
 # mount point is visible in the image and a chart cannot quietly disagree with it.
 VOLUME ["/data"]
 EXPOSE 8080
 
 ENTRYPOINT ["/app/tacku"]
-CMD ["serve", "-db", "/data/tacku.db", "-addr", ":8080"]
+CMD ["serve", "-db", "/data/tacku.db", "-addr", ":8080", "-web", "/app/web"]

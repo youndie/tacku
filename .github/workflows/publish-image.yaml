@@ -23,6 +23,36 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The page is built here rather than inside the image: a Gradle build in a Docker layer starts
+      # from nothing every time, while this runner shares the cache the check job fills. The
+      # Dockerfile copies what this step leaves behind, and fails outright if it is not there.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+          cache-dependency-path: |
+            client/*.gradle.kts
+            client/**/*.gradle.kts
+            client/gradle.properties
+            client/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Build the page
+        working-directory: client
+        run: ./gradlew --no-daemon :web:wasmJsBrowserDistribution
+
+      # A bundle that built but produced nothing would be copied into the image and refused at
+      # startup — after publishing, and by a pod that then rolls back. Cheaper to say it here.
+      - name: Refuse a bundle without a page in it
+        run: |
+          dist=client/web/build/dist/wasmJs/productionExecutable
+          for file in index.html tacku.js; do
+            if [ ! -s "$dist/$file" ]; then
+              echo "$dist/$file is missing or empty — the image would carry no product" >&2
+              exit 1
+            fi
+          done
+
       - name: Log in to the Container registry
         uses: docker/login-action@v4
         with:
