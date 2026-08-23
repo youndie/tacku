@@ -20,10 +20,10 @@ type DocsBoard struct {
 	Snapshot docsboard.Snapshot
 	Now      time.Time
 
-	// Stale is set when the source could not be reached and what is on the screen is the previous
-	// reading. It is a field rather than an inference from the timestamp: how old is too old is a
-	// judgement, and whether the last attempt failed is a fact.
-	Stale bool
+	// Failure is what stopped the last reading, or nil if nothing did. A field rather than an
+	// inference from the timestamp: how old is too old is a judgement, and whether the last attempt
+	// failed is a fact — and which failure it was is the only part a person can act on.
+	Failure error
 }
 
 func (d DocsBoard) Screen() Component {
@@ -47,13 +47,13 @@ func (d DocsBoard) header() Component {
 		Text("docs-count", DocsSummary(d.open(), d.done(), d.Snapshot.TakenAt, d.Now), TextBodyMuted),
 	)
 
-	if !d.Stale {
+	if d.Failure == nil {
 		return heading
 	}
 	return Column("docs-header", 12, nil,
 		heading,
 		Row("docs-stale", 0, []Modifier{FillWidth(), Padding(12), Background(ColorSurfaceBlock)},
-			Text("docs-stale-line", DocsStale(d.Snapshot.TakenAt, d.Now), TextNotice)),
+			Text("docs-stale-line", DocsStale(d.Snapshot.TakenAt, d.Now, DocsWhyUnread(d.Failure)), TextNotice)),
 	)
 }
 
@@ -142,7 +142,7 @@ func (d DocsBoard) done() int { return len(d.Snapshot.Items) - d.open() }
 // A screen and not an error status: the client would turn a 5xx into its own message, and the person
 // looking at it is the one who can fix this — the repository, the branch or the credential is wrong,
 // or the source is down. It says which of those it cannot tell apart rather than pretending to know.
-func UnreadableDocsBoard(person domain.MemberID) Component {
+func UnreadableDocsBoard(person domain.MemberID, failure error) Component {
 	return Row("screen-docs", 0,
 		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
 		Navigation(person, LinkDocsBoard),
@@ -152,8 +152,9 @@ func UnreadableDocsBoard(person domain.MemberID) Component {
 			Column("docs-unreadable", 8,
 				[]Modifier{Padding(32), Background(ColorSurfaceBlock)},
 				Text("docs-unreadable-title", "The backlog could not be read", TextTitle),
+				Text("docs-unreadable-why", DocsWhyUnread(failure), TextBody),
 				Text("docs-unreadable-body",
-					"Nothing has been read from the source yet. Either it cannot be reached, or this deployment is pointed at a repository, a branch or a directory that does not hold a backlog.",
+					"Nothing has been read from the source since this server started, so there is not even an old reading to show.",
 					TextBodyMuted),
 			),
 			Spacer("docs-unreadable-tail"),

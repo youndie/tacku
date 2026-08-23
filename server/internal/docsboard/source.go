@@ -13,6 +13,23 @@ import (
 	"time"
 )
 
+// Refusal is the source answering with something other than data.
+//
+// A type rather than a formatted string because the status is the whole of what a person can act
+// on: 401 is a credential that was not accepted, 404 is a repository this credential cannot see,
+// and telling them apart is the difference between fixing it in a minute and guessing. The body is
+// deliberately not kept — a refusal may quote the request, and the request carries the credential.
+type Refusal struct {
+	// What was asked for: the commit of a ref, or the archive.
+	What string
+	// Status is what the source answered.
+	Status int
+}
+
+func (r Refusal) Error() string {
+	return fmt.Sprintf("docsboard: asking for the %s was refused with %d", r.What, r.Status)
+}
+
 // Config says where the backlog being looked at lives.
 //
 // Every field arrives from the environment of the running process, and none of them has a default
@@ -141,7 +158,7 @@ func (s *Source) Load(ctx context.Context) (Snapshot, error) {
 	return s.snapshot, nil
 }
 
-func (s *Source) request(ctx context.Context, url, accept string) (*http.Response, error) {
+func (s *Source) request(ctx context.Context, url, accept, what string) (*http.Response, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -159,16 +176,14 @@ func (s *Source) request(ctx context.Context, url, accept string) (*http.Respons
 	}
 	if response.StatusCode != http.StatusOK {
 		response.Body.Close()
-		// The status and nothing from the body: a refusal from the source may quote the request,
-		// and the request carries a credential.
-		return nil, fmt.Errorf("docsboard: %s answered %s", path.Base(url), response.Status)
+		return nil, Refusal{What: what, Status: response.StatusCode}
 	}
 	return response, nil
 }
 
 func (s *Source) head(ctx context.Context) (string, error) {
 	url := fmt.Sprintf("%s/repos/%s/commits/%s", s.config.API, s.config.Repo, s.config.Ref)
-	response, err := s.request(ctx, url, "application/vnd.github.sha")
+	response, err := s.request(ctx, url, "application/vnd.github.sha", "commit")
 	if err != nil {
 		return "", err
 	}
@@ -192,7 +207,7 @@ const maxArchive = 64 << 20
 
 func (s *Source) read(ctx context.Context, head string) (Snapshot, error) {
 	url := fmt.Sprintf("%s/repos/%s/tarball/%s", s.config.API, s.config.Repo, head)
-	response, err := s.request(ctx, url, "application/vnd.github+json")
+	response, err := s.request(ctx, url, "application/vnd.github+json", "archive")
 	if err != nil {
 		return Snapshot{}, err
 	}
