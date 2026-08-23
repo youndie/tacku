@@ -1,7 +1,9 @@
 package render
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -569,8 +571,34 @@ func DocsSummary(open, done int, takenAt, now time.Time) string {
 }
 
 // DocsStale says that what is on the screen is the last thing that could be read, and when.
-func DocsStale(takenAt, now time.Time) string {
-	return fmt.Sprintf("The source could not be reached · showing what was read %s", since(takenAt, now))
+func DocsStale(takenAt, now time.Time, why string) string {
+	return fmt.Sprintf("%s · showing what was read %s", why, since(takenAt, now))
+}
+
+// DocsWhyUnread turns a failed reading into the sentence a person can act on.
+//
+// Written because the first deployment of this board met "the backlog could not be read" and there
+// was nothing else to go on — the server knew the source had answered 404 and kept it to itself, so
+// the next step was guesswork between a credential, a repository name and a firewall. The same
+// lesson as the sign-in refusal: what stopped it belongs where the person is looking.
+//
+// The status and never the body. A refusal may quote the request, and the request carries the
+// credential.
+func DocsWhyUnread(err error) string {
+	var refusal docsboard.Refusal
+	if !errors.As(err, &refusal) {
+		return "The source could not be reached at all: it did not answer, or the address is wrong."
+	}
+
+	switch refusal.Status {
+	case http.StatusUnauthorized:
+		return "The credential was not accepted (401). A token that an organisation has not yet approved answers exactly like this."
+	case http.StatusForbidden:
+		return "The credential is not allowed to read this (403). Check that it carries read access to the contents of that repository."
+	case http.StatusNotFound:
+		return "Nothing was found under that name (404). Either the repository or the branch is spelled differently, or the credential cannot see the repository at all — a private one answers a stranger the same way it answers nobody."
+	}
+	return fmt.Sprintf("The source answered %d, which is neither data nor a refusal this build knows.", refusal.Status)
 }
 
 // DocsCardMeta is a card's first line: the identifier, then whatever the item declares.

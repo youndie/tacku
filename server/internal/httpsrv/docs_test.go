@@ -56,15 +56,17 @@ func fixtureArchive(t *testing.T) []byte {
 	return buffer.Bytes()
 }
 
-// sourceStand answers as the forge does, and can be told to stop.
-func sourceStand(t *testing.T) (*httptest.Server, *bool) {
+// sourceStand answers as the forge does, and can be told to refuse.
+func sourceStand(t *testing.T) (*httptest.Server, *int) {
 	t.Helper()
 
 	archive := fixtureArchive(t)
-	down := false
+	refuse := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if down {
-			http.Error(w, "gone", http.StatusServiceUnavailable)
+		if refuse != 0 {
+			// A refusal that quotes the request, which is the shape that carries a credential back
+			// out into a message somebody pastes into a chat.
+			http.Error(w, "no: "+r.Header.Get("Authorization"), refuse)
 			return
 		}
 		if strings.Contains(r.URL.Path, "/commits/") {
@@ -74,14 +76,14 @@ func sourceStand(t *testing.T) (*httptest.Server, *bool) {
 		w.Write(archive)
 	}))
 	t.Cleanup(server.Close)
-	return server, &down
+	return server, &refuse
 }
 
 func withSource(t *testing.T, server *httptest.Server, ttl time.Duration) func(*httpsrv.Config) {
 	return func(config *httpsrv.Config) {
 		config.DocsBoard = docsboard.New(docsboard.Config{
 			Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
-			TTL: ttl, API: server.URL, Client: server.Client(),
+			Token: "a-secret-value", TTL: ttl, API: server.URL, Client: server.Client(),
 		})
 	}
 }
@@ -147,7 +149,7 @@ func TestWithASourceTheViewIsReachable(t *testing.T) {
 
 // The two states a board must never render identically.
 func TestAnUnreachableSourceSaysSoOverTheLastReading(t *testing.T) {
-	stand, down := sourceStand(t)
+	stand, refuse := sourceStand(t)
 	r := newResourceWith(t, withSource(t, stand, time.Nanosecond))
 	token := r.reader(t)
 
@@ -155,13 +157,13 @@ func TestAnUnreachableSourceSaysSoOverTheLastReading(t *testing.T) {
 		t.Fatal("первое чтение не удалось — дальше проверять нечего")
 	}
 
-	*down = true
+	*refuse = http.StatusNotFound
 	response, screen := r.get(t, render.DocsBoardPath, token, "")
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("экран ответил %d, а прошлый снимок был в руках", response.StatusCode)
 	}
-	if !strings.Contains(string(screen), "could not be reached") {
-		t.Error("источник недоступен, а экран об этом молчит — это неотличимо от пустого бэклога")
+	if !strings.Contains(string(screen), "(404)") {
+		t.Error("источник отказал, а экран не назвал чем именно — дальше только гадать")
 	}
 	if !strings.Contains(string(screen), "A failed overdue notice") {
 		t.Error("прошлое чтение выброшено")
@@ -169,8 +171,8 @@ func TestAnUnreachableSourceSaysSoOverTheLastReading(t *testing.T) {
 }
 
 func TestASourceThatWasNeverReadIsAScreenAndNotAnError(t *testing.T) {
-	stand, down := sourceStand(t)
-	*down = true
+	stand, refuse := sourceStand(t)
+	*refuse = http.StatusUnauthorized
 	r := newResourceWith(t, withSource(t, stand, time.Hour))
 	token := r.reader(t)
 
@@ -180,6 +182,14 @@ func TestASourceThatWasNeverReadIsAScreenAndNotAnError(t *testing.T) {
 	}
 	if !strings.Contains(string(screen), "could not be read") {
 		t.Error("экран не сказал, что прочитать не удалось")
+	}
+	// Первая выкатка встретила именно этот экран, и на нём не было ничего, по чему можно действовать:
+	// сервер знал, чем ответил источник, и оставил это при себе.
+	if !strings.Contains(string(screen), "(401)") {
+		t.Error("экран не назвал отказ: 401 и 404 чинятся по-разному, а выглядят одинаково")
+	}
+	if strings.Contains(string(screen), "a-secret-value") {
+		t.Error("на экране оказались учётные данные")
 	}
 }
 

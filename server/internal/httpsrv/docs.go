@@ -32,7 +32,7 @@ func docsBoard(source *docsboard.Source, now func() time.Time) http.HandlerFunc 
 		// saying so, because an empty board and a dead connection look identical and the difference
 		// is what a person came for.
 		if snapshot.Empty() {
-			respond(w, r, render.UnreadableDocsBoard(principal.Provenance.OnBehalfOf))
+			respond(w, r, render.UnreadableDocsBoard(principal.Provenance.OnBehalfOf, failure))
 			return
 		}
 
@@ -40,7 +40,7 @@ func docsBoard(source *docsboard.Source, now func() time.Time) http.HandlerFunc 
 			Person:   principal.Provenance.OnBehalfOf,
 			Snapshot: snapshot,
 			Now:      now(),
-			Stale:    failure != nil,
+			Failure:  failure,
 		}
 		respond(w, r, screen.Screen())
 	}
