@@ -66,16 +66,16 @@ func (d DocsBoard) header() Component {
 func (d DocsBoard) columns() []Component {
 	var out []Component
 	for _, stage := range d.Snapshot.Stages {
-		if items := docsboard.Column(d.Snapshot.Items, stage.ID); len(items) > 0 {
+		if items := docsboard.Column(d.Snapshot.Items, stage); len(items) > 0 {
 			out = append(out, d.column(stage, items))
 		}
 	}
 	return out
 }
 
-func (d DocsBoard) column(stage docsboard.Stage, items []docsboard.Item) Component {
-	id := "docs-column-" + stage.ID
-	if stage.ID == docsboard.NoStage {
+func (d DocsBoard) column(stage string, items []docsboard.Item) Component {
+	id := "docs-column-" + stage
+	if stage == docsboard.NoStage {
 		id = "docs-column-none"
 	}
 
@@ -86,7 +86,7 @@ func (d DocsBoard) column(stage docsboard.Stage, items []docsboard.Item) Compone
 
 	body := []Component{
 		Row(id+"-head", 0, nil,
-			Text(id+"-name", stage.Title, TextSubtitle),
+			Text(id+"-name", DocsStageName(stage), TextSubtitle),
 			Spacer(id+"-head-spacer"),
 			Text(id+"-count", fmt.Sprint(len(cards)), TextMeta),
 		),
@@ -94,7 +94,7 @@ func (d DocsBoard) column(stage docsboard.Stage, items []docsboard.Item) Compone
 	// Above the cards and not under them. Under them it was invisible: a list takes the height that
 	// is left, so anything after it starts below the bottom of the screen — which the tree does not
 	// say and only a picture shows.
-	if done := docsboard.DoneCount(d.Snapshot.Items, stage.ID); done > 0 {
+	if done := docsboard.DoneCount(d.Snapshot.Items, stage); done > 0 {
 		body = append(body, Text(id+"-done", DocsDone(done), TextMeta))
 	}
 	body = append(body, PaginatedList(id+"-list", cards, "", nil, FillWidth()))

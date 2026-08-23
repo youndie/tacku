@@ -73,7 +73,7 @@ func (c Config) withDefaults() Config {
 type Snapshot struct {
 	// Title is what the source calls its own backlog: the first heading of the index.
 	Title  string
-	Stages []Stage
+	Stages []string
 	Items  []Item
 
 	// Head is the commit this was read at, and TakenAt is when. Both are shown: a board with no

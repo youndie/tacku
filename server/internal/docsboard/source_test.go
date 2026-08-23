@@ -115,7 +115,7 @@ func TestASnapshotIsWhatTheRepositoryHolds(t *testing.T) {
 	if snapshot.Title != "The backlog of a lending system" {
 		t.Errorf("заголовок %q взят не из индекса", snapshot.Title)
 	}
-	if len(snapshot.Stages) != 1 || snapshot.Stages[0].Title != "First" {
+	if len(snapshot.Stages) != 1 || snapshot.Stages[0] != "stage-one" {
 		t.Errorf("этапы %v", snapshot.Stages)
 	}
 	if snapshot.Head != "abc1234" {

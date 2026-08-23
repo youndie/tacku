@@ -556,7 +556,7 @@
             ],
             "label": "Status",
             "value": "To do",
-            "helperText": "Changed by anna 12 hours ago"
+            "helperText": "Changed by anna 13 hours ago"
            },
            {
             "type": "read_only_field",
@@ -589,7 +589,7 @@
             ],
             "label": "Due",
             "value": "29 Aug",
-            "helperText": "In 6 days"
+            "helperText": "In 5 days"
            },
            {
             "type": "read_only_field",
