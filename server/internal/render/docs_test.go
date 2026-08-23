@@ -13,7 +13,7 @@ import (
 func snapshot() docsboard.Snapshot {
 	return docsboard.Snapshot{
 		Title:  "A backlog",
-		Stages: []docsboard.Stage{{ID: "one", Title: "One"}},
+		Stages: []string{"one"},
 		Items: []docsboard.Item{
 			{ID: "B-01", Number: 1, Title: "Open one", Status: "open", Stage: "one"},
 			{ID: "B-02", Number: 2, Title: "Finished one", Status: "done", Stage: "one"},
@@ -50,10 +50,10 @@ func TestTheTallyStandsAboveTheListAndNotBelowIt(t *testing.T) {
 
 func TestAFinishedStageIsNotDrawnAsAnEmptyColumn(t *testing.T) {
 	shot := snapshot()
-	shot.Stages = append(shot.Stages, docsboard.Stage{ID: "two", Title: "Nothing left here"})
+	shot.Stages = append(shot.Stages, "two")
 	shot.Items = append(shot.Items, docsboard.Item{ID: "B-03", Number: 3, Title: "t", Status: "done", Stage: "two"})
 
-	if strings.Contains(drawn(t, render.DocsBoard{Snapshot: shot, Now: time.Now()}), "Nothing left here") {
+	if strings.Contains(drawn(t, render.DocsBoard{Snapshot: shot, Now: time.Now()}), `"two"`) {
 		t.Error("этап без открытых задач занял колонку — на живом источнике таких больше, чем работающих")
 	}
 }

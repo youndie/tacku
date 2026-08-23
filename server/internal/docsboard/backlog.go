@@ -141,12 +141,6 @@ func list(value string) []string {
 	return out
 }
 
-// Stage is one column of the board.
-type Stage struct {
-	ID    string
-	Title string
-}
-
 // NoStage is the column items land in when their file names none.
 const NoStage = ""
 
@@ -161,11 +155,16 @@ var stageRow = regexp.MustCompile("(?m)^\\|\\s*`?([A-Za-z0-9][A-Za-z0-9._-]*)`?\
 
 // Stages is the column order: the stages the index names, in its order, then the ones it does not.
 //
-// The second half is the point. A live repository had an item whose stage is declared nowhere in
-// the table, and a board built from the table alone would have shown every column correctly and
-// silently lost that item. Its column is named by its bare identifier, which is ugly on purpose:
-// the ugliness is the report.
-func Stages(index string, items []Item) []Stage {
+// Identifiers and not the names beside them in the table, which was decided by looking at a live
+// repository rather than at the specification. The second cell of that table is a description — a
+// full sentence with a colon and commas, written to be read in a markdown table — and a column a
+// quarter of a screen wide would have spent five lines on it before the first card. The identifier
+// is short, and it is what the documents around it cite the stage by.
+//
+// The second half of the list is the other finding: an item whose stage is declared nowhere in the
+// table. A board built from the table alone shows every column correctly and loses that item
+// without a word.
+func Stages(index string, items []Item) []string {
 	used := map[string]bool{}
 	for _, item := range items {
 		if item.Stage != "" {
@@ -173,18 +172,15 @@ func Stages(index string, items []Item) []Stage {
 		}
 	}
 
-	var ordered []Stage
+	var ordered []string
 	seen := map[string]bool{}
 	for _, row := range stageRow.FindAllStringSubmatch(index, -1) {
-		id, title := row[1], strings.TrimSpace(row[2])
+		id := row[1]
 		if !used[id] || seen[id] {
 			continue
 		}
 		seen[id] = true
-		if title == "" {
-			title = id
-		}
-		ordered = append(ordered, Stage{ID: id, Title: title})
+		ordered = append(ordered, id)
 	}
 
 	var undeclared []string
@@ -194,13 +190,11 @@ func Stages(index string, items []Item) []Stage {
 		}
 	}
 	sort.Strings(undeclared)
-	for _, id := range undeclared {
-		ordered = append(ordered, Stage{ID: id, Title: id})
-	}
+	ordered = append(ordered, undeclared...)
 
 	for _, item := range items {
 		if item.Stage == "" {
-			ordered = append(ordered, Stage{ID: NoStage, Title: "No stage"})
+			ordered = append(ordered, NoStage)
 			break
 		}
 	}

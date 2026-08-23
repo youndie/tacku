@@ -132,7 +132,7 @@ func TestWithASourceTheViewIsReachable(t *testing.T) {
 	}
 	for _, expected := range []string{
 		"The backlog of a lending system", // заголовок из индекса источника
-		"Getting the loans right",         // колонка из таблицы этапов
+		"stage-one",                       // колонка названа идентификатором этапа
 		"A failed overdue notice",         // открытая задача
 		"1 open task · 1 done",            // сводка
 	} {

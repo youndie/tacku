@@ -330,7 +330,7 @@
           {
            "type": "text",
            "id": "docs-column-stage-trust-name",
-           "text": "Making the ledger match the shelf",
+           "text": "stage-trust",
            "style": "subtitle"
           },
           {
@@ -502,7 +502,7 @@
           {
            "type": "text",
            "id": "docs-column-stage-members-name",
-           "text": "What a member can do without asking staff",
+           "text": "stage-members",
            "style": "subtitle"
           },
           {

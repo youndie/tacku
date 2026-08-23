@@ -593,6 +593,20 @@ func DocsCardMeta(item docsboard.Item) string {
 	return strings.Join(parts, " · ")
 }
 
+// DocsStageName is a column's heading: the stage's own identifier, and a word for the items whose
+// file names no stage at all.
+//
+// The identifier rather than the description standing beside it in the index. That description is
+// written to be read in a markdown table — in one live repository it is a full sentence with a
+// colon and a list — and a column a quarter of a screen wide would spend five lines on it before
+// the first card. The identifier is short, stable, and the thing the documents around it cite.
+func DocsStageName(stage string) string {
+	if stage == "" {
+		return "No stage"
+	}
+	return stage
+}
+
 // DocsBlockedBy names what an item is waiting for.
 func DocsBlockedBy(ids []string) string {
 	return "waits for " + strings.Join(ids, ", ")

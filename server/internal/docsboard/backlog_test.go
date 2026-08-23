@@ -94,11 +94,7 @@ func TestAnUndeclaredStageGetsItsOwnColumn(t *testing.T) {
 	)
 
 	stages := Stages(index, parsed)
-	var names []string
-	for _, stage := range stages {
-		names = append(names, stage.ID)
-	}
-	if got := strings.Join(names, ","); got != "stage-early,platform" {
+	if got := strings.Join(stages, ","); got != "stage-early,platform" {
 		t.Fatalf("колонки %q: этап без объявления должен встать последним и не пропасть", got)
 	}
 	if len(Column(parsed, "platform")) != 1 {
@@ -108,7 +104,7 @@ func TestAnUndeclaredStageGetsItsOwnColumn(t *testing.T) {
 
 func TestARowThatIsNotAStageIsNotAColumn(t *testing.T) {
 	for _, stage := range Stages(index, items(t, frontmatter("B-01", "open", "P1", "stage-early"))) {
-		if stage.ID == "1" {
+		if stage == "1" {
 			t.Fatal("строка чужой таблицы стала колонкой")
 		}
 	}
@@ -120,7 +116,7 @@ func TestTheDeclaredOrderIsTheIndexOrder(t *testing.T) {
 		frontmatter("B-02", "open", "P1", "stage-late"),
 	)
 	stages := Stages(index, parsed)
-	if len(stages) != 2 || stages[0].ID != "stage-late" || stages[1].ID != "stage-early" {
+	if len(stages) != 2 || stages[0] != "stage-late" || stages[1] != "stage-early" {
 		t.Fatalf("порядок колонок взят не из индекса: %v", stages)
 	}
 }
@@ -128,7 +124,7 @@ func TestTheDeclaredOrderIsTheIndexOrder(t *testing.T) {
 func TestAnItemWithNoStageStillHasSomewhereToStand(t *testing.T) {
 	parsed := items(t, "---\nid: B-09\ntitle: t\nstatus: open\n---\n")
 	stages := Stages(index, parsed)
-	if len(stages) != 1 || stages[0].ID != NoStage {
+	if len(stages) != 1 || stages[0] != NoStage {
 		t.Fatalf("задача без этапа осталась без колонки: %v", stages)
 	}
 }
