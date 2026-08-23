@@ -55,8 +55,22 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 		description := form.MultilineInput("description", "Description",
 			"What does done look like?", "", render.DefaultLines, nil)
 
-		board := form.Select("board", "Board", "Choose a board", boardOptions,
-			[]forms.Rule{forms.Required("Every task belongs to a board.")})
+		// A choice of one is not a choice, and the mockup does not draw one: on its create screen
+		// the board is context in the header — the person came from it — rather than a field. Until
+		// the button that opens this form carries which board it was pressed on, the honest middle
+		// is to stop asking when there is nothing to ask.
+		//
+		// Not declared as a field either, and a guard here insisted on that before I had thought it
+		// through: a schema entry no input shows is a value nobody can fill, so the read-only line
+		// is what a person sees and the server is what decides. A second board declares the field
+		// again, because then there is something to ask.
+		var board render.Component
+		if len(boards) == 1 {
+			board = render.ReadOnlyField("field-board", "Board", boards[0].Title, "")
+		} else {
+			board = form.Select("board", "Board", "Choose a board", boardOptions,
+				[]forms.Rule{forms.Required("Every task belongs to a board.")})
+		}
 
 		status := form.Select("status", "Status", "", statusOptions(), nil)
 
@@ -107,8 +121,17 @@ func framedForm(id string, person domain.MemberID, current string, body ...rende
 		[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Background(render.ColorSurface)},
 		render.Navigation(person, current),
 		render.Rule(id+"-nav-rule", render.RuleDp, render.ColorDivider, false),
-		render.PaginatedList(id, body, "", nil,
-			render.Weight(1), render.Padding(32)),
+		// The padding is **inside** the list, not on it. On it, it insets the scrolling viewport:
+		// the content then slides under a frame and is cut by it at both ends, which is exactly what
+		// it looked like — a form with a margin that ate its own top and bottom. Inside, the padding
+		// scrolls with the content, which is what a person means by a margin.
+		//
+		// One item rather than one per node: a form is eight nodes, so there is nothing to gain from
+		// laziness, and a single column keeps the spacing between fields the business of the column
+		// that owns them rather than of the list.
+		render.PaginatedList(id, []render.Component{
+			render.Column(id+"-body", 20, []render.Modifier{render.FillWidth(), render.Padding(32)}, body...),
+		}, "", nil, render.Weight(1)),
 	)
 }
 
@@ -239,8 +262,19 @@ func submitNewTask(store domain.Store) http.HandlerFunc {
 		// No idempotency here, and that is the change B-11 made: a repeat never reaches this
 		// handler, so nothing it does — including the journal entry inside the store — can happen
 		// twice.
+		// The board a person could not choose. When there is exactly one, the form shows it rather
+		// than offering it, so a client that submits nothing for it is not a client in error — and
+		// the alternative, trusting every client to echo a value it was never given a control for,
+		// is a rule that holds until somebody writes a second client.
+		chosenBoard := request.chosen("board")
+		if chosenBoard == "" {
+			if boards, err := store.Boards(r.Context()); err == nil && len(boards) == 1 {
+				chosenBoard = string(boards[0].ID)
+			}
+		}
+
 		task, err := store.CreateTask(r.Context(), domain.Task{
-			Board:  domain.BoardID(request.chosen("board")),
+			Board:  domain.BoardID(chosenBoard),
 			Title:  request.text("title"),
 			Body:   request.text("description"),
 			Status: domain.Status(request.chosen("status")),

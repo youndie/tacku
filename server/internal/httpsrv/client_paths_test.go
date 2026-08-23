@@ -32,7 +32,10 @@ func TestThePageAnswersItsOwnAddresses(t *testing.T) {
 		}
 	}
 
-	strangers := []string{"/borad", "/task", "/tasks/TAC-2", "/nothing/at/all"}
+	// The last two are the ones that cost a blank window: a page served at a screen address asks for
+	// its own script relatively, and answering that with the page hands the browser HTML where it
+	// expects JavaScript.
+	strangers := []string{"/borad", "/task", "/tasks/TAC-2", "/nothing/at/all", "/task/tacku.js", "/edit-task/style.css"}
 	for _, path := range strangers {
 		if code := ask(t, resource.url+path, "").StatusCode; code != http.StatusNotFound {
 			t.Errorf("%s answered %d: a typo was given the page instead of an answer", path, code)

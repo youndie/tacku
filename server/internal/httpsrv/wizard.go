@@ -69,7 +69,11 @@ func newTaskFlow() []wizardStep {
 	return []wizardStep{
 		{
 			id: "basics", formID: wizardBasicsFormID,
-			fields: []string{"title", "board", "description"},
+			// `board` is conditional: with one board there is nothing to choose and the step does
+			// not declare it. The check that holds the two creation surfaces together compares what
+			// each actually declares, so both had to learn the same rule — which is the point of
+			// that check, and it found this the moment only one of them had.
+			fields: []string{"title", "description"},
 			build:  wizardBasics,
 		},
 		{
@@ -98,8 +102,16 @@ func wizardBasics(ctx context.Context, store domain.Store, _ map[string]json.Raw
 	form := forms.New(wizardBasicsFormID)
 	title := form.TextInput("title", "Title", "What needs to be done?",
 		[]forms.Rule{forms.Required("Give the task a title.")})
-	board := form.Select("board", "Board", "Choose a board", options,
-		[]forms.Rule{forms.Required("Every task belongs to a board.")})
+
+	// A choice of one is not a choice: the mockup draws the board as context on this screen rather
+	// than as a field, and with a single board the server knows the answer. Shown, not asked.
+	var board render.Component
+	if len(boards) == 1 {
+		board = render.ReadOnlyField("wizard-basics-board", "Board", boards[0].Title, "")
+	} else {
+		board = form.Select("board", "Board", "Choose a board", options,
+			[]forms.Rule{forms.Required("Every task belongs to a board.")})
+	}
 	// The same field the one-screen form offers, and the reason it is here is not symmetry for its
 	// own sake: two ways to create a task that take different facts make one of them the way that
 	// loses something, and nobody would find out from a failure — the task simply arrives without a
@@ -311,8 +323,18 @@ func wizardFinish(
 ) {
 	values := submitRequest{Values: state.Values}
 
+	// The board the walk did not ask for. With one board the step shows it instead of offering it,
+	// so nothing arrives under that name and the server supplies what it already knew — the same
+	// rule the one-screen form follows, in the same words, because two rules would be two answers.
+	chosenBoard := values.chosen("board")
+	if chosenBoard == "" {
+		if boards, err := store.Boards(r.Context()); err == nil && len(boards) == 1 {
+			chosenBoard = string(boards[0].ID)
+		}
+	}
+
 	task, err := store.CreateTask(r.Context(), domain.Task{
-		Board:  domain.BoardID(values.chosen("board")),
+		Board:  domain.BoardID(chosenBoard),
 		Title:  values.text("title"),
 		Body:   values.text("description"),
 		Status: domain.Status(values.chosen("status")),

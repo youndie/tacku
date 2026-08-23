@@ -93,8 +93,11 @@ func TestARefusalSaysWhatWasWrong(t *testing.T) {
 func ask(t *testing.T, url, token string) *http.Response {
 	t.Helper()
 
+	// Stopped at the end of the test rather than at the end of this function: the body is read by
+	// the caller, and cancelling here made every read fail with "context canceled" — invisible while
+	// the only callers looked at headers.
 	ctx, stop := context.WithTimeout(context.Background(), 5*time.Second)
-	defer stop()
+	t.Cleanup(stop)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

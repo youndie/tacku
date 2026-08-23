@@ -16,6 +16,12 @@
     </style>
 </head>
 <body>
-<script src="tacku.js"></script>
+<!--
+  Absolute, and that is not tidiness. The page is served at every address it has a screen at, so at
+  /edit-task/TAC-2 a relative src asks for /edit-task/tacku.js — which the server answers with this
+  very page, because the path looks like a screen. The browser then parses HTML as JavaScript and
+  the application never starts: a blank window, no error a person could act on.
+-->
+<script src="/tacku.js"></script>
 </body>
 </html>

@@ -29,7 +29,10 @@ actual suspend fun loadTackuFontFamily(): FontFamily {
 
     val loaded =
         faces.mapNotNull { (name, weight) ->
-            val path = "fonts/IBMPlexSans-$name.ttf"
+            // Absolute for the same reason the script tag is: at /task/TAC-2 a relative path asks
+            // for /task/fonts/…, and the answer is the page rather than a font — after which the
+            // product draws in whatever the machine has, silently.
+            val path = "/fonts/IBMPlexSans-$name.ttf"
             runCatching { http.get(path).readRawBytes() }
                 .onFailure {
                     println(
