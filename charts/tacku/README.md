@@ -10,9 +10,9 @@ sign everybody out, and missing issuer settings stop the server from starting at
 as a deploy that reports success.
 
 **The JWKS address is not derivable from the issuer.** It is asked of the identity provider's own
-discovery document, not guessed: this deployment's provider serves it from `/oauth2/jwks`, while
-the shape of the issuer URL would suggest the Keycloak path. A guess would verify no token at all,
-and the failure reads as every agent being unauthorised.
+discovery document, never guessed from the shape of the issuer URL — providers differ, and the two
+that look alike are exactly the ones a guess gets wrong. A wrong address verifies no token at all,
+and the failure arrives as every agent being unauthorised rather than as anything about a URL.
 
 **One replica and `Recreate`, because the store is a file.** SQLite on a ReadWriteOnce volume
 cannot be served by two pods; a rolling update waits for a volume the outgoing pod still holds and

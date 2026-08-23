@@ -40,7 +40,7 @@ spec:
             - name: TACKU_ISSUER
               value: {{ include "tacku.require" (dict "name" "auth.issuer" "because" "the server refuses to start without it, which arrives as a successful deploy and a service that is down" "value" .Values.auth.issuer) | quote }}
             - name: TACKU_JWKS_URL
-              value: {{ include "tacku.require" (dict "name" "auth.jwksUrl" "because" "without it no agent token can be verified, and the path is not derivable from the issuer — this deployment's own identity provider serves it from /oauth2/jwks, not from the path a Keycloak-shaped guess would produce" "value" .Values.auth.jwksUrl) | quote }}
+              value: {{ include "tacku.require" (dict "name" "auth.jwksUrl" "because" "without it no agent token can be verified, and the path is not derivable from the issuer — ask the provider's discovery document rather than guessing from the shape of the issuer URL" "value" .Values.auth.jwksUrl) | quote }}
             - name: TACKU_RESOURCE
               value: {{ include "tacku.resource" . | quote }}
             {{- if .Values.wizardTtl }}

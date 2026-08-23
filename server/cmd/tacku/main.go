@@ -51,7 +51,9 @@ func usage() error {
 		"HTTP takes identity from the token, and needs the authorization server named:\n" +
 		"  TACKU_RESOURCE        this server's canonical URI, and the audience a token must carry\n" +
 		"  TACKU_ISSUER          the authorization server's issuer identifier\n" +
-		"  TACKU_JWKS_URL        where that issuer publishes its signing keys\n\n" +
+		"  TACKU_JWKS_URL        where that issuer publishes its signing keys\n" +
+		"  TACKU_PAGE_AUDIENCE   what a token must carry to open a screen: this deployment's page\n" +
+		"  TACKU_PAGE_CLIENT_ID  what the page calls itself when it asks the issuer for a token\n\n" +
 		"The KOMPOT client carries tokens this server issues through the sign-in form:\n" +
 		"  TACKU_SESSION_KEY     at least 32 characters; generated per run when unset\n" +
 		"  TACKU_WIZARD_TTL      how long an untouched multi-step scenario is kept (default 30m)")
@@ -147,6 +149,14 @@ func runServe(args []string) error {
 		SessionKey: key,
 		WizardTTL:  ttl,
 		PageDir:    *web,
+		// The same issuer as the agent surface — two would be two sets of people — and an audience
+		// of its own, so that a token minted for the agents cannot open a screen.
+		Page: httpsrv.PageAuth{
+			Issuer:   os.Getenv("TACKU_ISSUER"),
+			JWKSURL:  os.Getenv("TACKU_JWKS_URL"),
+			Audience: os.Getenv("TACKU_PAGE_AUDIENCE"),
+			ClientID: os.Getenv("TACKU_PAGE_CLIENT_ID"),
+		},
 		Verifier: auth.VerifierConfig{
 			Issuer:   os.Getenv("TACKU_ISSUER"),
 			Resource: os.Getenv("TACKU_RESOURCE"),
