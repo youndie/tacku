@@ -23,6 +23,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.modules.SerializersModule
@@ -100,7 +101,12 @@ class Transport(
         accessToken = access
     }
 
-    suspend fun screen(path: String): KompotComponent = json.decodeFromString(get(path))
+    /** Drop the pair. What the door remembers is the door's to drop. */
+    fun forgetSession() {
+        accessToken = null
+    }
+
+    suspend fun screen(path: String): KompotComponent = decodeScreen(get(path))
 
     suspend fun form(path: String): KompotFormResponse = json.decodeFromString(get(path))
 
@@ -210,11 +216,18 @@ class Transport(
 
     // Decoding without fetching, so that the behaviour of the two hierarchies can be held to a test
     // rather than to a paragraph.
-    fun decodeScreen(body: String): KompotComponent = json.decodeFromString(body)
+    //
+    // The two roots of the vocabulary are plain interfaces, so their serializer is named here rather
+    // than inferred. A reified `decodeFromString<KompotComponent>` compiles on both platforms and
+    // works on only one: the JVM finds the polymorphic serializer by reflection at runtime, and a
+    // page has no reflection to find it with. Named, both platforms decode the same way.
+    fun decodeScreen(body: String): KompotComponent =
+        json.decodeFromString(PolymorphicSerializer(KompotComponent::class), body)
 
     fun decodeForm(body: String): KompotFormResponse = json.decodeFromString(body)
 
-    fun decodeAction(body: String): KompotAction = json.decodeFromString(body)
+    fun decodeAction(body: String): KompotAction =
+        json.decodeFromString(PolymorphicSerializer(KompotAction::class), body)
 }
 
 class ServerRefused(

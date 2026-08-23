@@ -43,6 +43,7 @@ docs:
 	$(PY) scripts/coverage_map.py --check --docs $(DOCS)
 	$(PY) scripts/questions_check.py
 	$(PY) scripts/no_private_names.py
+	$(PY) scripts/no_reflective_decode.py
 	$(PY) scripts/reports_check.py
 
 # Guards the committed spec against the generator: a kompot upgrade that changes the wire must not

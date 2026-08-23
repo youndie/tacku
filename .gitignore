@@ -14,3 +14,7 @@ local.properties
 
 # Worktrees of parallel agents: working copies of this same repository, not content of it.
 .claude/worktrees/
+
+# A binary `go build ./...` leaves beside its own source. The name is the package's, so it looks
+# like a file somebody wrote.
+/server/cmd/devauth/devauth

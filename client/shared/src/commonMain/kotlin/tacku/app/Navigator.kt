@@ -23,13 +23,32 @@ import kotlinx.coroutines.CoroutineScope
 class Navigator(
     private val transport: Transport,
     private val scope: CoroutineScope,
+    // Kept so that signing out starts again the same way signing in did.
+    private val door: Door? = null,
     private val show: (Screen) -> Unit,
 ) {
     private var routes: List<ScreenRoute> = emptyList()
 
     /** The sign-in screen, which is the one place a client has to know without a graph. */
-    fun start() {
+    fun start(door: Door?) {
         scope.launchCatching(onFailure = { show(Screen.Failed(it)) }) {
+            // The platform's own door first. In a page that is a redirect to the identity provider,
+            // which is the product's way in; on the desktop there is none, and the instrument falls
+            // back to the form its stand serves. A shipped server serves no such form, so the
+            // fallback there ends in a refusal rather than a screen — which is the honest outcome:
+            // the instrument is not a way into production.
+            if (door != null) {
+                val token = door.resume()
+                if (token == null) {
+                    door.open()
+                    return@launchCatching
+                }
+                transport.useSession(token)
+                loadGraph()
+                follow(DEFAULT_SCREEN)
+                return@launchCatching
+            }
+
             open(SIGN_IN_PATH, kind = "form")
         }
     }
@@ -138,12 +157,21 @@ class Navigator(
      * reported (§12.2). That is the rule, and it is also why the server has a test asserting every
      * deeplink it emits resolves somewhere: on this side the failure is silent by design — so the
      * one thing this can do is say so in the log, which is more than it used to.
+     *
+     * Public for the same reason [resolve] is: the destinations that do something other than open a
+     * screen — signing out is one — are reachable only through here, and a test that cannot call it
+     * can only assert where a deeplink points, not what following it undoes.
      */
-    private suspend fun follow(deeplink: String) {
+    suspend fun follow(deeplink: String) {
         trace("follow $deeplink")
         when (val target = resolve(deeplink)) {
             is Target.Open -> open(target.path, target.kind)
-            Target.Start -> start()
+            Target.Start -> start(door)
+            Target.SignOut -> {
+                transport.forgetSession()
+                door?.close()
+                start(door)
+            }
             null -> println("tacku: nothing resolves \"$deeplink\"; the tap did nothing")
         }
     }
@@ -164,7 +192,7 @@ class Navigator(
         }
         return when {
             deeplink == SIGN_IN -> Target.Open(SIGN_IN_PATH, "form")
-            deeplink == SIGN_OUT -> Target.Start
+            deeplink == SIGN_OUT -> Target.SignOut
 
             // The one destination the graph cannot carry: its endpoints are literal paths, so a
             // screen addressed by naming a thing is assembled here from a prefix and an identifier.
@@ -178,6 +206,9 @@ class Navigator(
             val path: String,
             val kind: String,
         ) : Target
+
+        /** Forget the person, then begin as if the application had just opened. */
+        data object SignOut : Target
 
         data object Start : Target
     }
