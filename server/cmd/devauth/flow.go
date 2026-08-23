@@ -126,6 +126,22 @@ func (f *flow) token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// The grant a program uses. The stand offers it because the provider does, and because a check
+	// that a real token opens the agent surface has nowhere else to get one — a stand that cannot
+	// mint what production mints makes the check unrehearsable.
+	//
+	// No secret is examined: this stand hands a token to whoever asks, which is the whole of what it
+	// is for. What it does honour is `resource`, because that is the claim the surface checks.
+	if r.FormValue("grant_type") == "client_credentials" {
+		client := r.FormValue("client_id")
+		if client == "" {
+			refuse(w, "invalid_request", "client_credentials needs a client_id")
+			return
+		}
+		f.issue(w, client, r.FormValue("resource"))
+		return
+	}
+
 	code := r.FormValue("code")
 	verifier := r.FormValue("code_verifier")
 
@@ -151,10 +167,26 @@ func (f *flow) token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	f.issue(w, waiting.subject, r.FormValue("resource"))
+}
+
+// issue signs a token for a subject, addressed to the resource that was asked for.
+//
+// The audience is the asked-for one when there is one, because that is what a client naming a
+// resource expects back and what the resource server compares against. Without it the stand's own
+// default stands in — which is the shape production has when nobody configured an audience, and
+// worth being able to reproduce.
+func (f *flow) issue(w http.ResponseWriter, subject, resource string) {
+	audience := f.audience
+	if resource != "" {
+		audience = resource
+	}
+
 	claims := jwt.MapClaims{
 		"iss":   f.issuer,
-		"sub":   waiting.subject,
-		"aud":   f.audience,
+		"sub":   subject,
+		"azp":   subject,
+		"aud":   audience,
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iat":   time.Now().Unix(),
 		"scope": "tasks:read tasks:write",
@@ -185,7 +217,7 @@ func (f *flow) discovery(w http.ResponseWriter, _ *http.Request) {
 		"token_endpoint":                        f.issuer + "/token",
 		"jwks_uri":                              f.issuer + "/jwks",
 		"response_types_supported":              []string{"code"},
-		"grant_types_supported":                 []string{"authorization_code"},
+		"grant_types_supported":                 []string{"authorization_code", "client_credentials"},
 		"code_challenge_methods_supported":      []string{"S256"},
 		"token_endpoint_auth_methods_supported": []string{"none"},
 	})
