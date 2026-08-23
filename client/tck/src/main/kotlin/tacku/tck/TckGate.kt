@@ -1,5 +1,6 @@
 package tacku.tck
 
+import io.github.youndie.kompot.tck.TckFinding
 import io.github.youndie.kompot.tck.TckReport
 import io.github.youndie.kompot.tck.TckSkip
 import kotlinx.serialization.json.JsonObject
@@ -61,12 +62,22 @@ object TckGate {
         val bodiesChecked: Int = 0,
         /** What the walk decided not to fetch, and why — in the kit's own words, as of 0.15. */
         val skipped: List<TckSkip> = emptyList(),
+        /**
+         * Findings this walk is known to produce about the kit rather than about this server, and
+         * the allowances that no longer match anything.
+         *
+         * The second list is what keeps the first from becoming a habit: an allowance that has
+         * stopped matching means the thing it excused is gone, and the allowance goes with it.
+         */
+        val tolerated: List<String> = emptyList(),
+        val staleAllowances: List<String> = emptyList(),
     ) {
         val passed: Boolean
             get() =
                 unexercised.isEmpty() &&
                     unknown.isEmpty() &&
                     findings == 0 &&
+                    staleAllowances.isEmpty() &&
                     bodiesChecked >= bodiesDeclared
     }
 
@@ -87,16 +98,62 @@ object TckGate {
      */
     private val bodyKinds = setOf("screen", "form", "page", "graph", "wizard_start")
 
+    /**
+     * A finding this walk produces about the kit rather than about this server.
+     *
+     * There is exactly one, it is named in full, and it is printed on every run: a walk that hides
+     * what it excused is a walk that will excuse the next thing too. The reason travels with it, and
+     * so does the way out — when the kit stops reporting it, the allowance stops matching and the
+     * gate fails until somebody deletes it. An excuse that outlives its cause is the thing this
+     * shape is built against.
+     */
+    class Allowance(
+        val check: String,
+        val target: String,
+        val message: String,
+        val because: String,
+    ) {
+        fun covers(finding: TckFinding): Boolean =
+            finding.check == check && finding.target == target && message in finding.message
+
+        override fun toString(): String = "[$check] $target — $because"
+    }
+
+    val knownFindings =
+        listOf(
+            Allowance(
+                check = "perform",
+                target = "/forms/task/{task}",
+                message = "the HTTP description does not declare",
+                because =
+                    "the description declares /submit/task-view/{task}; the kit compares the action's " +
+                        "target to it literally and does not resolve the parameter — Q-69, kompot#47",
+            ),
+        )
+
+    /**
+     * @param allowances what to excuse; nothing by default. The real walk passes [knownFindings]
+     *   itself, so a judgment of a report built by hand excuses nothing and expires nothing — an
+     *   allowance for a finding that report was never going to contain would otherwise fail it, and
+     *   for the wrong reason.
+     */
     fun judge(
         report: TckReport,
         openApi: JsonObject? = null,
+        allowances: List<Allowance> = emptyList(),
     ): Verdict {
         val exercised = report.exercised
         val declared = openApi?.let { countBodyEndpoints(it) } ?: 0
+        val excused = report.findings.filter { finding -> allowances.any { it.covers(finding) } }
         return Verdict(
             unexercised = expectedChecks.filter { (exercised[it] ?: 0) < 1 }.sorted(),
             unknown = exercised.keys.filterNot { it in expectedChecks }.sorted(),
-            findings = report.findings.size,
+            findings = report.findings.size - excused.size,
+            tolerated = excused.map { "[${it.check}] ${it.target}: ${it.message}" },
+            staleAllowances =
+                allowances
+                    .filterNot { allowance -> report.findings.any { allowance.covers(it) } }
+                    .map { it.toString() },
             exercised = exercised.toSortedMap(),
             bodiesDeclared = declared,
             bodiesChecked = exercised["schema"] ?: 0,
@@ -193,6 +250,19 @@ object TckGate {
                 appendLine(
                     "  the kit has grown; add them to TckGate.expectedChecks or the gate covers less than it claims",
                 )
+            }
+
+            if (verdict.tolerated.isNotEmpty()) {
+                appendLine()
+                appendLine("tolerated (${verdict.tolerated.size}) — about the kit, not this server:")
+                verdict.tolerated.forEach { appendLine("  $it") }
+            }
+
+            if (verdict.staleAllowances.isNotEmpty()) {
+                appendLine()
+                appendLine("allowances that no longer match (${verdict.staleAllowances.size}):")
+                verdict.staleAllowances.forEach { appendLine("  $it") }
+                appendLine("  whatever they excused is gone — delete them.")
             }
 
             if (report.findings.isNotEmpty()) {
