@@ -60,4 +60,13 @@ data class DateInput(
     val displayFormat: String = "d MMM yyyy",
     val placeholder: String = "",
     val hint: String = "",
+    /**
+     * What the control that clears the date is called, and empty means it is not offered.
+     *
+     * On the wire rather than in the renderer, because it is a word a person reads and words a
+     * person reads are the server's — the same rule that keeps every other caption out of this
+     * client. Empty by default so a server that predates it draws four offers and no way back,
+     * which is what every server did until now.
+     */
+    val clearLabel: String = "",
 ) : KompotComponent

@@ -453,6 +453,13 @@ func upper(value string) string {
 	return string(out)
 }
 
+// ClearDateLabel is the way back from a chosen day to none.
+//
+// The form has always said "leave it empty if there is no deadline" and offered no way to make it
+// empty again: the four offers set a date and nothing unset one. The word is here because it is a
+// word a person reads, and every one of those lives in this file.
+const ClearDateLabel = "No date"
+
 // MarkDoneLabel names the outcome rather than the mechanism: a person finishing a task is not
 // "moving it to Done", they are done with it.
 const MarkDoneLabel = "Mark as Done"

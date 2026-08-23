@@ -68,8 +68,8 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 
 		agent := form.Checkbox("agent_may_update", "Let my agent keep this task up to date")
 
-		screen := render.Column("form-new-task", 20,
-			[]render.Modifier{render.FillWidth(), render.Padding(32), render.Background(render.ColorSurface)},
+		principal, _ := principalOf(r)
+		screen := framedForm("form-new-task", principal.Provenance.OnBehalfOf, render.LinkBoard,
 			render.Text("form-new-task-title", "New task", render.TextDisplay),
 			title,
 			description,
@@ -90,6 +90,26 @@ func newTaskForm(store domain.Store) http.HandlerFunc {
 
 		respond(w, r, form.Build(screen))
 	}
+}
+
+// framedForm puts a form where every other screen of this product lives: beside the rail.
+//
+// Two things it settles, and the second is why it is a list. The rail was simply missing from the
+// two screens that create and change a task, so walking into one felt like leaving the product —
+// and once the rail is there the frame is a row, which the toolkit draws as a single item that
+// cannot scroll. There is no scrolling container in the vocabulary (Q-66); the one thing that
+// scrolls its own content is a paginated list, so the form's own nodes are its items.
+//
+// A list with no next page and no empty state: it is a scroller, and saying so plainly here is
+// better than a reader wondering which page never loads.
+func framedForm(id string, person domain.MemberID, current string, body ...render.Component) render.Component {
+	return render.Row(id+"-frame", 0,
+		[]render.Modifier{render.FillWidth(), render.FillHeight(), render.Background(render.ColorSurface)},
+		render.Navigation(person, current),
+		render.Rule(id+"-nav-rule", render.RuleDp, render.ColorDivider, false),
+		render.PaginatedList(id, body, "", nil,
+			render.Weight(1), render.Padding(32)),
+	)
 }
 
 // editTaskForm serves the form that changes a task, filled in with what it currently is.
@@ -131,8 +151,8 @@ func editTaskForm(store domain.Store) http.HandlerFunc {
 		due := form.DateInput("due", "Due date", task.Due, "", "", "Leave it empty if there is no deadline.",
 			[]forms.Rule{forms.Regex(`^\d{4}-\d{2}-\d{2}$`, "Enter the date as YYYY-MM-DD, for example 2026-08-29.")})
 
-		screen := render.Column("form-edit-task", 20,
-			[]render.Modifier{render.FillWidth(), render.Padding(32), render.Background(render.ColorSurface)},
+		principal, _ := principalOf(r)
+		screen := framedForm("form-edit-task", principal.Provenance.OnBehalfOf, render.LinkBoard,
 			render.Text("form-edit-task-title", "Edit task", render.TextDisplay),
 			render.Text("form-edit-task-meta", string(task.ID), render.TextMeta),
 			title,

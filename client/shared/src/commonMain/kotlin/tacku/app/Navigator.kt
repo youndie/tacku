@@ -25,11 +25,19 @@ class Navigator(
     private val scope: CoroutineScope,
     // Kept so that signing out starts again the same way signing in did.
     private val door: Door? = null,
+    /**
+     * Where the platform records the person's position, or none on a platform without one.
+     *
+     * The navigator writes to it and reads from it; it does not own it. That is what keeps the
+     * desktop untouched — it hands in null and every line below is skipped.
+     */
+    private val history: History? = null,
     private val show: (Screen) -> Unit,
 ) {
     private var routes: List<ScreenRoute> = emptyList()
 
     /** The sign-in screen, which is the one place a client has to know without a graph. */
+
     fun start(door: Door?) {
         scope.launchCatching(onFailure = { show(Screen.Failed(it)) }) {
             // The platform's own door first. In a page that is a redirect to the identity provider,
@@ -45,13 +53,41 @@ class Navigator(
                 }
                 transport.useSession(token)
                 loadGraph()
-                follow(DEFAULT_SCREEN)
+                // Where the address already points, if it points anywhere this client knows. A
+                // reload used to land on the first screen whatever the person had open, and a link
+                // to a task opened the catch-up feed — both because nobody read the address.
+                follow(opening())
                 return@launchCatching
             }
 
             open(SIGN_IN_PATH, kind = "form")
         }
     }
+
+    /**
+     * Begin listening for the back button, and go where the address already points.
+     *
+     * Called once. Twice would answer one press with two moves — the browser hands the event to
+     * every listener, and each of them would follow it.
+     */
+    fun startHistory() {
+        val here = history ?: return
+        here.onPop { path ->
+            val deeplink = path?.let(Address::deeplinkOf) ?: DEFAULT_SCREEN
+            scope.launchCatching(onFailure = { show(Screen.Failed(it)) }) {
+                // Followed rather than pushed: the browser has already moved, and pushing here
+                // would add the place we just came back from on top of itself.
+                when (val target = resolve(deeplink)) {
+                    is Target.Open -> open(target.path, target.kind)
+                    else -> println("tacku: the address \"$deeplink\" names no screen this client knows")
+                }
+            }
+        }
+    }
+
+    /** Where the address says the person already is, or the screen this product opens on. */
+    private fun opening(): String =
+        history?.current()?.let(Address::deeplinkOf)?.takeIf { resolve(it) != null } ?: DEFAULT_SCREEN
 
     fun handler(
         controller: FormController,
@@ -165,7 +201,13 @@ class Navigator(
     suspend fun follow(deeplink: String) {
         trace("follow $deeplink")
         when (val target = resolve(deeplink)) {
-            is Target.Open -> open(target.path, target.kind)
+            is Target.Open -> {
+                open(target.path, target.kind)
+                // After the screen, not before it: an address recorded ahead of the answer would
+                // name a screen that failed to arrive, and pressing back would then leave the
+                // person on a refusal with a URL claiming otherwise.
+                Address.pathOf(deeplink)?.let { history?.push(it) }
+            }
             Target.Start -> start(door)
             Target.SignOut -> {
                 transport.forgetSession()

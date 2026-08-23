@@ -546,6 +546,7 @@ type dateInput struct {
 	DisplayFormat string     `json:"displayFormat,omitempty"`
 	Placeholder   string     `json:"placeholder,omitempty"`
 	Hint          string     `json:"hint,omitempty"`
+	ClearLabel    string     `json:"clearLabel,omitempty"`
 }
 
 // DateInput is the tree half of the deployment's own field type — see forms.Builder.DateInput.
@@ -556,6 +557,7 @@ func DateInput(id, fieldID, label, hint string, modifiers ...Modifier) Component
 	return dateInput{
 		Type: "date_input", ID: id, Modifiers: canonical(modifiers),
 		FieldID: fieldID, Label: label, DisplayFormat: dayLayoutPattern, Hint: hint,
+		ClearLabel: ClearDateLabel,
 	}
 }
 

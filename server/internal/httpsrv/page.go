@@ -6,6 +6,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/youndie/tacku/server/internal/render"
 )
 
 // page serves the browser client: the product's human surface.
@@ -32,13 +34,39 @@ func page(dir string) (http.Handler, error) {
 
 	files := http.FileServer(http.Dir(dir))
 
+	// The addresses the page itself can be standing at. Until it kept its position in the browser
+	// there were none — a deeplink was `app://…` and never a path — and the comment here said so.
+	// Now a person can reload one, or send one to somebody, and the server has to answer with the
+	// page rather than with the 404 that a path with no file behind it earns.
+	//
+	// Named rather than "anything that is not a file": a typo is still a mistake and still says so,
+	// which was the point of the old rule and is worth keeping. The names come from the graph, so
+	// there is no second list to drift.
+	exact, prefixes := render.ClientPaths()
+	known := make(map[string]bool, len(exact))
+	for _, path := range exact {
+		known[path] = true
+	}
+
+	standing := func(path string) bool {
+		if known[path] {
+			return true
+		}
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(path, prefix) && len(path) > len(prefix) {
+				return true
+			}
+		}
+		return false
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Everything the page asks for is a file it was shipped with. There are no client-side
-		// routes to fall back for: a deeplink in this product is `app://…` and never a path, so a
-		// request for a path that does not exist is a mistake and answered as one.
-		//
 		// The API is mounted on its own prefixes and this handler never sees those; what does reach
-		// here is the page, its bundle, its fonts, and typos.
+		// here is the page, its bundle, its fonts, the addresses the page keeps, and typos.
+		if standing(r.URL.Path) {
+			http.ServeFile(w, r, index)
+			return
+		}
 		if strings.HasSuffix(r.URL.Path, "/") || r.URL.Path == "" {
 			if !precompressed(w, r, dir, "index.html") {
 				http.ServeFile(w, r, index)
