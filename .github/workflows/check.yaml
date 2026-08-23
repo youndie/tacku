@@ -91,6 +91,22 @@ jobs:
 
       - run: make check
 
+      # The evidence of a failed screenshot comparison, which otherwise dies with the runner.
+      #
+      # `if: failure()` rather than `always()`: on a green run there is nothing in there worth
+      # keeping, and an artifact that is always present is one nobody looks at. This exists because
+      # of a run where twelve screenshots disagreed and the log said only "12 failed" — the images
+      # that would have said *how* were on a machine that no longer existed.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-report
+          path: |
+            client/app/build/reports/tests/viddikVerify
+            client/app/build/viddik
+          if-no-files-found: ignore
+          retention-days: 7
+
       # Default branch only. `status: draft` is legal in a pull request, where it means "this
       # branch will make it true", and a defect the moment it merges.
       - if: github.ref == 'refs/heads/main' && github.event_name == 'push'
