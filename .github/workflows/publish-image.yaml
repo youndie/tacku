@@ -41,6 +41,14 @@ jobs:
         working-directory: client
         run: ./gradlew --no-daemon :web:wasmJsBrowserDistribution
 
+      # Compressed once here rather than per request in the server: the files never change, and a
+      # compressor working offline can afford its slowest setting. Measured on this bundle:
+      # 4 511 076 bytes of WebAssembly leave as 1 326 026 gzipped and 996 564 with brotli.
+      - name: Compress the page
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq brotli
+          scripts/precompress.sh client/web/build/dist/wasmJs/productionExecutable
+
       # A bundle that built but produced nothing would be copied into the image and refused at
       # startup — after publishing, and by a pod that then rolls back. Cheaper to say it here.
       - name: Refuse a bundle without a page in it
@@ -51,6 +59,17 @@ jobs:
               echo "$dist/$file is missing or empty — the image would carry no product" >&2
               exit 1
             fi
+          done
+          # And that the compression above actually happened. The server falls back to the
+          # originals when a compressed sibling is missing, so an image without them serves the
+          # page perfectly — four times heavier, and with nothing to say so.
+          for file in tacku.js index.html; do
+            for encoding in gz br; do
+              if [ ! -s "$dist/$file.$encoding" ]; then
+                echo "$dist/$file.$encoding is missing — the page would ship uncompressed" >&2
+                exit 1
+              fi
+            done
           done
 
       - name: Log in to the Container registry
