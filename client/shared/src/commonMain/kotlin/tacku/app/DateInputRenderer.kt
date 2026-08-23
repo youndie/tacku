@@ -69,6 +69,18 @@ class DateInputRenderer(
                         padding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
                     ) { formController.onValueChanged(component.fieldId, TextValue(offer.iso)) }
                 }
+
+                // Only once there is something to clear. A control that undoes nothing is noise on
+                // a screen that has none, and the moment it becomes useful is the moment a date is
+                // chosen — which is also the moment somebody discovers the choice was not final.
+                // Until this existed the four offers were one-way: the form said "leave it empty if
+                // there is no deadline" and gave no way back to empty.
+                if (chosen.isNotEmpty() && component.clearLabel.isNotEmpty()) {
+                    SquareButton(
+                        label = component.clearLabel,
+                        padding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                    ) { formController.onValueChanged(component.fieldId, TextValue("")) }
+                }
             }
             val shown =
                 when {

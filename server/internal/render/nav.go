@@ -82,7 +82,21 @@ func navItem(id, link, current string) Component {
 // whose word is invented is a second name for the same place.
 // BackAction is the way out standing in a row of actions, where the design pads it like the button
 // beside it: 12 by 18 against the action's 12 by 24, so the two read as one pair.
-func BackAction(to string) Component { return backTo(to, RouteTitle(to), PaddingXY(12, 18)) }
+// BackAction is the way out standing beside the action that finishes the screen.
+//
+// A button rather than a padded line of text, and the reason is alignment: a button carries its own
+// minimum height, so a label padded to look the same sat higher than the button beside it and no
+// amount of padding fixed it honestly — the vocabulary has no way to say "centre these two". Two
+// buttons in a row agree by construction. It reads as a link because the design system answers for
+// a button with no variant with a transparent container and quiet text, which is the mechanism that
+// exists precisely so appearance stays off the wire.
+func BackAction(to string) Component {
+	id := "back-" + strings.ToLower(strings.ReplaceAll(RouteTitle(to), " ", "-"))
+	if RouteTitle(to) == "" {
+		id = "back"
+	}
+	return Button(id, BackLabel(RouteTitle(to)), Navigate(to), PaddingXY(12, 18))
+}
 
 // BackTask is the way out of a screen that belongs to one task: back to that task, named by its
 // identifier because that is what the person came from and what they will recognise.

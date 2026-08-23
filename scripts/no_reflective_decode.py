@@ -28,12 +28,35 @@ INFERRED = re.compile(
 
 COMMENT = re.compile(r"//[^\n]*|/\*.*?\*/", re.DOTALL)
 
+# A function whose declared return type is a root, and whose body decodes without naming a
+# serializer. The two forms above only see an expression body; this one shipped in a block body and
+# reached a browser, where it threw on the first click that produced an action.
+RETURNING = re.compile(r"\)\s*:\s*(" + "|".join(ROOTS) + r")\s*\{")
+BARE_DECODE = re.compile(r"\bdecodeFromString\s*\((?!\s*PolymorphicSerializer)")
+
 def blanked(text: str) -> str:
     """Comments, blanked but for their newlines, so offsets still name the right line.
 
     Prose that names the forbidden shape in order to explain it is not the shape.
     """
     return COMMENT.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+
+def balanced(text: str, opening: int) -> str:
+    """The block that starts at `opening`, counting braces.
+
+    Crude and enough: strings in this codebase do not carry unbalanced braces, and a miscount would
+    make the guard read too much rather than too little — which is the safe direction for a guard.
+    """
+    depth = 0
+    for index in range(opening, len(text)):
+        if text[index] == "{":
+            depth += 1
+        elif text[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[opening : index + 1]
+    return text[opening:]
+
 
 def main() -> int:
     root = pathlib.Path(__file__).resolve().parent.parent / "client"
@@ -53,6 +76,13 @@ def main() -> int:
                 number = text.count("\n", 0, hit.start()) + 1
                 where = f"{path.relative_to(root.parent)}:{number}"
                 found.append(f"{where}: {' '.join(hit.group(0).split())}")
+
+        for hit in RETURNING.finditer(text):
+            body = balanced(text, hit.end() - 1)
+            for decode in BARE_DECODE.finditer(body):
+                number = text.count("\n", 0, hit.end() - 1 + decode.start()) + 1
+                where = f"{path.relative_to(root.parent)}:{number}"
+                found.append(f"{where}: a function returning {hit.group(1)} decodes without naming one")
 
     if found:
         print("A root of the vocabulary is decoded without naming its serializer.", file=sys.stderr)

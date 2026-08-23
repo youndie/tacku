@@ -4,6 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -229,6 +230,54 @@ class TackuDesignSystem(
             "nav" to style(14, FontWeight.Normal, if (dark) 0xFFA8B0BC else 0xFF4F5766),
             "nav_current" to style(14, FontWeight.SemiBold, if (dark) 0xFFFFFFFF else 0xFF14161A),
         )
+
+    /**
+     * The same tokens, in the slots Material asks for.
+     *
+     * It exists because the toolkit's own controls take their text from `MaterialTheme.typography`,
+     * and the product handed them the untouched default: a placeholder came out at Material's 16sp
+     * in whatever font the machine had, beside a value at this system's 14sp in the product's. The
+     * two sat in the same field and did not match, which is a design defect nothing in the wire
+     * could have caused and nothing in the design system could have fixed while the theme was
+     * carrying somebody else's numbers.
+     *
+     * Only the slots a control reaches for are mapped. The rest keep Material's sizes and inherit
+     * the family from [base], which is enough: a slot nothing draws from is a slot nothing sees.
+     */
+    fun materialTypography(): Typography =
+        Typography(
+            displayLarge = styleOf("display"),
+            displayMedium = styleOf("display"),
+            displaySmall = styleOf("display"),
+            headlineLarge = styleOf("title"),
+            headlineMedium = styleOf("title"),
+            headlineSmall = styleOf("title"),
+            titleLarge = styleOf("title"),
+            titleMedium = styleOf("subtitle"),
+            titleSmall = styleOf("subtitle"),
+            bodyLarge = styleOf("body"),
+            bodyMedium = styleOf("body"),
+            bodySmall = styleOf("meta"),
+            // The quiet button's metrics, not the primary one's, because Material gives both the
+            // same slot and only one can have it. Colour already tells them apart — it comes from
+            // the surface role — so the shared half is weight, and the emphasised button is
+            // emphasised by its fill. Mapping the primary style here turned every quiet label bold
+            // and white: "Mark all as seen" shouted from a corner of the catch-up screen.
+            labelLarge = styleOf("button_quiet"),
+            labelMedium = styleOf("label"),
+            labelSmall = styleOf("meta"),
+        )
+
+    /**
+     * One token as a style, with its colour left out.
+     *
+     * Size, weight and family are the token's; colour is not, because these styles are handed to
+     * Material and Material's controls take their colour from the surface the design system already
+     * answers for. Carrying it here painted a quiet button's label in the primary button's white:
+     * "Mark all as seen" turned bold and white the moment this mapping arrived, which is the whole
+     * argument for who owns what in one screenshot.
+     */
+    private fun styleOf(key: String): TextStyle = (typography[key] ?: base).copy(color = Color.Unspecified)
 
     private fun style(
         size: Int,

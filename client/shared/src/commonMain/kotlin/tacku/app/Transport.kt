@@ -188,7 +188,7 @@ class Transport(
                     setBody(body)
                 }
             }
-        return json.decodeFromString(readBody(response, path))
+        return decodeAction(readBody(response, path))
     }
 
     /**
@@ -224,7 +224,7 @@ class Transport(
                     setBody(body)
                 }
             }
-        return json.decodeFromString(readBody(response, url))
+        return decodeAction(readBody(response, url))
     }
 
     private suspend fun get(path: String): String {

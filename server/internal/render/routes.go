@@ -1,5 +1,7 @@
 package render
 
+import "strings"
+
 // Where a screen lives, in one place.
 //
 // Enumerating what this server actually emitted turned up two spellings of one destination —
@@ -80,3 +82,27 @@ var ClientNative = []string{LinkSignIn, LinkSignOut}
 // Listed separately because the graph cannot express them at all: a route's endpoint is a literal
 // path, so anything addressed by naming a thing is resolved by the client from a prefix it knows.
 var ClientNativePrefixes = []string{LinkTask, LinkEditTask}
+
+// ClientPaths are the addresses a page can be standing at, as a browser writes them.
+//
+// The same names as the deeplinks with the scheme taken off — a translation rather than a second
+// routing table, because two tables drift and a person then has a link that works in one of them.
+// The server needs them for one thing: answering with the page when somebody reloads or follows a
+// link, instead of the 404 that a path with no file behind it would otherwise get.
+func ClientPaths() ([]string, []string) {
+	exact := make([]string, 0, len(Graph)+len(ClientNative))
+	for _, route := range Graph {
+		exact = append(exact, pathOfDeeplink(route.Deeplink))
+	}
+	for _, deeplink := range ClientNative {
+		exact = append(exact, pathOfDeeplink(deeplink))
+	}
+
+	prefixes := make([]string, 0, len(ClientNativePrefixes))
+	for _, deeplink := range ClientNativePrefixes {
+		prefixes = append(prefixes, pathOfDeeplink(deeplink))
+	}
+	return exact, prefixes
+}
+
+func pathOfDeeplink(deeplink string) string { return "/" + strings.TrimPrefix(deeplink, "app://") }
