@@ -1,0 +1,773 @@
+{
+ "type": "row",
+ "id": "screen-docs",
+ "modifiers": [
+  {
+   "type": "background",
+   "color": "surface"
+  },
+  {
+   "type": "size",
+   "width": "Fill"
+  },
+  {
+   "type": "size",
+   "height": "Fill"
+  }
+ ],
+ "children": [
+  {
+   "type": "column",
+   "id": "nav",
+   "modifiers": [
+    {
+     "type": "background",
+     "color": "surface_block"
+    },
+    {
+     "type": "size",
+     "widthDp": 240
+    },
+    {
+     "type": "size",
+     "height": "Fill"
+    },
+    {
+     "type": "padding",
+     "top": 20,
+     "bottom": 20,
+     "start": 0,
+     "end": 0
+    }
+   ],
+   "children": [
+    {
+     "type": "text",
+     "id": "nav-brand",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 12,
+       "bottom": 12,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "tacku",
+     "style": "title"
+    },
+    {
+     "type": "row",
+     "id": "nav-catchup",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-catchup-label",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Catch-up",
+       "style": "nav"
+      }
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://catch-up"
+     }
+    },
+    {
+     "type": "row",
+     "id": "nav-boards",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-boards-label",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Board",
+       "style": "nav"
+      }
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://board"
+     }
+    },
+    {
+     "type": "row",
+     "id": "nav-mine",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-mine-label",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "My tasks",
+       "style": "nav"
+      }
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://my-tasks"
+     }
+    },
+    {
+     "type": "row",
+     "id": "nav-docs",
+     "modifiers": [
+      {
+       "type": "background",
+       "color": "surface_selected"
+      },
+      {
+       "type": "size",
+       "width": "Fill"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-docs-label",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Docs backlog",
+       "style": "nav_current"
+      }
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://docs-board"
+     }
+    },
+    {
+     "type": "column",
+     "id": "nav-spacer",
+     "modifiers": [
+      {
+       "type": "weight",
+       "value": 1
+      }
+     ],
+     "children": []
+    },
+    {
+     "type": "text",
+     "id": "nav-person",
+     "modifiers": [
+      {
+       "type": "padding",
+       "top": 0,
+       "bottom": 0,
+       "start": 20,
+       "end": 20
+      }
+     ],
+     "text": "anna",
+     "style": "meta"
+    },
+    {
+     "type": "row",
+     "id": "nav-signout",
+     "modifiers": [
+      {
+       "type": "size",
+       "width": "Fill"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "id": "nav-signout-label",
+       "modifiers": [
+        {
+         "type": "padding",
+         "top": 12,
+         "bottom": 12,
+         "start": 20,
+         "end": 20
+        }
+       ],
+       "text": "Sign out",
+       "style": "nav"
+      }
+     ],
+     "action": {
+      "type": "navigate",
+      "deeplink": "app://sign-out"
+     }
+    }
+   ]
+  },
+  {
+   "type": "column",
+   "id": "docs-nav-rule",
+   "modifiers": [
+    {
+     "type": "background",
+     "color": "divider"
+    },
+    {
+     "type": "size",
+     "widthDp": 1
+    },
+    {
+     "type": "size",
+     "height": "Fill"
+    }
+   ],
+   "children": []
+  },
+  {
+   "type": "column",
+   "id": "docs",
+   "modifiers": [
+    {
+     "type": "weight",
+     "value": 1
+    },
+    {
+     "type": "padding",
+     "all": 32
+    }
+   ],
+   "children": [
+    {
+     "type": "column",
+     "id": "docs-heading",
+     "children": [
+      {
+       "type": "text",
+       "id": "docs-title",
+       "text": "Backlog: a lending system the staff can trust",
+       "style": "display"
+      },
+      {
+       "type": "text",
+       "id": "docs-count",
+       "text": "5 open tasks · 2 done · read just now",
+       "style": "body_muted"
+      }
+     ],
+     "spacing": 6
+    },
+    {
+     "type": "row",
+     "id": "docs-columns",
+     "modifiers": [
+      {
+       "type": "weight",
+       "value": 1
+      }
+     ],
+     "children": [
+      {
+       "type": "column",
+       "id": "docs-column-stage-trust",
+       "modifiers": [
+        {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
+         "type": "weight",
+         "value": 1
+        },
+        {
+         "type": "padding",
+         "all": 12
+        }
+       ],
+       "children": [
+        {
+         "type": "row",
+         "id": "docs-column-stage-trust-head",
+         "children": [
+          {
+           "type": "text",
+           "id": "docs-column-stage-trust-name",
+           "text": "Making the ledger match the shelf",
+           "style": "subtitle"
+          },
+          {
+           "type": "column",
+           "id": "docs-column-stage-trust-head-spacer",
+           "modifiers": [
+            {
+             "type": "weight",
+             "value": 1
+            }
+           ],
+           "children": []
+          },
+          {
+           "type": "text",
+           "id": "docs-column-stage-trust-count",
+           "text": "2",
+           "style": "meta"
+          }
+         ]
+        },
+        {
+         "type": "text",
+         "id": "docs-column-stage-trust-done",
+         "text": "2 items done",
+         "style": "meta"
+        },
+        {
+         "type": "paginated_list",
+         "id": "docs-column-stage-trust-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
+         "initialItems": [
+          {
+           "type": "column",
+           "id": "docs-card-B-01-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
+           "children": [
+            {
+             "type": "column",
+             "id": "docs-card-B-01-body",
+             "modifiers": [
+              {
+               "type": "background",
+               "color": "surface_field"
+              },
+              {
+               "type": "size",
+               "width": "Fill"
+              },
+              {
+               "type": "padding",
+               "all": 12
+              }
+             ],
+             "children": [
+              {
+               "type": "text",
+               "id": "docs-card-B-01-meta",
+               "text": "B-01 · P1 · S",
+               "style": "meta"
+              },
+              {
+               "type": "text",
+               "id": "docs-card-B-01-title",
+               "text": "A failed overdue notice is recorded as sent",
+               "style": "body"
+              }
+             ],
+             "spacing": 6
+            }
+           ]
+          },
+          {
+           "type": "column",
+           "id": "docs-card-B-02-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
+           "children": [
+            {
+             "type": "column",
+             "id": "docs-card-B-02-body",
+             "modifiers": [
+              {
+               "type": "background",
+               "color": "surface_field"
+              },
+              {
+               "type": "size",
+               "width": "Fill"
+              },
+              {
+               "type": "padding",
+               "all": 12
+              }
+             ],
+             "children": [
+              {
+               "type": "text",
+               "id": "docs-card-B-02-meta",
+               "text": "B-02 · P2 · M · question",
+               "style": "meta"
+              },
+              {
+               "type": "text",
+               "id": "docs-card-B-02-title",
+               "text": "Queue positions are recomputed on every read",
+               "style": "body"
+              }
+             ],
+             "spacing": 6
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "spacing": 12
+      },
+      {
+       "type": "column",
+       "id": "docs-column-stage-members",
+       "modifiers": [
+        {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
+         "type": "weight",
+         "value": 1
+        },
+        {
+         "type": "padding",
+         "all": 12
+        }
+       ],
+       "children": [
+        {
+         "type": "row",
+         "id": "docs-column-stage-members-head",
+         "children": [
+          {
+           "type": "text",
+           "id": "docs-column-stage-members-name",
+           "text": "What a member can do without asking staff",
+           "style": "subtitle"
+          },
+          {
+           "type": "column",
+           "id": "docs-column-stage-members-head-spacer",
+           "modifiers": [
+            {
+             "type": "weight",
+             "value": 1
+            }
+           ],
+           "children": []
+          },
+          {
+           "type": "text",
+           "id": "docs-column-stage-members-count",
+           "text": "2",
+           "style": "meta"
+          }
+         ]
+        },
+        {
+         "type": "paginated_list",
+         "id": "docs-column-stage-members-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
+         "initialItems": [
+          {
+           "type": "column",
+           "id": "docs-card-B-04-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
+           "children": [
+            {
+             "type": "column",
+             "id": "docs-card-B-04-body",
+             "modifiers": [
+              {
+               "type": "background",
+               "color": "surface_field"
+              },
+              {
+               "type": "size",
+               "width": "Fill"
+              },
+              {
+               "type": "padding",
+               "all": 12
+              }
+             ],
+             "children": [
+              {
+               "type": "text",
+               "id": "docs-card-B-04-meta",
+               "text": "B-04 · P0 · S",
+               "style": "meta"
+              },
+              {
+               "type": "text",
+               "id": "docs-card-B-04-title",
+               "text": "A blocked member can still renew everything they hold",
+               "style": "body"
+              }
+             ],
+             "spacing": 6
+            }
+           ]
+          },
+          {
+           "type": "column",
+           "id": "docs-card-B-05-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
+           "children": [
+            {
+             "type": "column",
+             "id": "docs-card-B-05-body",
+             "modifiers": [
+              {
+               "type": "background",
+               "color": "surface_field"
+              },
+              {
+               "type": "size",
+               "width": "Fill"
+              },
+              {
+               "type": "padding",
+               "all": 12
+              }
+             ],
+             "children": [
+              {
+               "type": "text",
+               "id": "docs-card-B-05-meta",
+               "text": "B-05 · P3 · XL",
+               "style": "meta"
+              },
+              {
+               "type": "text",
+               "id": "docs-card-B-05-title",
+               "text": "Members can place and watch their own holds",
+               "style": "body"
+              },
+              {
+               "type": "text",
+               "id": "docs-card-B-05-blocked",
+               "text": "waits for B-02",
+               "style": "meta"
+              }
+             ],
+             "spacing": 6
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "spacing": 12
+      },
+      {
+       "type": "column",
+       "id": "docs-column-platform",
+       "modifiers": [
+        {
+         "type": "background",
+         "color": "surface_block"
+        },
+        {
+         "type": "weight",
+         "value": 1
+        },
+        {
+         "type": "padding",
+         "all": 12
+        }
+       ],
+       "children": [
+        {
+         "type": "row",
+         "id": "docs-column-platform-head",
+         "children": [
+          {
+           "type": "text",
+           "id": "docs-column-platform-name",
+           "text": "platform",
+           "style": "subtitle"
+          },
+          {
+           "type": "column",
+           "id": "docs-column-platform-head-spacer",
+           "modifiers": [
+            {
+             "type": "weight",
+             "value": 1
+            }
+           ],
+           "children": []
+          },
+          {
+           "type": "text",
+           "id": "docs-column-platform-count",
+           "text": "1",
+           "style": "meta"
+          }
+         ]
+        },
+        {
+         "type": "paginated_list",
+         "id": "docs-column-platform-list",
+         "modifiers": [
+          {
+           "type": "size",
+           "width": "Fill"
+          }
+         ],
+         "initialItems": [
+          {
+           "type": "column",
+           "id": "docs-card-B-07-gap",
+           "modifiers": [
+            {
+             "type": "size",
+             "width": "Fill"
+            },
+            {
+             "type": "padding",
+             "top": 6,
+             "bottom": 6,
+             "start": 0,
+             "end": 0
+            }
+           ],
+           "children": [
+            {
+             "type": "column",
+             "id": "docs-card-B-07-body",
+             "modifiers": [
+              {
+               "type": "background",
+               "color": "surface_field"
+              },
+              {
+               "type": "size",
+               "width": "Fill"
+              },
+              {
+               "type": "padding",
+               "all": 12
+              }
+             ],
+             "children": [
+              {
+               "type": "text",
+               "id": "docs-card-B-07-meta",
+               "text": "B-07 · infra · M",
+               "style": "meta"
+              },
+              {
+               "type": "text",
+               "id": "docs-card-B-07-title",
+               "text": "Nightly reconciliation has no owner",
+               "style": "body"
+              }
+             ],
+             "spacing": 6
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "spacing": 12
+      }
+     ],
+     "spacing": 12
+    }
+   ],
+   "spacing": 20
+  }
+ ]
+}

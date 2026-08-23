@@ -63,3 +63,16 @@ fun RealMyTasks() = Shot(screenOf("my-tasks"))
 @ViddikScreenshot(name = "Sign in", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealSignIn() = Shot(screenOf("sign-in"))
+
+/**
+ * The read-only view over a backlog that lives in another repository.
+ *
+ * Its body comes from a server pointed at a fixture repository rather than at a real one, which is
+ * what `scripts/docs_stub.py` is for: a picture of this screen must not depend on a credential, a
+ * network or somebody's repository standing still. The fixture is built to carry the awkward cases
+ * on purpose — an item whose stage the index never declares, one that waits for another, a priority
+ * that is a word — so that the picture is of the conditions rather than of the happy one.
+ */
+@ViddikScreenshot(name = "Docs backlog", group = "Screens", width = 1440, height = 900)
+@Composable
+fun RealDocsBoard() = Shot(screenOf("docs-board"))

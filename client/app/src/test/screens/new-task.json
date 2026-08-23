@@ -19,16 +19,6 @@
    },
    {
     "type": "selection_field",
-    "fieldId": "board",
-    "rules": [
-     {
-      "type": "required",
-      "errorMessage": "Every task belongs to a board."
-     }
-    ]
-   },
-   {
-    "type": "selection_field",
     "fieldId": "status"
    },
    {
@@ -49,8 +39,8 @@
   ]
  },
  "screen": {
-  "type": "column",
-  "id": "form-new-task",
+  "type": "row",
+  "id": "form-new-task-frame",
   "modifiers": [
    {
     "type": "background",
@@ -61,115 +51,110 @@
     "width": "Fill"
    },
    {
-    "type": "padding",
-    "all": 32
+    "type": "size",
+    "height": "Fill"
    }
   ],
   "children": [
    {
-    "type": "text",
-    "id": "form-new-task-title",
-    "text": "New task",
-    "style": "display"
-   },
-   {
-    "type": "text_input",
-    "id": "field-title",
-    "fieldId": "title",
-    "label": "Title",
-    "placeholder": "What needs to be done?"
-   },
-   {
-    "type": "text_input",
-    "id": "field-description",
-    "fieldId": "description",
-    "label": "Description",
-    "placeholder": "What does done look like?",
-    "multiline": true
-   },
-   {
-    "type": "select_input",
-    "id": "field-board",
-    "fieldId": "board",
-    "label": "Board",
-    "options": [
+    "type": "column",
+    "id": "nav",
+    "modifiers": [
      {
-      "id": "Sprint 24",
-      "label": "Sprint 24"
+      "type": "background",
+      "color": "surface_block"
+     },
+     {
+      "type": "size",
+      "widthDp": 240
+     },
+     {
+      "type": "size",
+      "height": "Fill"
+     },
+     {
+      "type": "padding",
+      "top": 20,
+      "bottom": 20,
+      "start": 0,
+      "end": 0
      }
     ],
-    "placeholder": "Choose a board"
-   },
-   {
-    "type": "select_input",
-    "id": "field-status",
-    "fieldId": "status",
-    "label": "Status",
-    "options": [
-     {
-      "id": "todo",
-      "label": "To do"
-     },
-     {
-      "id": "in_progress",
-      "label": "In progress"
-     },
-     {
-      "id": "in_review",
-      "label": "In review"
-     },
-     {
-      "id": "done",
-      "label": "Done"
-     },
-     {
-      "id": "blocked",
-      "label": "Blocked"
-     }
-    ]
-   },
-   {
-    "type": "date_input",
-    "id": "field-due",
-    "fieldId": "due",
-    "label": "Due date",
-    "displayFormat": "d MMM",
-    "hint": "Leave it empty if there is no deadline."
-   },
-   {
-    "type": "checkbox_input",
-    "id": "field-agent_may_update",
-    "fieldId": "agent_may_update",
-    "label": "Let my agent keep this task up to date"
-   },
-   {
-    "type": "text",
-    "id": "form-agent-hint",
-    "text": "It may change the status and post comments on your behalf. Every action stays in the history.",
-    "style": "meta"
-   },
-   {
-    "type": "row",
-    "id": "form-actions",
     "children": [
      {
+      "type": "text",
+      "id": "nav-brand",
+      "modifiers": [
+       {
+        "type": "padding",
+        "top": 12,
+        "bottom": 12,
+        "start": 20,
+        "end": 20
+       }
+      ],
+      "text": "tacku",
+      "style": "title"
+     },
+     {
       "type": "row",
-      "id": "back-board",
+      "id": "nav-catchup",
+      "modifiers": [
+       {
+        "type": "size",
+        "width": "Fill"
+       }
+      ],
       "children": [
        {
         "type": "text",
-        "id": "back-board-label",
+        "id": "nav-catchup-label",
         "modifiers": [
          {
           "type": "padding",
           "top": 12,
           "bottom": 12,
-          "start": 18,
-          "end": 18
+          "start": 20,
+          "end": 20
          }
         ],
-        "text": "← Board",
-        "style": "button_quiet"
+        "text": "Catch-up",
+        "style": "nav"
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://catch-up"
+      }
+     },
+     {
+      "type": "row",
+      "id": "nav-boards",
+      "modifiers": [
+       {
+        "type": "background",
+        "color": "surface_selected"
+       },
+       {
+        "type": "size",
+        "width": "Fill"
+       }
+      ],
+      "children": [
+       {
+        "type": "text",
+        "id": "nav-boards-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
+         }
+        ],
+        "text": "Board",
+        "style": "nav_current"
        }
       ],
       "action": {
@@ -178,27 +163,70 @@
       }
      },
      {
-      "type": "button",
-      "id": "form-submit",
+      "type": "row",
+      "id": "nav-mine",
       "modifiers": [
        {
-        "type": "padding",
-        "top": 12,
-        "bottom": 12,
-        "start": 24,
-        "end": 24
+        "type": "size",
+        "width": "Fill"
        }
       ],
-      "text": "Create task",
+      "children": [
+       {
+        "type": "text",
+        "id": "nav-mine-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
+         }
+        ],
+        "text": "My tasks",
+        "style": "nav"
+       }
+      ],
       "action": {
-       "type": "submit_form",
-       "formId": "new-task"
-      },
-      "variant": "primary"
+       "type": "navigate",
+       "deeplink": "app://my-tasks"
+      }
+     },
+     {
+      "type": "row",
+      "id": "nav-docs",
+      "modifiers": [
+       {
+        "type": "size",
+        "width": "Fill"
+       }
+      ],
+      "children": [
+       {
+        "type": "text",
+        "id": "nav-docs-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
+         }
+        ],
+        "text": "Docs backlog",
+        "style": "nav"
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://docs-board"
+      }
      },
      {
       "type": "column",
-      "id": "form-actions-spacer",
+      "id": "nav-spacer",
       "modifiers": [
        {
         "type": "weight",
@@ -206,11 +234,234 @@
        }
       ],
       "children": []
+     },
+     {
+      "type": "text",
+      "id": "nav-person",
+      "modifiers": [
+       {
+        "type": "padding",
+        "top": 0,
+        "bottom": 0,
+        "start": 20,
+        "end": 20
+       }
+      ],
+      "text": "anna",
+      "style": "meta"
+     },
+     {
+      "type": "row",
+      "id": "nav-signout",
+      "modifiers": [
+       {
+        "type": "size",
+        "width": "Fill"
+       }
+      ],
+      "children": [
+       {
+        "type": "text",
+        "id": "nav-signout-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
+         }
+        ],
+        "text": "Sign out",
+        "style": "nav"
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://sign-out"
+      }
+     }
+    ]
+   },
+   {
+    "type": "column",
+    "id": "form-new-task-nav-rule",
+    "modifiers": [
+     {
+      "type": "background",
+      "color": "divider"
+     },
+     {
+      "type": "size",
+      "widthDp": 1
+     },
+     {
+      "type": "size",
+      "height": "Fill"
      }
     ],
-    "spacing": 12
+    "children": []
+   },
+   {
+    "type": "paginated_list",
+    "id": "form-new-task",
+    "modifiers": [
+     {
+      "type": "weight",
+      "value": 1
+     }
+    ],
+    "initialItems": [
+     {
+      "type": "column",
+      "id": "form-new-task-body",
+      "modifiers": [
+       {
+        "type": "size",
+        "width": "Fill"
+       },
+       {
+        "type": "padding",
+        "all": 32
+       }
+      ],
+      "children": [
+       {
+        "type": "text",
+        "id": "form-new-task-title",
+        "text": "New task",
+        "style": "display"
+       },
+       {
+        "type": "text_input",
+        "id": "field-title",
+        "fieldId": "title",
+        "label": "Title",
+        "placeholder": "What needs to be done?"
+       },
+       {
+        "type": "text_input",
+        "id": "field-description",
+        "fieldId": "description",
+        "label": "Description",
+        "placeholder": "What does done look like?",
+        "multiline": true
+       },
+       {
+        "type": "read_only_field",
+        "id": "field-board",
+        "label": "Board",
+        "value": "Sprint 24"
+       },
+       {
+        "type": "select_input",
+        "id": "field-status",
+        "fieldId": "status",
+        "label": "Status",
+        "options": [
+         {
+          "id": "todo",
+          "label": "To do"
+         },
+         {
+          "id": "in_progress",
+          "label": "In progress"
+         },
+         {
+          "id": "in_review",
+          "label": "In review"
+         },
+         {
+          "id": "done",
+          "label": "Done"
+         },
+         {
+          "id": "blocked",
+          "label": "Blocked"
+         }
+        ]
+       },
+       {
+        "type": "date_input",
+        "id": "field-due",
+        "fieldId": "due",
+        "label": "Due date",
+        "displayFormat": "d MMM",
+        "hint": "Leave it empty if there is no deadline.",
+        "clearLabel": "No date"
+       },
+       {
+        "type": "checkbox_input",
+        "id": "field-agent_may_update",
+        "fieldId": "agent_may_update",
+        "label": "Let my agent keep this task up to date"
+       },
+       {
+        "type": "text",
+        "id": "form-agent-hint",
+        "text": "It may change the status and post comments on your behalf. Every action stays in the history.",
+        "style": "meta"
+       },
+       {
+        "type": "row",
+        "id": "form-actions",
+        "children": [
+         {
+          "type": "button",
+          "id": "back-board",
+          "modifiers": [
+           {
+            "type": "padding",
+            "top": 12,
+            "bottom": 12,
+            "start": 18,
+            "end": 18
+           }
+          ],
+          "text": "← Board",
+          "action": {
+           "type": "navigate",
+           "deeplink": "app://board"
+          }
+         },
+         {
+          "type": "button",
+          "id": "form-submit",
+          "modifiers": [
+           {
+            "type": "padding",
+            "top": 12,
+            "bottom": 12,
+            "start": 24,
+            "end": 24
+           }
+          ],
+          "text": "Create task",
+          "action": {
+           "type": "submit_form",
+           "formId": "new-task"
+          },
+          "variant": "primary"
+         },
+         {
+          "type": "column",
+          "id": "form-actions-spacer",
+          "modifiers": [
+           {
+            "type": "weight",
+            "value": 1
+           }
+          ],
+          "children": []
+         }
+        ],
+        "spacing": 12
+       }
+      ],
+      "spacing": 20
+     }
+    ]
    }
-  ],
-  "spacing": 20
+  ]
  }
 }

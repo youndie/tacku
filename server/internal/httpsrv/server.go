@@ -18,9 +18,11 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/oauthex"
 
 	"github.com/youndie/tacku/server/internal/auth"
+	"github.com/youndie/tacku/server/internal/docsboard"
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/idem"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
+	"github.com/youndie/tacku/server/internal/render"
 	"github.com/youndie/tacku/server/internal/wizard"
 )
 
@@ -70,6 +72,15 @@ type Config struct {
 	// A bound on latency rather than a tuning knob: the channel is the journal delivered by push,
 	// so this is the distance between a change being written and being sent, and nothing else.
 	UpdateInterval time.Duration
+
+	// DocsBoard is the source behind the read-only view over a backlog kept in a repository, or nil
+	// for a deployment that shows none.
+	//
+	// Its presence decides two things at once — the route in the navigation graph and the endpoint
+	// behind it — and they are decided here together on purpose: a route promising an endpoint that
+	// was never registered is a dead button, and an endpoint outside the graph is a screen nobody
+	// can reach.
+	DocsBoard *docsboard.Source
 
 	// WizardTTL is how long an untouched multi-step scenario is kept. Zero means wizard.DefaultTTL.
 	//
@@ -159,6 +170,9 @@ func New(config Config) (http.Handler, error) {
 	// now carries what its own specification asks for, and an MCP token is not accepted here —
 	// spending a credential bound by audience to somewhere else is the confused deputy arriving
 	// through the front door.
+	// The graph this deployment carries, assembled before anything is served.
+	render.WithDocsBoard(config.DocsBoard != nil)
+
 	screens := http.NewServeMux()
 	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store, config.Seen, gap, now))
 	screens.Handle("GET /pages/changes", changesPage(config.Deps.Store))
@@ -186,6 +200,9 @@ func New(config Config) (http.Handler, error) {
 	// The live channel is mounted beside the screens and behind the same session guard, which is
 	// what makes its topic the token's member rather than anything the caller names.
 	screens.Handle("GET "+updatesPath, updates(config.Deps.Store, config.Seen, config.UpdateInterval))
+	if config.DocsBoard != nil {
+		screens.Handle("GET "+docsBoardPath, docsBoard(config.DocsBoard, now))
+	}
 	screens.Handle("GET /graph", navigationGraph())
 
 	mux := http.NewServeMux()

@@ -22,13 +22,17 @@ const NavWidthDp = 240
 func Navigation(person domain.MemberID, current string) Component {
 	// Никакого интервала: в макете пункты стоят вплотную (68, 109, 150 — ровно по 41), и высоту
 	// строки задаёт её собственный отступ. Интервал в 4 сдвигал каждый следующий на 4 вниз.
-	return Column("nav", 0,
-		[]Modifier{WidthDp(NavWidthDp), FillHeight(), Background(ColorSurfaceBlock), PaddingXY(20, 0)},
-		Text("nav-brand", "tacku", TextTitle, PaddingXY(12, 20)),
-		navItem("nav-catchup", LinkCatchUp, current),
-		navItem("nav-boards", LinkBoard, current),
-		navItem("nav-mine", LinkMyTasks, current),
-		Spacer("nav-spacer"),
+	// The destinations come from the graph rather than from a list written here. Written here they
+	// were three of the six the graph carried, chosen once and never revisited: a deployment that
+	// carries a seventh destination could not show it without a change to this function, which is a
+	// renderer deciding what a deployment offers.
+	items := []Component{Text("nav-brand", "tacku", TextTitle, PaddingXY(12, 20))}
+	for _, route := range Graph {
+		if route.Rail != "" {
+			items = append(items, navItem(route.Rail, route.Deeplink, current))
+		}
+	}
+	items = append(items, Spacer("nav-spacer"),
 		Text("nav-person", string(person), TextMeta, PaddingXY(0, 20)),
 		Opens(
 			Row("nav-signout", 0, []Modifier{FillWidth()},
@@ -36,6 +40,10 @@ func Navigation(person domain.MemberID, current string) Component {
 			Navigate(LinkSignOut),
 		),
 	)
+
+	return Column("nav", 0,
+		[]Modifier{WidthDp(NavWidthDp), FillHeight(), Background(ColorSurfaceBlock), PaddingXY(20, 0)},
+		items...)
 }
 
 // navItem is one destination: a line of text with a background behind the one you are standing on.

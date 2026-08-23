@@ -57,6 +57,30 @@ db:
 # How long an untouched multi-step scenario is kept. Empty leaves the server's own default.
 wizardTtl: ""
 
+# The read-only view over a backlog that lives in another repository: one file per item, the method
+# this project documents itself with. Empty `repo` means the deployment shows none — no endpoint, no
+# route in the navigation graph, nothing in the rail — which is the shape every deployment had until
+# this existed.
+#
+# The repository is named here rather than in the image because it is a property of a deployment and
+# not of the product: this chart is public, and a repository name committed to it cannot be taken
+# back out of the clones.
+docs:
+  # owner/name of the source repository.
+  repo: ""
+  # The branch to read. Empty means main.
+  ref: ""
+  # Where the item files sit inside it. Empty means docs/backlog, which is where the method puts
+  # them; a repository whose whole content is documentation keeps them at backlog.
+  root: ""
+  # The index file carrying the stage table and the title. Empty means backlog.md.
+  index: ""
+  # How long a reading is served before the source is asked whether it moved. Empty means a minute.
+  ttl: ""
+  # A read-only credential for that repository, from a secret through --set. A private source
+  # answers 404 to an anonymous request, so a missing token arrives as "no such repository".
+  token: ""
+
 traefik:
   entrypoint: websecure
   certResolver: ""

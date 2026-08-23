@@ -45,13 +45,15 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (6)
+## Open (8)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
 | [B-51](docs/backlog/B-51-two-screens-are-photographed-but-not-checked.md) `[ ]` | Вернуть в сверку два экрана, выпавших из съёмки | P2 | S | - |
+| [B-53](docs/backlog/B-53-docs-backlog-showcase.md) `[~]` | Витрина: бэклог внешнего docs-репозитория виден как доска | P2 | L | - |
+| [B-54](docs/backlog/B-54-screen-corpus-goes-stale-unseen.md) `[ ]` | Корпус тел экранов протухает молча: сверять его с сервером в гейте | P2 | M | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |

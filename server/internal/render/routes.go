@@ -22,6 +22,10 @@ const (
 	// The selection mode, which is a screen because the vocabulary has no mode. See render.BulkMove.
 	LinkBulkMove = "app://bulk-move"
 
+	// The read-only view over a backlog kept in a repository. Carried only by a deployment that has
+	// a source configured — see [WithDocsBoard].
+	LinkDocsBoard = "app://docs-board"
+
 	// Known to the client rather than carried by the graph.
 	//
 	// Signing in cannot be in the graph by construction: fetching the graph needs a session, and
@@ -48,6 +52,15 @@ type Route struct {
 	Endpoint string `json:"endpoint"`
 	Kind     string `json:"kind,omitempty"`
 	Title    string `json:"title,omitempty"`
+
+	// Rail is the node this destination gets in the navigation rail, and empty means it has none.
+	//
+	// On the route rather than in the rail, because the rail used to list three destinations by
+	// hand out of the six the graph carried, and a deployment that carries a seventh has no way to
+	// say so without editing a renderer. It travels on the wire with the rest of the route, which
+	// is harmless — a client that does not know the field ignores it — and it keeps the two facts
+	// about a destination, that it exists and that a person can get to it, in one place.
+	Rail string `json:"rail,omitempty"`
 }
 
 // Graph is what the client fetches to learn which screens it can reach without a release of its own.
@@ -63,13 +76,46 @@ type Route struct {
 //
 // A per-task screen is still absent, and for a different reason: `endpoint` is a literal path and the
 // graph has no parameters, so a screen addressed by an identifier is always one the client builds.
-var Graph = []Route{
-	{Deeplink: LinkCatchUp, Endpoint: "/screens/catch-up", Kind: "screen", Title: "Catch-up"},
-	{Deeplink: LinkBoard, Endpoint: "/screens/board", Kind: "screen", Title: "Board"},
-	{Deeplink: LinkMyTasks, Endpoint: "/forms/my-tasks", Kind: "form", Title: "My tasks"},
+var base = []Route{
+	{Deeplink: LinkCatchUp, Endpoint: "/screens/catch-up", Kind: "screen", Title: "Catch-up", Rail: "nav-catchup"},
+	{Deeplink: LinkBoard, Endpoint: "/screens/board", Kind: "screen", Title: "Board", Rail: "nav-boards"},
+	{Deeplink: LinkMyTasks, Endpoint: "/forms/my-tasks", Kind: "form", Title: "My tasks", Rail: "nav-mine"},
 	{Deeplink: LinkBulkMove, Endpoint: "/forms/bulk-move", Kind: "form", Title: "Move several"},
 	{Deeplink: LinkNewTask, Endpoint: "/forms/new-task", Kind: "form", Title: "New task"},
 	{Deeplink: LinkNewBoard, Endpoint: "/forms/new-board", Kind: "form", Title: "New board"},
+}
+
+// Graph is what this deployment carries. Assembled before the server starts serving and not touched
+// afterwards.
+var Graph = base
+
+// DocsRoute is the read-only view over a backlog kept in a repository.
+//
+// Defined always and carried only where a source is configured. The two halves of carrying it — the
+// route and the endpoint behind it — are decided in one place (httpsrv.New) because a route
+// promising an endpoint nobody registered is a button that does nothing, in silence, for as long as
+// nobody presses it while watching.
+// DocsBoardPath is where that view is served. A constant because the route and the handler must
+// agree on it, and they are registered in two packages.
+const DocsBoardPath = "/screens/docs-board"
+
+var DocsRoute = Route{
+	Deeplink: LinkDocsBoard, Endpoint: DocsBoardPath, Kind: "screen",
+	Title: "Docs backlog", Rail: "nav-docs",
+}
+
+// WithDocsBoard assembles the graph of a deployment that does or does not show the docs view.
+//
+// It assigns rather than appends, and that is the whole reason it is written out: a process that
+// builds a server twice — which every test binary does — would otherwise end up carrying the route
+// twice, or carrying it in a server configured without a source. Assigning makes the graph a
+// function of the argument instead of a function of the history.
+func WithDocsBoard(on bool) {
+	if !on {
+		Graph = base
+		return
+	}
+	Graph = append(append([]Route(nil), base...), DocsRoute)
 }
 
 // ClientNative are the destinations a client resolves without the graph. Listed rather than left

@@ -34,6 +34,7 @@ class SnapshotCoverageTest {
             "Screens_Catch_up.png",
             "Screens_My_tasks.png",
             "Screens_Sign_in.png",
+            "Screens_Docs_backlog.png",
             // `Screens_Task` and `Screens_New_task` are missing on purpose, and this list is where
             // that is said out loud: both carry a back link, the harness's font has no `←`, and the
             // host draws that one glyph — so everything after it sits differently on each machine.

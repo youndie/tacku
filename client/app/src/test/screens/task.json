@@ -169,6 +169,37 @@
       }
      },
      {
+      "type": "row",
+      "id": "nav-docs",
+      "modifiers": [
+       {
+        "type": "size",
+        "width": "Fill"
+       }
+      ],
+      "children": [
+       {
+        "type": "text",
+        "id": "nav-docs-label",
+        "modifiers": [
+         {
+          "type": "padding",
+          "top": 12,
+          "bottom": 12,
+          "start": 20,
+          "end": 20
+         }
+        ],
+        "text": "Docs backlog",
+        "style": "nav"
+       }
+      ],
+      "action": {
+       "type": "navigate",
+       "deeplink": "app://docs-board"
+      }
+     },
+     {
       "type": "column",
       "id": "nav-spacer",
       "modifiers": [
@@ -525,7 +556,7 @@
             ],
             "label": "Status",
             "value": "To do",
-            "helperText": "Changed by anna just now"
+            "helperText": "Changed by anna 12 hours ago"
            },
            {
             "type": "read_only_field",

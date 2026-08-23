@@ -70,25 +70,18 @@
     "id": "new-board-actions",
     "children": [
      {
-      "type": "row",
+      "type": "button",
       "id": "back-board",
-      "children": [
+      "modifiers": [
        {
-        "type": "text",
-        "id": "back-board-label",
-        "modifiers": [
-         {
-          "type": "padding",
-          "top": 12,
-          "bottom": 12,
-          "start": 18,
-          "end": 18
-         }
-        ],
-        "text": "← Board",
-        "style": "button_quiet"
+        "type": "padding",
+        "top": 12,
+        "bottom": 12,
+        "start": 18,
+        "end": 18
        }
       ],
+      "text": "← Board",
       "action": {
        "type": "navigate",
        "deeplink": "app://board"
