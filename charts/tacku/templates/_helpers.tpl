@@ -22,3 +22,15 @@ tokens come to verify everywhere except in production.
 {{- define "tacku.resource" -}}
 {{- if .Values.auth.resource }}{{ .Values.auth.resource }}{{ else }}https://{{ .Values.hostname }}/mcp{{ end }}
 {{- end }}
+
+{{/*
+The audience of a token the page signs in with, derived from the hostname unless it was set.
+
+Derived the same way and for the same reason as the resource above, and deliberately not equal to
+it: this address is where a person's browser goes, and that is the whole distinction being drawn.
+The trailing slash is not decoration — it is the redirect address registered with the provider, and
+a provider matches redirect URIs exactly.
+*/}}
+{{- define "tacku.pageAudience" -}}
+{{- if .Values.page.audience }}{{ .Values.page.audience }}{{ else }}https://{{ .Values.hostname }}/{{ end }}
+{{- end }}

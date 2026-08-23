@@ -205,8 +205,16 @@ func New(config Config) (http.Handler, error) {
 		return nil, fmt.Errorf("the page's identity provider is not usable: %w", err)
 	}
 	fromSession := sessionDoor(mux, config.Members, sessions)
-	if fromPage == nil && fromSession == nil {
-		return nil, fmt.Errorf("nobody can sign in: no identity provider is configured for the page and this build has no second door")
+
+	// Only when this process actually serves a page. A deployment that serves the agent surface
+	// alone has nobody to let in through a browser and needs no door at all — the conformance walk
+	// is one, and it started failing here with "connection refused", which is what a refusal to
+	// start looks like from the outside.
+	//
+	// Serving screens with no way to reach them is still refused: that is a deployment nobody can
+	// use, reporting success.
+	if config.PageDir != "" && fromPage == nil && fromSession == nil {
+		return nil, fmt.Errorf("a page is served but nobody can sign in to it: no identity provider is configured and this build has no second door")
 	}
 
 	guardedScreens := requireHuman(fromPage, fromSession)(idem.Middleware(config.Deps.Attempts, screens))

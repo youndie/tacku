@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
@@ -49,6 +50,15 @@ fun TackuTheme(
         CompositionLocalProvider(
             LocalKompotDesignSystem provides design,
             LocalContentColor provides design.resolveTypography(TypographyToken("body")).color,
+            // The ambient style, for everything that draws text without asking for a token.
+            //
+            // The toolkit's own controls are such places: a button's label takes the style that is
+            // in scope. With nothing here that style is `TextStyle.Default`, which names no font
+            // family — so the labels came out in whatever the machine had installed while the text
+            // around them was in the product's typeface, and the button's width followed its label.
+            // Invisible on one machine: the fallback is a reasonable sans and a picture of it is
+            // stable. Two machines drawing the same screen are what told them apart.
+            LocalTextStyle provides design.resolveTypography(TypographyToken("body")),
             // Every pressable thing in the product highlights the same way, and highlights all of
             // itself. Material's ripple is round, which on a design with no corners is wrong twice,
             // and it arrives in Material's colours rather than these.

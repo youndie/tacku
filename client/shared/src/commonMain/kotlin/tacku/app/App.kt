@@ -32,6 +32,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun App(baseUrl: String) {
     val scope = rememberCoroutineScope()
+
+    // One door, not one per caller: it holds the verifier of a sign-in that is in flight, and two
+    // would be two halves of one exchange.
+    val door = remember(baseUrl) { platformDoor(baseUrl) }
     val transport = remember(baseUrl) { Transport(baseUrl) }
     val updates = remember(baseUrl) { Updates(baseUrl) { transport.accessToken } }
 
@@ -44,10 +48,10 @@ fun App(baseUrl: String) {
         remember {
             // The trace is the navigator's own, and it is one line rather than a flag read here:
             // reading the environment is a thing a JVM can do and a page cannot.
-            Navigator(transport, scope) { state -> screen = state }
+            Navigator(transport, scope, door) { state -> screen = state }
         }
 
-    LaunchedEffect(Unit) { navigator.start() }
+    LaunchedEffect(Unit) { navigator.start(door) }
 
     // The theme is Material 3 in the dark, and the token names the server sends resolve through the
     // design system rather than through anything here. A name it does not know costs a default and a

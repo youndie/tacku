@@ -134,9 +134,11 @@ fun main() {
             ).run()
         }
 
-    println(TckGate.describe(report, TckGate.judge(report, spec.openApi)))
+    // The walk is the one judgment that carries the allowances: they describe findings this kit
+    // produces about itself, and a verdict computed anywhere else has no business excusing anything.
+    val verdict = TckGate.judge(report, spec.openApi, TckGate.knownFindings)
 
-    val verdict = TckGate.judge(report, spec.openApi)
+    println(TckGate.describe(report, verdict))
     if (!verdict.passed) {
         System.exit(1)
     }

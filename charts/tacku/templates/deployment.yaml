@@ -30,7 +30,9 @@ spec:
       containers:
         - name: server
           image: "{{ .Values.server.image }}:{{ include "tacku.require" (dict "name" "server.version" "because" "an image tag that moves leaves helm nothing to notice, and a green deploy then runs the previous binary" "value" .Values.server.version) }}"
-          args: ["serve", "-db", "/data/tacku.db", "-addr", ":8080"]
+          # The page is served by the same process on the same address. A second container, or a
+          # second host, would mean CORS between our own halves and a second thing to roll out.
+          args: ["serve", "-db", "/data/tacku.db", "-addr", ":8080", "-web", "/app/web"]
           env:
             - name: TACKU_SESSION_KEY
               valueFrom:
@@ -43,6 +45,13 @@ spec:
               value: {{ include "tacku.require" (dict "name" "auth.jwksUrl" "because" "without it no agent token can be verified, and the path is not derivable from the issuer — ask the provider's discovery document rather than guessing from the shape of the issuer URL" "value" .Values.auth.jwksUrl) | quote }}
             - name: TACKU_RESOURCE
               value: {{ include "tacku.resource" . | quote }}
+            # The page's own audience, separate from the MCP resource above. A token good at both
+            # surfaces is the confused deputy the whole scheme is built against: an agent's token,
+            # talked out of an agent, would open the screens as well.
+            - name: TACKU_PAGE_AUDIENCE
+              value: {{ include "tacku.pageAudience" . | quote }}
+            - name: TACKU_PAGE_CLIENT_ID
+              value: {{ include "tacku.require" (dict "name" "page.clientId" "because" "without it the page cannot ask the provider for a token, and it fails in the browser rather than at startup — a deploy that looks entirely successful" "value" .Values.page.clientId) | quote }}
             {{- if .Values.wizardTtl }}
             - name: TACKU_WIZARD_TTL
               value: {{ .Values.wizardTtl | quote }}

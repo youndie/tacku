@@ -56,7 +56,9 @@ TACKU_RESOURCE=http://localhost:$port \
   TACKU_ISSUER=http://localhost:$authport \
   TACKU_JWKS_URL=http://localhost:$authport/jwks \
   TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
-  go run ./cmd/tacku serve -db "$db" -addr :$port >/dev/null 2>&1 &
+  # The instrument's door, which is what a stand is: a release build serves no sign-in form, and
+  # this script signs in through one.
+  go run -tags debugdoor ./cmd/tacku serve -db "$db" -addr :$port >/dev/null 2>&1 &
 started="$started $!"
 sleep 6
 

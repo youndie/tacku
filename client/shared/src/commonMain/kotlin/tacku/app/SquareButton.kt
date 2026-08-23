@@ -9,9 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.TextStyle
 import io.github.youndie.kompot.KompotSurfaceRoles
 import io.github.youndie.kompot.LocalKompotDesignSystem
+import io.github.youndie.kompot.TypographyToken
 
 /**
  * The button the date extension draws, and the only one this client draws at all.
@@ -30,10 +30,21 @@ fun SquareButton(
     padding: PaddingValues,
     onClick: () -> Unit,
 ) {
-    val surface =
-        LocalKompotDesignSystem.current.resolveSurface(
-            KompotSurfaceRoles.button(TackuDesignSystem.VARIANT_PRIMARY),
-        )
+    val design = LocalKompotDesignSystem.current
+    val surface = design.resolveSurface(KompotSurfaceRoles.button(TackuDesignSystem.VARIANT_PRIMARY))
+
+    // The label's style comes from the design system, like every other piece of text here.
+    //
+    // It used to be a bare `TextStyle(color = …)`, which names no font family — so the one control
+    // the design cares most about was drawn in whatever the machine had installed, while everything
+    // around it was set in the product's typeface. It was invisible on any single machine: the
+    // fallback is a reasonable-looking sans, and a picture of it is stable. Two machines are what
+    // told them apart.
+    val labelStyle =
+        design
+            .resolveTypography(
+                TypographyToken(TackuDesignSystem.BUTTON_PRIMARY_STYLE),
+            ).copy(color = surface.content)
 
     Box(
         Modifier
@@ -44,6 +55,6 @@ fun SquareButton(
             .clickable { onClick() }
             .padding(padding),
     ) {
-        Text(label, style = TextStyle(color = surface.content))
+        Text(label, style = labelStyle)
     }
 }

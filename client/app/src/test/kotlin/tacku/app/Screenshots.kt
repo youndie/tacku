@@ -15,8 +15,8 @@ import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import ru.workinprogress.viddik.annotations.ViddikScreenshot
+import ru.workinprogress.viddik.core.ViddikFontFamily
 import ru.workinprogress.viddik.core.ViddikPlatformTextStyle
 import ru.workinprogress.viddik.core.viddikTypography
 
@@ -42,16 +42,25 @@ private val registry = tackuRegistry()
  * screens recorded on two operating systems then differ in glyphs — measured here at 2.5-8.6% of
  * pixels before the font was pinned.
  *
- * It was the harness's own Roboto for a while, which met the requirement and photographed a near
- * relative of the product: the design is set in IBM Plex Sans and the client drew in whatever the
- * system offered. The product now carries that typeface itself, so the same file satisfies both —
- * the golden travels, and it is of the product.
+ * **It is the harness's font, not the product's, and that was measured rather than chosen.** For a
+ * while this pinned IBM Plex Sans — the typeface the design is drawn in, which the product now
+ * carries itself — on the argument that one file could satisfy both. It cannot: the goldens
+ * recorded on a mac disagreed with the same commit on a Linux runner on **every screen that has
+ * text**, between 0.09% and 3.27% of pixels, while the one screen with no text in it came out
+ * identical to the pixel. No offset explains it — the best whole-image shift barely improves the
+ * count — so it is the glyphs themselves: the same file rasterises differently under FreeType and
+ * under CoreText.
+ *
+ * So the picture is drawn in the font viddik carries for exactly this, and what it photographs is a
+ * near relative of the product's typeface. That is a real loss and it buys the only thing that
+ * makes a golden a gate: the same answer on the machine that records it and the machine that
+ * checks it.
  *
  * The platform style stays: it is what keeps line metrics identical across machines.
  */
 private val viddikBase =
     TextStyle(
-        fontFamily = runBlocking { loadTackuFontFamily() },
+        fontFamily = ViddikFontFamily,
         platformStyle = ViddikPlatformTextStyle,
     )
 

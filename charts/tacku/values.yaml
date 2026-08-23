@@ -38,6 +38,18 @@ auth:
   # empty, because it is the address of this server's own MCP endpoint and nothing else.
   resource: ""
 
+# How a person signs in to the browser client. Both the audience and the client identifier are
+# public — they travel in the address bar during the redirect — and the page reads them from the
+# server at /auth/config, so no configuration is compiled into the bundle.
+page:
+  # What the page calls itself to the provider. A public client: a page keeps no secret, so the flow
+  # is authorization code with PKCE and nothing else. No default — a wrong or absent client id fails
+  # in somebody's browser rather than at startup, which is a deploy that reports success.
+  clientId: ""
+  # The audience a person's token must carry. Derived from the hostname when empty, because it is
+  # the address of the page itself — and it must be **different** from auth.resource above.
+  audience: ""
+
 db:
   size: 2Gi
   class: local-path
