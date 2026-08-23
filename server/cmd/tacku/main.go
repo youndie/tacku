@@ -14,10 +14,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/youndie/tacku/server/internal/auth"
+	"github.com/youndie/tacku/server/internal/docsboard"
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/httpsrv"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
@@ -142,6 +144,11 @@ func runServe(args []string) error {
 		return err
 	}
 
+	docs, err := docsSource()
+	if err != nil {
+		return err
+	}
+
 	handler, err := httpsrv.New(httpsrv.Config{
 		Deps:       mcpsrv.Deps{Store: store, Attempts: store, Version: version()},
 		Members:    store,
@@ -149,6 +156,7 @@ func runServe(args []string) error {
 		SessionKey: key,
 		WizardTTL:  ttl,
 		PageDir:    *web,
+		DocsBoard:  docs,
 		// The same issuer as the agent surface — two would be two sets of people — and an audience
 		// of its own, so that a token minted for the agents cannot open a screen.
 		Page: httpsrv.PageAuth{
@@ -231,6 +239,51 @@ func wizardTTL() (time.Duration, error) {
 		return 0, fmt.Errorf("TACKU_WIZARD_TTL must be positive, got %s", configured)
 	}
 	return ttl, nil
+}
+
+// docsSource is the backlog the read-only view looks at, or nothing where none is configured.
+//
+// Every part of it comes from the environment and none of it has a default that names anything. This
+// repository is public and stands beside closed ones; a repository name committed here cannot be
+// taken back out of the clones, and scripts/no_private_names.py keeps fingerprints of the names that
+// must not appear so that forgetting is caught by the gate rather than by a reader.
+//
+// A repository named without a credential is not corrected: a private source answers 404 to an
+// anonymous request, which arrives as "there is no such repository" and sends whoever configured it
+// looking for a typo.
+func docsSource() (*docsboard.Source, error) {
+	repo := os.Getenv("TACKU_DOCS_REPO")
+	if repo == "" {
+		return nil, nil
+	}
+	if !strings.Contains(repo, "/") {
+		return nil, fmt.Errorf("TACKU_DOCS_REPO must be owner/name, got %q", repo)
+	}
+
+	ttl := time.Duration(0)
+	if configured := os.Getenv("TACKU_DOCS_TTL"); configured != "" {
+		parsed, err := time.ParseDuration(configured)
+		if err != nil {
+			return nil, fmt.Errorf("TACKU_DOCS_TTL is not a duration: %w", err)
+		}
+		if parsed <= 0 {
+			return nil, fmt.Errorf("TACKU_DOCS_TTL must be positive, got %s", configured)
+		}
+		ttl = parsed
+	}
+
+	return docsboard.New(docsboard.Config{
+		Repo: repo,
+		// Where the forge is. Set by the script that records the screen bodies, which points it at a
+		// stub so that photographing this board needs neither a real repository nor a network — see
+		// scripts/docs_stub.py. Empty everywhere else, which is the address of GitHub.
+		API:   os.Getenv("TACKU_DOCS_API"),
+		Ref:   os.Getenv("TACKU_DOCS_REF"),
+		Root:  os.Getenv("TACKU_DOCS_ROOT"),
+		Index: os.Getenv("TACKU_DOCS_INDEX"),
+		Token: os.Getenv("TACKU_DOCS_TOKEN"),
+		TTL:   ttl,
+	}), nil
 }
 
 func version() string {

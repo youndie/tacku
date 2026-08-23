@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/youndie/tacku/server/internal/docsboard"
 	"github.com/youndie/tacku/server/internal/domain"
 )
 
@@ -552,4 +553,57 @@ func DueHelper(iso string, now time.Time) string {
 	default:
 		return fmt.Sprintf("%d %s ago", -days, plural(-days, "day", "days"))
 	}
+}
+
+// The words of the read-only view over a backlog kept in a repository.
+//
+// They live here for the ordinary reason — every one of them is chosen by data — and one of them is
+// here for a second reason worth writing down. The line about a failed refresh is the only thing
+// separating "this repository has nothing open" from "this has not been read since morning", and a
+// board renders those two identically. The sentence carries the difference, so it belongs where
+// sentences are owned.
+
+// DocsSummary is the line under the heading: how much stands open, and how old the reading is.
+func DocsSummary(open, done int, takenAt, now time.Time) string {
+	return fmt.Sprintf("%s · %d done · read %s", count(open, "open task", "open tasks"), done, since(takenAt, now))
+}
+
+// DocsStale says that what is on the screen is the last thing that could be read, and when.
+func DocsStale(takenAt, now time.Time) string {
+	return fmt.Sprintf("The source could not be reached · showing what was read %s", since(takenAt, now))
+}
+
+// DocsCardMeta is a card's first line: the identifier, then whatever the item declares.
+//
+// Assembled out of what is there rather than out of a fixed shape, because the fields are a foreign
+// repository's and any of them may be missing. The status appears only when it is neither open nor
+// done — a word outside the method's own vocabulary is the reason it appears at all, and a card
+// repeating "open" on every open item would bury it.
+func DocsCardMeta(item docsboard.Item) string {
+	parts := []string{item.ID}
+	if item.Priority != "" {
+		parts = append(parts, item.Priority)
+	}
+	if item.Size != "" {
+		parts = append(parts, item.Size)
+	}
+	if item.Status != "" && item.Status != "open" && !item.Done() {
+		parts = append(parts, item.Status)
+	}
+	return strings.Join(parts, " · ")
+}
+
+// DocsBlockedBy names what an item is waiting for.
+func DocsBlockedBy(ids []string) string {
+	return "waits for " + strings.Join(ids, ", ")
+}
+
+// DocsDone is the tally under a column: how much of that stage is already finished.
+//
+// Counted and not drawn. A repository that has been running for a while is mostly finished items,
+// and a column that listed them would be a wall a person scrolls past to reach the three that are
+// open. The number stays because a stage with nothing left and a stage nobody has started are
+// different states, and an empty column shows them the same way.
+func DocsDone(done int) string {
+	return fmt.Sprintf("%s done", count(done, "item", "items"))
 }

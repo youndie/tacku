@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performScrollToNode
@@ -42,10 +43,13 @@ class ScrollTest {
                 }
             }
 
-            // Does not exist rather than is not displayed, and the difference is the mechanism: a
-            // lazy screen has not composed what is below the fold at all, so there is no node to
-            // ask about. Either way it is unreachable, which is the point.
-            onNode(hasText(BOTTOM_OF_THE_FORM, substring = true)).assertDoesNotExist()
+            // Not displayed, rather than not composed. It used to be the second: every field was
+            // an item of the list, and a lazy list does not compose what is below the fold, so the
+            // node did not exist at all. Since the form's padding moved inside the scroll the whole
+            // body is one item — the list composes it entirely and the bottom line exists at y=695
+            // of a 320-point window. Composed and off-screen is still unreachable, which is the
+            // property this test is about; where the node is in the tree is not.
+            onNode(hasText(BOTTOM_OF_THE_FORM, substring = true)).assertIsNotDisplayed()
 
             onNode(hasScrollAction()).performScrollToNode(hasText(BOTTOM_OF_THE_FORM, substring = true))
             onNode(hasText(BOTTOM_OF_THE_FORM, substring = true)).assertIsDisplayed()
