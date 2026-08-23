@@ -45,10 +45,11 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (5)
+## Open (6)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-50](docs/backlog/B-50-roll-the-browser-onto-the-stand.md) `[ ]` | Выкатить браузерный клиент на стенд | P1 | M | B-49 |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
