@@ -3,7 +3,9 @@ package httpsrv
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/youndie/tacku/server/internal/auth"
 	"github.com/youndie/tacku/server/internal/domain"
@@ -146,8 +148,34 @@ func requireSession(sessions *auth.Sessions, next http.Handler) http.Handler {
 }
 
 func challenge(w http.ResponseWriter) {
-	// Bearer with no metadata pointer: this surface has no authorization server to send anybody to,
-	// its tokens coming from the sign-in form.
+	// Bearer with no metadata pointer: an anonymous caller is told where it is, not where to go —
+	// the page knows its provider already, from /auth/config.
 	w.Header().Set("WWW-Authenticate", `Bearer realm="tacku"`)
+	unauthenticated(w)
+}
+
+// refuseWithReason is challenge for a caller that presented something, and says what was wrong.
+//
+// Everything else about a refused request is identical whether the token expired, names another
+// audience, or was signed by a provider this server does not know — three different mistakes with
+// three different fixes, and one of them cost a day of guessing. RFC 6750 §3.1 is where the shape
+// comes from: `error` for a program, `error_description` for whoever is reading a network tab.
+func refuseWithReason(w http.ResponseWriter, refusal error) {
+	if refusal == nil {
+		challenge(w)
+		return
+	}
+
+	// Quotes and backslashes would end the header value early, and a truncated header is a worse
+	// answer than a plain one.
+	description := strings.NewReplacer(`"`, "'", `\`, "/", "\n", " ").Replace(refusal.Error())
+	if len(description) > 200 {
+		description = description[:200]
+	}
+
+	w.Header().Set(
+		"WWW-Authenticate",
+		fmt.Sprintf(`Bearer realm="tacku", error="invalid_token", error_description="%s"`, description),
+	)
 	unauthenticated(w)
 }
