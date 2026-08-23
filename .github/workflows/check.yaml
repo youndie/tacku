@@ -97,6 +97,13 @@ jobs:
       # keeping, and an artifact that is always present is one nobody looks at. This exists because
       # of a run where twelve screenshots disagreed and the log said only "12 failed" — the images
       # that would have said *how* were on a machine that no longer existed.
+      # What this machine drew, not only where it disagrees. A diff says which pixels differ; the
+      # picture says whether the text moved, changed weight or changed typeface — and those have
+      # different causes. Recording overwrites the goldens in the workspace, which is why it runs
+      # after the gate has already failed and never on a green run.
+      - if: failure()
+        run: cd client && ./gradlew --quiet :app:viddikRecord || true
+
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -104,6 +111,7 @@ jobs:
           path: |
             client/app/build/reports/tests/viddikVerify
             client/app/build/reports/screenshots
+            client/app/src/test/snapshots
           if-no-files-found: ignore
           retention-days: 7
 
