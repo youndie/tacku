@@ -34,3 +34,26 @@ class AddressTest {
         assertNull(Address.pathOf("app://"))
     }
 }
+
+/**
+ * Every destination the server trusts this client to resolve, resolved.
+ *
+ * The server keeps a list of deeplinks it emits without a graph route and asserts that each is on
+ * the client's list — but the client's list was a constant nobody read: `app://edit-task/TAC-2`
+ * resolved to nothing, and following such a link opened the first screen instead. Two lists agreed
+ * with each other while one of them was fiction.
+ */
+class PrefixedDestinationsTest {
+    @Test
+    fun `a task and an edit screen both resolve`() {
+        assertEquals("/forms/task/TAC-2", Navigator.resolvePrefixed("app://task/TAC-2"))
+        assertEquals("/forms/edit-task/TAC-2", Navigator.resolvePrefixed("app://edit-task/TAC-2"))
+    }
+
+    @Test
+    fun `a prefix with nothing after it names no screen`() {
+        assertNull(Navigator.resolvePrefixed("app://task/"))
+        assertNull(Navigator.resolvePrefixed("app://edit-task/"))
+        assertNull(Navigator.resolvePrefixed("app://board"))
+    }
+}

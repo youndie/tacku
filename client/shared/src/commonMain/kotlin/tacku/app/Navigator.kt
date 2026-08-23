@@ -318,11 +318,30 @@ class Navigator(
          * that spells the address itself keeps passing after the client stops resolving it — which
          * is exactly the failure this exists to catch.
          */
-        fun resolveTaskPath(deeplink: String): String? =
-            if (deeplink.startsWith(TASK_PREFIX) && deeplink.length > TASK_PREFIX.length) {
-                TASK_PATH + deeplink.removePrefix(TASK_PREFIX)
-            } else {
-                null
+        fun resolveTaskPath(deeplink: String): String? = resolvePrefixed(deeplink)
+
+        /**
+         * Every destination addressed by naming a thing, in one table.
+         *
+         * It is a table because it was two branches and only one of them existed: `EDIT_TASK_PREFIX`
+         * was declared, the server listed it among the destinations it trusts this client to
+         * resolve, and nothing here ever read it — so a link to an edit screen resolved to nothing
+         * and quietly opened the first screen instead. Declared and never called, and the only
+         * thing that would have caught it is somebody following such a link.
+         */
+        private val prefixed =
+            listOf(
+                TASK_PREFIX to TASK_PATH,
+                EDIT_TASK_PREFIX to EDIT_TASK_PATH,
+            )
+
+        fun resolvePrefixed(deeplink: String): String? =
+            prefixed.firstNotNullOfOrNull { (prefix, path) ->
+                if (deeplink.startsWith(prefix) && deeplink.length > prefix.length) {
+                    path + deeplink.removePrefix(prefix)
+                } else {
+                    null
+                }
             }
     }
 }

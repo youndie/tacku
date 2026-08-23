@@ -95,8 +95,12 @@ private class RedirectDoor(
         }
 
         // The code is spent, so the address bar should stop carrying it: a reload would otherwise
-        // try to spend it again and be refused for a reason that reads like a broken sign-in.
-        window.history.replaceState(null, "", window.location.pathname)
+        // try to spend it again and be refused for a reason that reads like a broken sign-in. And
+        // the address it becomes is where the person was going, not where the provider returned
+        // them — that is the whole of "a link opens what it names" when they were not signed in.
+        val intended = window.sessionStorage[INTENDED]?.takeIf { it.trim('/').isNotEmpty() }
+        window.sessionStorage.removeItem(INTENDED)
+        window.history.replaceState(null, "", intended ?: window.location.pathname)
         return token
     }
 
@@ -155,6 +159,10 @@ private class RedirectDoor(
         val state = randomString()
         window.sessionStorage[VERIFIER] = verifier
         window.sessionStorage[STATE] = state
+        // Where the person was going. The provider returns to one registered address — the root —
+        // so without this a link to a task signs somebody in and then puts them on the first
+        // screen, which reads as the link having been wrong.
+        window.sessionStorage[INTENDED] = window.location.pathname
 
         val challenge = sha256(verifier)
         val url =
@@ -209,6 +217,7 @@ private class RedirectDoor(
     override fun close() {
         window.sessionStorage.removeItem(TOKEN)
         window.sessionStorage.removeItem(REFRESH)
+        window.sessionStorage.removeItem(INTENDED)
         clean()
     }
 
@@ -235,6 +244,7 @@ private class RedirectDoor(
     private companion object {
         const val TOKEN = "tacku.token"
         const val REFRESH = "tacku.refresh"
+        const val INTENDED = "tacku.intended"
         const val VERIFIER = "tacku.verifier"
         const val STATE = "tacku.state"
     }

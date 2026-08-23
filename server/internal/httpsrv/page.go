@@ -49,6 +49,13 @@ func page(dir string) (http.Handler, error) {
 	}
 
 	standing := func(path string) bool {
+		// A last segment with an extension is a file, whatever it looks like otherwise. Without
+		// this, a page served at /task/TAC-2 that asks for a relative `tacku.js` is handed this very
+		// page — the browser parses HTML as JavaScript and the application never starts, which
+		// arrives as a blank window and no error anybody can act on. It happened exactly that way.
+		if strings.Contains(path[strings.LastIndex(path, "/")+1:], ".") {
+			return false
+		}
 		if known[path] {
 			return true
 		}
