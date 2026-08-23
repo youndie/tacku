@@ -42,13 +42,11 @@ fun RealBoard() = Shot(screenOf("board"))
 @Composable
 fun RealCatchUp() = Shot(screenOf("catch-up"))
 
-// Not photographed, and that is a loss with a reason: the toolkit's button sets its label in a font
-// the design system cannot reach (Q-68, kompot#46), so this screen and the one below disagree with
-// themselves between two machines. A red build about the machine teaches everybody to ignore red
-// builds. Restored by B-51, and the measure of that is thirteen compared screens rather than eleven.
+@ViddikScreenshot(name = "Task", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealTask() = Shot(screenOf("task"))
 
+@ViddikScreenshot(name = "New task", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealNewTask() = Shot(screenOf("new-task"))
 

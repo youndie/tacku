@@ -45,19 +45,18 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (7)
+## Open (6)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
 | [B-50](docs/backlog/B-50-roll-the-browser-onto-the-stand.md) `[ ]` | Выкатить браузерный клиент на стенд | P1 | M | B-49 |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
-| [B-51](docs/backlog/B-51-two-screens-are-photographed-but-not-checked.md) `[ ]` | Вернуть в сверку два экрана, выпавших из съёмки | P2 | S | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
 
-## Closed (44)
+## Closed (45)
 
 **Чем меряем**
 
@@ -117,6 +116,10 @@
 - [B-47](docs/backlog/B-47-mark-as-done.md) `[x]` - «Отметить сделанной» одним нажатием вместо цепочки статусов
 - [B-48](docs/backlog/B-48-sidebar-says-what-happened.md) `[x]` - Панель задачи говорит, что есть, и молчит о том, что произошло
 - [B-49](docs/backlog/B-49-web-client.md) `[x]` - Клиент в браузере: собрать под wasmJs и отдавать страницу с сервера
+
+**s3-quality**
+
+- [B-51](docs/backlog/B-51-two-screens-are-photographed-but-not-checked.md) `[x]` - Вернуть в сверку два экрана, выпавших из съёмки
 
 <!-- END INDEX -->
 
