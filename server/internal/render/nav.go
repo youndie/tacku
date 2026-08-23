@@ -100,8 +100,14 @@ func BackAction(to string) Component {
 
 // BackTask is the way out of a screen that belongs to one task: back to that task, named by its
 // identifier because that is what the person came from and what they will recognise.
+//
+// A button for the same reason [BackAction] is one — two buttons in a row line up and a padded line
+// of text does not — and it was missed when that one changed, so the edit screen kept the crooked
+// pair for another round. Its node is named after what it is rather than where it goes: the old
+// identifier was built out of the deeplink, which put `app://task/tac-2` in the middle of a node
+// name, and node names travel in update frames.
 func BackTask(id domain.TaskID) Component {
-	return backTo(LinkTask+string(id), string(id), PaddingXY(12, 18))
+	return Button("back-task", BackLabel(string(id)), Navigate(LinkTask+string(id)), PaddingXY(12, 18))
 }
 
 // BackLink is the way out standing above a title, where the design gives it no padding at all: a
