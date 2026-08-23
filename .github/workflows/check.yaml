@@ -103,7 +103,7 @@ jobs:
           name: screenshot-report
           path: |
             client/app/build/reports/tests/viddikVerify
-            client/app/build/viddik
+            client/app/build/reports/screenshots
           if-no-files-found: ignore
           retention-days: 7
 
