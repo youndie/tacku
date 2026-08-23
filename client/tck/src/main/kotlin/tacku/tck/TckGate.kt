@@ -119,17 +119,15 @@ object TckGate {
         override fun toString(): String = "[$check] $target — $because"
     }
 
-    val knownFindings =
-        listOf(
-            Allowance(
-                check = "perform",
-                target = "/forms/task/{task}",
-                message = "the HTTP description does not declare",
-                because =
-                    "the description declares /submit/task-view/{task}; the kit compares the action's " +
-                        "target to it literally and does not resolve the parameter — Q-69, kompot#47",
-            ),
-        )
+    /**
+     * Findings this walk produces about the kit rather than about this server.
+     *
+     * Empty, and it has been non-empty exactly once: the `perform` check compared an action's
+     * target with the declared paths literally and read `/submit/task-view/{task}` as undeclared
+     * (Q-69, kompot#47). The allowance survived one release and then failed the walk by itself —
+     * the finding it excused had stopped appearing, which is the only way an excuse should end.
+     */
+    val knownFindings = emptyList<Allowance>()
 
     /**
      * @param allowances what to excuse; nothing by default. The real walk passes [knownFindings]

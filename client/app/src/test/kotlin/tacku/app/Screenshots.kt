@@ -42,19 +42,17 @@ private val registry = tackuRegistry()
  * screens recorded on two operating systems then differ in glyphs — measured here at 2.5-8.6% of
  * pixels before the font was pinned.
  *
- * **It is the harness's font, not the product's, and that was measured rather than chosen.** For a
- * while this pinned IBM Plex Sans — the typeface the design is drawn in, which the product now
- * carries itself — on the argument that one file could satisfy both. It cannot: the goldens
- * recorded on a mac disagreed with the same commit on a Linux runner on **every screen that has
- * text**, between 0.09% and 3.27% of pixels, while the one screen with no text in it came out
- * identical to the pixel. No offset explains it — the best whole-image shift barely improves the
- * count — so it is the glyphs themselves: the same file rasterises differently under FreeType and
- * under CoreText.
+ * **The harness's font, not the product's, and that was settled by measurement rather than taste.**
+ * Pinning IBM Plex Sans — the typeface the design is drawn in, which the product now carries itself —
+ * made twelve of thirteen screens disagree between a mac and a Linux runner, by 0.09% to 3.27% of
+ * pixels, while the one screen with no text came out identical. Normalising its vertical metrics with
+ * viddik's own tool changed nothing: the same twelve, the same numbers. So the cause is the
+ * rasterisation of that file and not the table its metrics live in, and the font viddik bundles for
+ * exactly this purpose is the only one that comes out the same on both machines.
  *
- * So the picture is drawn in the font viddik carries for exactly this, and what it photographs is a
- * near relative of the product's typeface. That is a real loss and it buys the only thing that
- * makes a golden a gate: the same answer on the machine that records it and the machine that
- * checks it.
+ * What that costs is [ScreenTextCoverageTest]: the bundled font does not carry every character this
+ * product draws, and one it lacks moves a button two pixels. The test names the ones we know about,
+ * so the next uncovered character fails as a sentence instead of as a pixel count.
  *
  * The platform style stays: it is what keeps line metrics identical across machines.
  */
@@ -64,16 +62,14 @@ private val viddikBase =
         platformStyle = ViddikPlatformTextStyle,
     )
 
-/**
- * One design system for the picture and for the product.
- *
- * The harness used to wrap the screens in the baseline Material scheme, so a golden agreed with the
- * application about colours neither of them had taken from the design system — both were simply
- * Material's defaults. That is the failure mode a screenshot test exists to catch, and it could not:
- * a picture of the wrong palette is stable, and a stable picture passes.
- */
 private val design = TackuDesignSystem(base = viddikBase)
 
+/**
+ * The product's three faces, with the metrics both Skia backends will agree on.
+ *
+ * Read from the same jar the desktop reads them from, so there is one copy of the files and the
+ * picture cannot drift from what ships.
+ */
 @Composable
 internal fun Shot(body: String) {
     TackuTheme(design, typography = viddikTypography(Typography())) {

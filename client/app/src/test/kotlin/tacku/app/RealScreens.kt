@@ -42,10 +42,14 @@ fun RealBoard() = Shot(screenOf("board"))
 @Composable
 fun RealCatchUp() = Shot(screenOf("catch-up"))
 
-// Not photographed, and that is a loss with a reason: the toolkit's button sets its label in a font
-// the design system cannot reach (Q-68, kompot#46), so this screen and the one below disagree with
-// themselves between two machines. A red build about the machine teaches everybody to ignore red
-// builds. Restored by B-51, and the measure of that is thirteen compared screens rather than eleven.
+// The two screens with a back link on them, and therefore the two the harness cannot photograph the
+// same way twice. Its bundled font has no `←` (ScreenTextCoverageTest names the codepoint), the host
+// draws that one glyph, its width differs between machines, and everything after it moves: two
+// pixels on this screen, the whole content column on the one below.
+//
+// The product itself is fine — IBM Plex carries the arrow, measured in its cmap — so what is lost is
+// the picture, not the page. Changing the copy to suit a screenshot would be the wrong way round.
+// B-51 is the way back: bundle-side coverage, or a harness that can be told a fallback.
 @Composable
 fun RealTask() = Shot(screenOf("task"))
 

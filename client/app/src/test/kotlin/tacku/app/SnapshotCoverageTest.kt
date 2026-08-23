@@ -35,10 +35,9 @@ class SnapshotCoverageTest {
             "Screens_My_tasks.png",
             "Screens_Sign_in.png",
             // `Screens_Task` and `Screens_New_task` are missing on purpose, and this list is where
-            // that is said out loud: they are the two screens with buttons, and a button's label is
-            // set in a font the design system cannot reach, so the same commit disagrees with
-            // itself between two machines (Q-68, kompot#46). Eleven compared screens look exactly
-            // like thirteen from the outside — B-51 puts them back, and its measure is the count.
+            // that is said out loud: both carry a back link, the harness's font has no `←`, and the
+            // host draws that one glyph — so everything after it sits differently on each machine.
+            // Eleven compared screens look exactly like thirteen from the outside. B-51.
         )
 
     @Test
