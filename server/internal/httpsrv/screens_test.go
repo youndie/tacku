@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/youndie/tacku/server/internal/auth"
 	"github.com/youndie/tacku/server/internal/domain"
-	"github.com/youndie/tacku/server/internal/httpsrv"
 	"github.com/youndie/tacku/server/internal/render"
 )
 
@@ -64,33 +64,27 @@ func (r *resource) reader(t *testing.T) string {
 func (r *resource) readerAs(t *testing.T, member domain.MemberID, email, name string) string {
 	t.Helper()
 
+	// The member still exists locally: a token names who is acting, and the journal names what they
+	// touched, so the two have to meet somewhere. What the password is for is the instrument's door,
+	// which a shipped build does not carry.
 	const password = "a-good-password"
 	if _, err := r.store.AddMember(context.Background(), member, email, name, password); err != nil {
 		t.Fatal(err)
 	}
 
-	response := r.request(t, http.MethodPost, httpsrv.LoginPath, "",
-		`{"formId":"sign_in","fieldId":"","values":{`+
-			`"email":{"type":"text_value","text":"`+email+`"},`+
-			`"password":{"type":"text_value","text":"`+password+`"}}}`)
-	if response.StatusCode != http.StatusOK {
-		t.Fatalf("signing in answered %d", response.StatusCode)
-	}
-
-	var session struct {
-		Type        string `json:"type"`
-		AccessToken string `json:"accessToken"`
-	}
-	if err := json.NewDecoder(response.Body).Decode(&session); err != nil {
-		t.Fatal(err)
-	}
-	// The answer to a submit is an action the client runs through the same chain as any other
-	// intent — §16.4 — and for a sign-in that action is update_session.
-	if session.Type != "update_session" {
-		t.Fatalf("signing in answered %q", session.Type)
-	}
-	return session.AccessToken
+	// Signed in the way the page signs in: the provider's token, with the page's own audience and no
+	// agent claims. Not through the form — the form is compiled out of what ships, and a test that
+	// used it would be exercising the one door a person never opens.
+	return r.as.token(t, claims{
+		subject:  string(member),
+		audience: r.pageAudience(),
+		scopes:   auth.ScopeRead + " " + auth.ScopeWrite,
+	})
 }
+
+// pageAudience is what a token must carry to open a screen: this deployment's page, and not its MCP
+// endpoint. A token good at both is the confused deputy the audience check exists to refuse.
+func (r *resource) pageAudience() string { return r.url + "/" }
 
 func (r *resource) seed(t *testing.T) {
 	t.Helper()

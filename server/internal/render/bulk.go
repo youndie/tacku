@@ -56,7 +56,10 @@ func (b BulkMove) Screen(status Component) Component {
 		[]Modifier{FillWidth(), Padding(32), Background(ColorSurface)},
 		b.heading(),
 		status,
-		Column("bulk-move-list", 8, []Modifier{Weight(1)}, rows...),
+		// No weight: this is a child of a column root, where the client lays children out as
+		// separate items so the screen can scroll, and a weight among them divides nothing. The
+		// list takes the height of its rows, which is what a scrolling screen wants anyway.
+		Column("bulk-move-list", 8, []Modifier{FillWidth()}, rows...),
 		Row("bulk-move-actions", 0, nil,
 			PrimaryButton("bulk-move-apply", "Move selected", SubmitForm(BulkFormID),
 				PaddingXY(14, 24)),

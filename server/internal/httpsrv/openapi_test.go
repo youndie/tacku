@@ -25,8 +25,43 @@ func TestTheCommittedDescriptionMatchesTheGenerator(t *testing.T) {
 	}
 
 	generated := httpsrv.OpenAPI("http://localhost:8080")
-	if string(committed) != string(generated) {
-		t.Errorf("%s has drifted from the generator; regenerate it", path)
+
+	// The committed description is the shipped build's, because that is the one somebody integrates
+	// against. A build with the instrument's door serves two addresses more, so comparing byte for
+	// byte would be asking the wrong question — but skipping would let the extra build drift
+	// unwatched, so it is asked as containment instead: everything that ships is still promised,
+	// and the door is promised on top.
+	if !httpsrv.DoorPresent {
+		if string(committed) != string(generated) {
+			t.Errorf("%s has drifted from the generator; regenerate it", path)
+		}
+		return
+	}
+
+	var shipped, here struct {
+		Paths map[string]json.RawMessage `json:"paths"`
+	}
+	if err := json.Unmarshal(committed, &shipped); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(generated, &here); err != nil {
+		t.Fatal(err)
+	}
+
+	for path, promise := range shipped.Paths {
+		mine, ok := here.Paths[path]
+		if !ok {
+			t.Errorf("the committed description promises %s and this build does not serve it", path)
+			continue
+		}
+		if string(mine) != string(promise) {
+			t.Errorf("%s is described differently here than in the committed description", path)
+		}
+	}
+	for _, door := range []string{"/forms/sign-in", httpsrv.LoginPath} {
+		if _, ok := here.Paths[door]; !ok {
+			t.Errorf("this build carries the instrument's door and does not describe %s", door)
+		}
 	}
 }
 

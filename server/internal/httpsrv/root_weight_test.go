@@ -28,14 +28,7 @@ func TestNoScreenWeighsTheRootsOwnChildren(t *testing.T) {
 	r.fill(t, 2)
 	token := r.reader(t)
 
-	screens := []string{
-		"/forms/sign-in",
-		"/screens/catch-up",
-		"/screens/board",
-		"/forms/my-tasks",
-		"/forms/new-task",
-		"/forms/task/TAC-1",
-	}
+	screens := screenPaths()
 
 	checked := 0
 	for _, path := range screens {

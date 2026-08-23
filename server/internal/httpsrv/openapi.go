@@ -27,7 +27,7 @@ func OpenAPI(resource string) json.RawMessage {
 			},
 		},
 		"security": []any{map[string]any{"bearer": []any{}}},
-		"paths": map[string]any{
+		"paths": doorPaths(map[string]any{
 			"/screens/catch-up": map[string]any{
 				"get": operation("catchUp", kindScreen,
 					ref("kompot-core.schema.json#/$defs/KompotComponent"),
@@ -90,14 +90,7 @@ func OpenAPI(resource string) json.RawMessage {
 			seenURL: map[string]any{
 				"post": submitOperation("submitSeen"),
 			},
-			"/forms/sign-in": map[string]any{
-				"get": public(operation("signInForm", kindForm,
-					ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))),
-			},
-			LoginPath: map[string]any{
-				"post": public(operation("submitSignIn", kindSubmit,
-					ref("kompot-core.schema.json#/$defs/KompotAction"))),
-			},
+
 			"/graph": map[string]any{
 				"get": operation("navigationGraph", kindGraph,
 					ref("kompot-navigation.schema.json#/$defs/NavigationGraph")),
@@ -110,7 +103,7 @@ func OpenAPI(resource string) json.RawMessage {
 				"get": stream(operation("updates", kindUpdates,
 					ref("kompot-realtime.schema.json#/$defs/UpdateComponentMessage"))),
 			},
-		},
+		}),
 	}
 
 	encoded, err := json.MarshalIndent(document, "", "  ")
@@ -256,6 +249,26 @@ func wizardResumeOperation(id string) map[string]any {
 //
 // The 401 stays on the submit, and that is not a contradiction. §16.8: the absence of authorisation
 // and the code 401 are independent, and a sign-in answering a wrong pair is the example it gives.
+// doorPaths are the two the instrument's door adds, and they are in the description only when they
+// are in the build.
+//
+// A description that promises an address which answers 404 is worse than one that omits it: the
+// first is a lie a client acts on, the second is a client asking and being told no.
+func doorPaths(paths map[string]any) map[string]any {
+	if !DoorPresent {
+		return paths
+	}
+	paths["/forms/sign-in"] = map[string]any{
+		"get": public(operation("signInForm", kindForm,
+			ref("kompot-forms.schema.json#/$defs/KompotFormResponse"))),
+	}
+	paths[LoginPath] = map[string]any{
+		"post": public(operation("submitSignIn", kindSubmit,
+			ref("kompot-core.schema.json#/$defs/KompotAction"))),
+	}
+	return paths
+}
+
 func public(op map[string]any) map[string]any {
 	op["security"] = []any{}
 	responses, _ := op["responses"].(map[string]any)

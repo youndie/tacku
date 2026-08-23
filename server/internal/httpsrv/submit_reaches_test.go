@@ -23,14 +23,7 @@ func TestEveryFormSubmitsSomewhereThatAnswers(t *testing.T) {
 	r.fill(t, 3)
 	token := r.reader(t)
 
-	screens := []string{
-		"/forms/sign-in",
-		"/forms/new-task",
-		"/forms/new-board",
-		"/forms/bulk-move",
-		"/forms/my-tasks",
-		"/forms/task/TAC-1",
-	}
+	screens := screenPaths()
 
 	forms := map[string]string{}
 	for _, path := range screens {

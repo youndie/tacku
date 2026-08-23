@@ -7,6 +7,7 @@
 package httpsrv
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -52,6 +53,10 @@ type Config struct {
 	// through the sign-in form. See auth.Sessions for why there are two token systems here.
 	Members    domain.Members
 	SessionKey []byte
+
+	// Page is how a person signs in to the browser client: through the identity provider, with an
+	// audience of this deployment's own.
+	Page PageAuth
 
 	// PageDir is the built browser client, or empty for a server that serves no page.
 	//
@@ -193,7 +198,18 @@ func New(config Config) (http.Handler, error) {
 	// And it sits *inside* the session check, not outside. The other order answered an anonymous
 	// caller with 400 for a missing idempotency key: telling somebody who has not authenticated
 	// what else their request lacks, and hiding the reason it was going to be refused anyway.
-	guardedScreens := requireSession(sessions, idem.Middleware(config.Deps.Attempts, screens))
+	// Who may open a screen. The provider's token is the product's door; the session this server
+	// signs itself is the instrument's, and is present only when it was compiled in.
+	fromPage, err := pageVerifier(context.Background(), config.Page)
+	if err != nil {
+		return nil, fmt.Errorf("the page's identity provider is not usable: %w", err)
+	}
+	fromSession := sessionDoor(mux, config.Members, sessions)
+	if fromPage == nil && fromSession == nil {
+		return nil, fmt.Errorf("nobody can sign in: no identity provider is configured for the page and this build has no second door")
+	}
+
+	guardedScreens := requireHuman(fromPage, fromSession)(idem.Middleware(config.Deps.Attempts, screens))
 
 	mux.Handle("/screens/", guardedScreens)
 	// Behind the same idempotency middleware as the submits, and that is the decision Q-51 records:
@@ -206,10 +222,12 @@ func New(config Config) (http.Handler, error) {
 	mux.Handle("/graph", guardedScreens)
 	mux.Handle(updatesPath, guardedScreens)
 
-	// Public, and the only route of this surface that is: a person with no session has to be able
-	// to reach the form that starts one.
-	mux.Handle("GET /forms/sign-in", loginForm())
-	mux.Handle("POST "+LoginPath, submitLogin(config.Members, sessions))
+	// Where the page sends somebody to sign in, and what it calls itself while asking. Public
+	// because it is read before anybody has signed in, and carrying nothing that is not already
+	// visible in the address bar during the redirect.
+	if config.Page.configured() {
+		mux.HandleFunc("GET "+AuthConfigPath, authConfig(config.Page))
+	}
 	// The page last, and by the widest pattern there is: everything the API claims is claimed on a
 	// narrower one, so a request that reaches here is for the page, its bundle or a typo.
 	if pages, err := page(config.PageDir); err != nil {

@@ -44,15 +44,7 @@ func TestEveryDeeplinkTheServerEmitsResolves(t *testing.T) {
 	}
 
 	// Every tree this server can serve, since a deeplink is only reachable through one.
-	screens := []string{
-		"/screens/catch-up",
-		"/forms/task/TAC-1",
-		"/screens/board",
-		"/forms/my-tasks",
-		"/forms/new-task",
-		"/forms/new-board",
-		"/forms/sign-in",
-	}
+	screens := screenPaths()
 
 	emitted := map[string][]string{}
 	collect := func(from *resource, token, path, label string) {

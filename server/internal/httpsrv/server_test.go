@@ -183,6 +183,15 @@ func newResourceWith(t *testing.T, adjust func(*httpsrv.Config)) *resource {
 			Resource: base + httpsrv.MCPPath,
 			JWKSURL:  as.http.URL + "/jwks",
 		},
+		// The door the product ships. The tests sign in the way a page does — a token from the
+		// provider, carrying this deployment's page as its audience — rather than the way the
+		// instrument does, so that what is exercised here is what a person will meet.
+		Page: httpsrv.PageAuth{
+			Issuer:   as.issuer,
+			JWKSURL:  as.http.URL + "/jwks",
+			Audience: base + "/",
+			ClientID: "tacku-web",
+		},
 	}
 	if adjust != nil {
 		adjust(&config)

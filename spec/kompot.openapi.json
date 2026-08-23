@@ -118,25 +118,6 @@
         "x-kompot-endpoint-kind": "form"
       }
     },
-    "/forms/sign-in": {
-      "get": {
-        "operationId": "signInForm",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "kompot-forms.schema.json#/$defs/KompotFormResponse"
-                }
-              }
-            },
-            "description": "ok"
-          }
-        },
-        "security": [],
-        "x-kompot-endpoint-kind": "form"
-      }
-    },
     "/forms/task/{task}": {
       "get": {
         "operationId": "taskScreen",
@@ -532,28 +513,6 @@
             "bearer": []
           }
         ],
-        "x-kompot-endpoint-kind": "submit"
-      }
-    },
-    "/submit/sign-in": {
-      "post": {
-        "operationId": "submitSignIn",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "kompot-core.schema.json#/$defs/KompotAction"
-                }
-              }
-            },
-            "description": "ok"
-          },
-          "401": {
-            "description": "no token, or a token issued for another resource"
-          }
-        },
-        "security": [],
         "x-kompot-endpoint-kind": "submit"
       }
     },
