@@ -64,6 +64,9 @@ private class RedirectDoor(
                             append("code_verifier", verifier)
                             append("client_id", config.clientId)
                             append("redirect_uri", redirectUri())
+                            // Named again at the exchange, because that is the request that
+                            // produces the token; the one above only produces a code.
+                            append("resource", config.audience)
                         },
                 ).bodyAsText()
 
@@ -104,7 +107,11 @@ private class RedirectDoor(
                 "&state=" + encode(state) +
                 "&code_challenge=" + encode(challenge) +
                 "&code_challenge_method=S256" +
-                "&scope=" + encode("tasks:read tasks:write")
+                "&scope=" + encode("tasks:read tasks:write") +
+                // RFC 8707: which resource the token is for. Without it a provider that binds
+                // audiences hands back a token addressed to everything this client may reach, and
+                // this server would rather be named than included.
+                "&resource=" + encode(config.audience)
 
         window.location.href = url
     }
@@ -115,6 +122,7 @@ private class RedirectDoor(
         return AuthConfig(
             issuer = fields["issuer"]?.jsonPrimitive?.content.orEmpty(),
             clientId = fields["clientId"]?.jsonPrimitive?.content.orEmpty(),
+            audience = fields["audience"]?.jsonPrimitive?.content.orEmpty(),
         )
     }
 
@@ -150,6 +158,8 @@ private class RedirectDoor(
     private data class AuthConfig(
         val issuer: String,
         val clientId: String,
+        /** What this server will insist the token is addressed to — so the page asks for it by name. */
+        val audience: String,
     )
 
     private data class Discovery(
