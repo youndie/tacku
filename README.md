@@ -16,8 +16,19 @@ Two things make tacku different from the other small trackers:
 
 ## Status
 
-Both surfaces work. A Go server serves screens, forms, pages, a navigation graph, a multi-step
-scenario, a live update channel and ten MCP tools; a Compose Desktop client renders them.
+A Go server serves screens, forms, pages, a navigation graph, a multi-step scenario, a live update
+channel and ten MCP tools.
+
+The two surfaces this product ships are **a browser and MCP**. MCP works. The browser does not exist
+yet, and cannot: none of the toolkit modules publishes a `wasmJs` variant
+([kompot#42](https://github.com/youndie/kompot/issues/42)), so the screens have nowhere to be drawn
+where a person has installed nothing. Until that lands, the human half of the product is unshipped —
+not partly shipped.
+
+What renders the screens today is a **Compose Desktop client, and it is an instrument rather than a
+surface**: the most exercised implementation on hand, used to find out whether the server is right.
+That is why it is allowed shortcuts a product is not, and why "it works in the desktop client" says
+something about the server and nothing about what a person can use.
 
 The conformance walk passes with every declared endpoint checked and every check having found
 something to check — see below for why that second half is the part worth stating.
@@ -64,7 +75,7 @@ undeclared.
 | `docs/` | the documentation tree — research, the question journal, the backlog, the designer brief |
 | `probes/` | one-off programs, each proving one fact the research relies on |
 | `server/` | the Go server: both surfaces, the store, the spec reader |
-| `client/` | the Compose Desktop client, the deployment's own wire types, the spec generator and the conformance harness |
+| `client/` | the Compose Desktop client — a debugging instrument, not a shipped surface — plus the deployment's own wire types, the spec generator and the conformance harness |
 | `spec/` | the generated schema files and profile of this build, committed so the Go half can read them |
 
 ## Checks
