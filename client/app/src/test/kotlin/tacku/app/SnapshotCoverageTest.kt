@@ -33,9 +33,11 @@ class SnapshotCoverageTest {
             "Screens_Board.png",
             "Screens_Catch_up.png",
             "Screens_My_tasks.png",
-            "Screens_New_task.png",
             "Screens_Sign_in.png",
-            "Screens_Task.png",
+            // `Screens_Task` and `Screens_New_task` are missing on purpose, and this list is where
+            // that is said out loud: both carry a back link, the harness's font has no `←`, and the
+            // host draws that one glyph — so everything after it sits differently on each machine.
+            // Eleven compared screens look exactly like thirteen from the outside. B-51.
         )
 
     @Test

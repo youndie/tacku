@@ -9,9 +9,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.platform.Font
 import io.github.youndie.kompot.KompotLazyScreen
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
@@ -19,8 +16,8 @@ import io.github.youndie.kompot.form.FormSchema
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import ru.workinprogress.viddik.annotations.ViddikScreenshot
+import ru.workinprogress.viddik.core.ViddikFontFamily
 import ru.workinprogress.viddik.core.ViddikPlatformTextStyle
-import ru.workinprogress.viddik.core.normalizeVerticalMetrics
 import ru.workinprogress.viddik.core.viddikTypography
 
 /**
@@ -45,49 +42,23 @@ private val registry = tackuRegistry()
  * screens recorded on two operating systems then differ in glyphs — measured here at 2.5-8.6% of
  * pixels before the font was pinned.
  *
- * **The product's own typeface, with its vertical metrics normalised.** Pinning IBM Plex Sans
- * straight from the jar was not enough: the goldens then disagreed between a mac and a Linux runner
- * on every screen with text in it, because Skia's two backends read a font's vertical metrics from
- * different tables and the baseline lands a pixel apart. Switching to the harness's own Roboto fixed
- * that and broke something smaller and stranger — Roboto has no `←` (measured: the codepoint is
- * absent from its cmap and present in IBM Plex's), so that one glyph fell back to whatever the
- * machine had, its width differed, and the button beside it moved two pixels.
+ * **The harness's font, not the product's, and that was settled by measurement rather than taste.**
+ * Pinning IBM Plex Sans — the typeface the design is drawn in, which the product now carries itself —
+ * made twelve of thirteen screens disagree between a mac and a Linux runner, by 0.09% to 3.27% of
+ * pixels, while the one screen with no text came out identical. Normalising its vertical metrics with
+ * viddik's own tool changed nothing: the same twelve, the same numbers. So the cause is the
+ * rasterisation of that file and not the table its metrics live in, and the font viddik bundles for
+ * exactly this purpose is the only one that comes out the same on both machines.
  *
- * Both go away by normalising the product's font instead of replacing it: the harness carries the
- * same three files the product ships, put through viddik's `normalizeVerticalMetrics`, which exists
- * for a consumer's font rather than only for the bundled one. So the picture is of the product's
- * typeface **and** the same on both machines — the two properties looked mutually exclusive for a
- * while, and that was a wrong conclusion drawn from one experiment.
+ * What that costs is [ScreenTextCoverageTest]: the bundled font does not carry every character this
+ * product draws, and one it lacks moves a button two pixels. The test names the ones we know about,
+ * so the next uncovered character fails as a sentence instead of as a pixel count.
  *
  * The platform style stays: it is what keeps line metrics identical across machines.
  */
-private val normalisedTackuFamily: FontFamily =
-    FontFamily(
-        listOf(
-            "Regular" to FontWeight.Normal,
-            "Medium" to FontWeight.Medium,
-            "SemiBold" to FontWeight.SemiBold,
-        ).map { (face, weight) ->
-            val name = "fonts/IBMPlexSans-$face.ttf"
-            val bytes =
-                checkNotNull(object {}.javaClass.classLoader.getResourceAsStream(name)) {
-                    "the harness cannot find $name, and a golden drawn without it is a picture of this machine"
-                }.use { it.readBytes() }
-            Font(face, normalizeVerticalMetrics(bytes), weight)
-        },
-    )
-
-/**
- * One design system for the picture and for the product.
- *
- * The harness used to wrap the screens in the baseline Material scheme, so a golden agreed with the
- * application about colours neither of them had taken from the design system — both were simply
- * Material's defaults. That is the failure mode a screenshot test exists to catch, and it could not:
- * a picture of the wrong palette is stable, and a stable picture passes.
- */
 private val viddikBase =
     TextStyle(
-        fontFamily = normalisedTackuFamily,
+        fontFamily = ViddikFontFamily,
         platformStyle = ViddikPlatformTextStyle,
     )
 

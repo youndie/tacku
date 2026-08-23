@@ -42,11 +42,17 @@ fun RealBoard() = Shot(screenOf("board"))
 @Composable
 fun RealCatchUp() = Shot(screenOf("catch-up"))
 
-@ViddikScreenshot(name = "Task", group = "Screens", width = 1440, height = 900)
+// The two screens with a back link on them, and therefore the two the harness cannot photograph the
+// same way twice. Its bundled font has no `←` (ScreenTextCoverageTest names the codepoint), the host
+// draws that one glyph, its width differs between machines, and everything after it moves: two
+// pixels on this screen, the whole content column on the one below.
+//
+// The product itself is fine — IBM Plex carries the arrow, measured in its cmap — so what is lost is
+// the picture, not the page. Changing the copy to suit a screenshot would be the wrong way round.
+// B-51 is the way back: bundle-side coverage, or a harness that can be told a fallback.
 @Composable
 fun RealTask() = Shot(screenOf("task"))
 
-@ViddikScreenshot(name = "New task", group = "Screens", width = 1440, height = 900)
 @Composable
 fun RealNewTask() = Shot(screenOf("new-task"))
 
