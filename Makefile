@@ -116,6 +116,13 @@ design:
 screens:
 	./scripts/screens.sh
 
+# Собрать страницу и поднять сервер, который её отдаёт. Продакшн-поверхность продукта, в отличие от
+# десктопного клиента — тот прибор.
+web:
+	cd client && ./gradlew --quiet :web:wasmJsBrowserDistribution
+	@echo "готово: client/web/build/dist/wasmJs/productionExecutable"
+	@echo "отдать её:  go run ./cmd/tacku serve -web ../client/web/build/dist/wasmJs/productionExecutable" 
+
 # The client as a measuring instrument: a response can satisfy the schema and still not decode, and
 # only the code that will actually draw the screen can say so.
 probe:

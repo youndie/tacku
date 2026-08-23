@@ -15,6 +15,7 @@ import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import ru.workinprogress.viddik.annotations.ViddikScreenshot
 import ru.workinprogress.viddik.core.ViddikPlatformTextStyle
 import ru.workinprogress.viddik.core.viddikTypography
@@ -48,7 +49,11 @@ private val registry = tackuRegistry()
  *
  * The platform style stays: it is what keeps line metrics identical across machines.
  */
-private val viddikBase = TextStyle(fontFamily = TackuFontFamily, platformStyle = ViddikPlatformTextStyle)
+private val viddikBase =
+    TextStyle(
+        fontFamily = runBlocking { loadTackuFontFamily() },
+        platformStyle = ViddikPlatformTextStyle,
+    )
 
 /**
  * One design system for the picture and for the product.

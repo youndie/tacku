@@ -14,7 +14,6 @@ import io.github.youndie.kompot.navigation.NavigationGraph
 import io.github.youndie.kompot.standard.KompotPageLoader
 import io.github.youndie.kompot.standard.KompotPageResponse
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -49,7 +48,10 @@ class Transport(
      */
     private val knowsExtensions: Boolean = true,
 ) {
-    private val http = HttpClient(CIO)
+    // No engine named, so each platform brings its own off the classpath: CIO on the desktop, the
+    // browser's fetch in a page. The alternative — naming one — is the line that would have to be
+    // duplicated per target for no gain.
+    private val http = HttpClient()
 
     /**
      * The engine's serialisers **plus the field plug-in's**, and the second half is not optional.
@@ -84,8 +86,13 @@ class Transport(
             },
         )
 
-    /** The pair a sign-in hands over, replaced whenever `update_session` arrives (§12.4). */
-    @Volatile
+    /**
+     * The pair a sign-in hands over, replaced whenever `update_session` arrives (§12.4).
+     *
+     * No `@Volatile`, which it carried while this was a JVM module: the annotation does not exist
+     * everywhere this now runs, the one place that writes it is the navigator's own scope, and a
+     * page has a single thread regardless.
+     */
     var accessToken: String? = null
         private set
 
@@ -203,11 +210,11 @@ class Transport(
 
     // Decoding without fetching, so that the behaviour of the two hierarchies can be held to a test
     // rather than to a paragraph.
-    internal fun decodeScreen(body: String): KompotComponent = json.decodeFromString(body)
+    fun decodeScreen(body: String): KompotComponent = json.decodeFromString(body)
 
-    internal fun decodeForm(body: String): KompotFormResponse = json.decodeFromString(body)
+    fun decodeForm(body: String): KompotFormResponse = json.decodeFromString(body)
 
-    internal fun decodeAction(body: String): KompotAction = json.decodeFromString(body)
+    fun decodeAction(body: String): KompotAction = json.decodeFromString(body)
 }
 
 class ServerRefused(

@@ -6,9 +6,12 @@ import io.github.youndie.kompot.KompotRegistry
 import io.github.youndie.kompot.generated.generatedFormsClientRenderers
 import io.github.youndie.kompot.kompotCoreRenderers
 import io.github.youndie.kompot.kompotStandardRenderers
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import tacku.fields.DateInput
-import java.time.LocalDate
 import kotlin.reflect.KClass
+import kotlin.time.Clock
 
 /**
  * What this deployment draws that the toolkit does not.
@@ -22,7 +25,7 @@ import kotlin.reflect.KClass
  * wall clock cannot be photographed.
  */
 fun tackuRenderers(
-    today: () -> LocalDate = { LocalDate.now() },
+    today: () -> LocalDate = ::todayHere,
 ): Map<KClass<out KompotComponent>, KompotComponentRenderer<out KompotComponent>> =
     mapOf(
         DateInput::class to DateInputRenderer(today),
@@ -37,7 +40,15 @@ fun tackuRenderers(
  * union keeps the last entry, which is what lets [ButtonRenderer] replace a standard one; that also
  * means the order here is not decoration.
  */
-fun tackuRegistry(today: () -> LocalDate = { LocalDate.now() }): KompotRegistry =
+fun tackuRegistry(today: () -> LocalDate = ::todayHere): KompotRegistry =
     KompotRegistry(
         kompotCoreRenderers + kompotStandardRenderers + generatedFormsClientRenderers + tackuRenderers(today),
     )
+
+/**
+ * Today, where this is running.
+ *
+ * A function rather than a value, and named rather than a lambda, because a renderer that reads the
+ * wall clock cannot be photographed: every caller that wants a picture passes its own.
+ */
+fun todayHere(): LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())

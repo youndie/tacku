@@ -51,8 +51,8 @@ class Navigator(
      * the running application saying what it actually did.
      */
     private fun trace(what: String) {
-        if (System.getenv("TACKU_TRACE") != null) {
-            System.err.println("tacku: $what")
+        if (traceEnabled) {
+            println("tacku: $what")
         }
     }
 
@@ -144,7 +144,7 @@ class Navigator(
         when (val target = resolve(deeplink)) {
             is Target.Open -> open(target.path, target.kind)
             Target.Start -> start()
-            null -> System.err.println("tacku: nothing resolves \"$deeplink\"; the tap did nothing")
+            null -> println("tacku: nothing resolves \"$deeplink\"; the tap did nothing")
         }
     }
 
@@ -158,7 +158,7 @@ class Navigator(
      * had `else -> Unit` and no branch for the task prefix at all: the server's list said the client
      * knew it, and nobody asked the client. Opening a card did nothing, on every screen that has one.
      */
-    internal fun resolve(deeplink: String): Target? {
+    fun resolve(deeplink: String): Target? {
         routes.firstOrNull { it.deeplink == deeplink }?.let {
             return Target.Open(it.endpoint, it.kind ?: "screen")
         }
@@ -173,7 +173,7 @@ class Navigator(
     }
 
     /** Where a deeplink leads. */
-    internal sealed interface Target {
+    sealed interface Target {
         data class Open(
             val path: String,
             val kind: String,
@@ -196,7 +196,7 @@ class Navigator(
         }
     }
 
-    internal suspend fun loadGraph() {
+    suspend fun loadGraph() {
         routes = transport.graph().routes
     }
 
@@ -214,11 +214,22 @@ class Navigator(
      */
     private fun submitPathFor(formId: String): String = "/submit/$formId"
 
-    internal companion object {
+    companion object {
         const val SIGN_IN = "app://sign-in"
         const val SIGN_OUT = "app://sign-out"
         const val SIGN_IN_PATH = "/forms/sign-in"
         const val DEFAULT_SCREEN = "app://catch-up"
+
+        /**
+         * Whether the client narrates what it did.
+         *
+         * A variable rather than an environment lookup, because reading the environment is a thing a
+         * JVM can do and a page cannot. Set by whichever entry point knows how its platform is
+         * configured; off by default, because the trace exists for an afternoon of debugging and not
+         * for a product's log.
+         */
+        var traceEnabled: Boolean = false
+
         const val TASK_PREFIX = "app://task/"
         const val TASK_PATH = "/forms/task/"
 
@@ -234,7 +245,7 @@ class Navigator(
          * that spells the address itself keeps passing after the client stops resolving it — which
          * is exactly the failure this exists to catch.
          */
-        internal fun resolveTaskPath(deeplink: String): String? =
+        fun resolveTaskPath(deeplink: String): String? =
             if (deeplink.startsWith(TASK_PREFIX) && deeplink.length > TASK_PREFIX.length) {
                 TASK_PATH + deeplink.removePrefix(TASK_PREFIX)
             } else {

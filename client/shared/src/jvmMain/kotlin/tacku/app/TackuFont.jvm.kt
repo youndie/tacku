@@ -14,7 +14,7 @@ import androidx.compose.ui.text.platform.Font
  *
  * Bundled under the SIL Open Font License, which travels beside the files.
  */
-val TackuFontFamily: FontFamily =
+private val family: FontFamily =
     FontFamily(
         // A resource path, read out of the jar: a file path works until the application is
         // packaged and then it is a file that is not there — the sort of difference that only shows
@@ -23,3 +23,6 @@ val TackuFontFamily: FontFamily =
         Font("fonts/IBMPlexSans-Medium.ttf", FontWeight.Medium),
         Font("fonts/IBMPlexSans-SemiBold.ttf", FontWeight.SemiBold),
     )
+
+/** On the desktop the files are in the jar, so there is nothing to wait for. */
+actual suspend fun loadTackuFontFamily(): FontFamily = family

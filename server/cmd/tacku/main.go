@@ -115,6 +115,9 @@ func runServe(args []string) error {
 	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
 	path := flags.String("db", "tacku.db", "path to the database file")
 	addr := flags.String("addr", ":8080", "address to listen on")
+	// The built browser client. Empty serves no page, which is what this server did for its whole
+	// life and is still a legitimate shape: agents need no page.
+	web := flags.String("web", "", "directory of the built browser client to serve")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -143,6 +146,7 @@ func runServe(args []string) error {
 		Seen:       store,
 		SessionKey: key,
 		WizardTTL:  ttl,
+		PageDir:    *web,
 		Verifier: auth.VerifierConfig{
 			Issuer:   os.Getenv("TACKU_ISSUER"),
 			Resource: os.Getenv("TACKU_RESOURCE"),

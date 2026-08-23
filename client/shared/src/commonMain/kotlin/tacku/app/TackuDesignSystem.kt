@@ -47,11 +47,14 @@ class TackuDesignSystem(
      * client drew in whatever the system offered, so the running product and the mockup were never
      * the same picture and no screenshot could have said so.
      *
-     * The default now carries the typeface the design was drawn in. The screenshot harness still
-     * passes its own, and that remains right for a different reason: a golden has to be a picture of
-     * the code rather than of the machine, and it needs a font it carries with it to be so.
+     * The default carries no family and that is now deliberate rather than an oversight: the
+     * typeface arrives over the network in a browser, so it cannot be a constant. Exactly two places
+     * construct a design system that will be looked at — [App], which waits for the family before it
+     * draws anything, and the screenshot harness, which passes the same files with normalised
+     * metrics. Everything else that constructs one is asking it for token names, where the font is
+     * not part of the question.
      */
-    private val base: TextStyle = TextStyle(fontFamily = TackuFontFamily),
+    private val base: TextStyle = TextStyle.Default,
 ) : KompotDesignSystem {
     @Composable
     override fun resolveColor(token: ColorToken): Color =
@@ -242,7 +245,7 @@ class TackuDesignSystem(
         kind: String,
         token: String,
     ) {
-        System.err.println("tacku: unknown $kind token \"$token\"; using a default")
+        println("tacku: unknown $kind token \"$token\"; using a default")
     }
 
     companion object {

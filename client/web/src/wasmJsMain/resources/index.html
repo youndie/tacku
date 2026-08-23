@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>tacku</title>
+    <!--
+      The background is the product's surface token, written out here and nowhere else it can be
+      taken from: this paints before a single line of the application has run, and the alternative is
+      a white flash on every load. It is the one place a colour is duplicated, and it is duplicated
+      knowingly.
+    -->
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; background: #101114; }
+        canvas { outline: none; }
+    </style>
+</head>
+<body>
+<script src="tacku.js"></script>
+</body>
+</html>

@@ -29,6 +29,7 @@ val kompotVersion: String = property("kompot.version").toString()
 // names a reload carries field values, and what a client actually does with a deeplink it does not
 // know.
 dependencies {
+    implementation(project(":shared"))
     implementation(project(":fields"))
     implementation(compose.desktop.currentOs)
 
@@ -66,6 +67,7 @@ dependencies {
     implementation("io.github.youndie:form-standard:$kompotVersion")
 
     implementation("io.ktor:ktor-client-cio:3.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
     implementation("io.ktor:ktor-client-content-negotiation:3.5.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")

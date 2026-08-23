@@ -17,9 +17,11 @@ import io.github.youndie.kompot.LocalKompotDesignSystem
 import io.github.youndie.kompot.TypographyToken
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.standard.TextValue
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import tacku.fields.DateInput
-import java.time.DayOfWeek
-import java.time.LocalDate
 
 /**
  * What a date looks like when it is a date rather than a text box with a mask.
@@ -96,12 +98,16 @@ class DateInputRenderer(
      * while these do not.
      */
     private fun offers(from: LocalDate): List<Offer> {
-        val friday = generateSequence(from.plusDays(1)) { it.plusDays(1) }.first { it.dayOfWeek == DayOfWeek.FRIDAY }
+        val friday =
+            generateSequence(from.plus(DatePeriod(days = 1))) { it.plus(DatePeriod(days = 1)) }.first {
+                it.dayOfWeek ==
+                    DayOfWeek.FRIDAY
+            }
         return listOf(
             Offer("Today", from.toString()),
-            Offer("Tomorrow", from.plusDays(1).toString()),
+            Offer("Tomorrow", from.plus(DatePeriod(days = 1)).toString()),
             Offer("Friday", friday.toString()),
-            Offer("Next week", from.plusDays(7).toString()),
+            Offer("Next week", from.plus(DatePeriod(days = 7)).toString()),
         )
     }
 }

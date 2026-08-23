@@ -43,4 +43,6 @@ rootProject.name = "tacku-client"
 include(":fields")
 include(":spec-gen")
 include(":tck")
+include(":shared")
 include(":app")
+include(":web")

@@ -9,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import io.github.youndie.kompot.ColorToken
 import io.github.youndie.kompot.LocalKompotDesignSystem
@@ -72,7 +71,3 @@ fun TackuTheme(
         }
     }
 }
-
-/** The one this application uses; the screenshots pass their own, carrying the font they ship. */
-@Composable
-fun rememberTackuDesignSystem(): TackuDesignSystem = remember { TackuDesignSystem() }

@@ -5,7 +5,6 @@ import io.github.youndie.kompot.kompotJson
 import io.github.youndie.kompot.realtime.KompotRealtimeSource
 import io.github.youndie.kompot.realtime.UpdateComponentMessage
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
@@ -33,7 +32,7 @@ class Updates(
     private val baseUrl: String,
     private val token: () -> String?,
 ) : KompotRealtimeSource {
-    private val http = HttpClient(CIO)
+    private val http = HttpClient()
 
     // The same vocabulary the screens are decoded with, extensions included: a frame carries a
     // component, and a component this deployment added is still one of them.
@@ -67,7 +66,7 @@ class Updates(
      * Internal rather than private so that a test can hand it a frame without opening a socket: what
      * is worth checking is the vocabulary, and a connection would only make that harder to see.
      */
-    internal fun decodeFrame(body: String): UpdateComponentMessage = json.decodeFromString(body)
+    fun decodeFrame(body: String): UpdateComponentMessage = json.decodeFromString(body)
 
     private companion object {
         const val DATA = "data: "

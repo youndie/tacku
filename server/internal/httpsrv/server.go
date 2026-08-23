@@ -53,6 +53,13 @@ type Config struct {
 	Members    domain.Members
 	SessionKey []byte
 
+	// PageDir is the built browser client, or empty for a server that serves no page.
+	//
+	// The product's human surface is a page; the desktop client is an instrument. A deployment that
+	// names no directory here is one that answers agents and nothing else, which is a legitimate
+	// shape and was the only shape for the project's whole life.
+	PageDir string
+
 	// UpdateInterval is how often the live channel looks at the journal. Zero means one second.
 	//
 	// A bound on latency rather than a tuning knob: the channel is the journal delivered by push,
@@ -203,6 +210,14 @@ func New(config Config) (http.Handler, error) {
 	// to reach the form that starts one.
 	mux.Handle("GET /forms/sign-in", loginForm())
 	mux.Handle("POST "+LoginPath, submitLogin(config.Members, sessions))
+	// The page last, and by the widest pattern there is: everything the API claims is claimed on a
+	// narrower one, so a request that reaches here is for the page, its bundle or a typo.
+	if pages, err := page(config.PageDir); err != nil {
+		return nil, fmt.Errorf("the browser client is not at %q: %w", config.PageDir, err)
+	} else if pages != nil {
+		mux.Handle("/", pages)
+	}
+
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
