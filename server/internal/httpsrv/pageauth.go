@@ -83,20 +83,33 @@ func requireHuman(page func(string) (auth.Principal, error), session func(string
 			}
 			token := header[len(prefix):]
 
+			// Why it was refused, in the words of whichever door came closest to opening. A `401`
+			// that says only "no" is the reason a wrong audience and an expired token and a
+			// provider nobody can reach all look the same from a browser — and each has a different
+			// fix. Nothing here is a secret: whoever is being told already holds the token and can
+			// read every claim in it.
+			var refusal error
+
 			if page != nil {
-				if principal, err := page(token); err == nil {
+				principal, err := page(token)
+				if err == nil {
 					next.ServeHTTP(w, r.WithContext(auth.WithPrincipal(r.Context(), principal)))
 					return
 				}
+				refusal = err
 			}
 			if session != nil {
-				if principal, err := session(token); err == nil {
+				principal, err := session(token)
+				if err == nil {
 					next.ServeHTTP(w, r.WithContext(auth.WithPrincipal(r.Context(), principal)))
 					return
+				}
+				if refusal == nil {
+					refusal = err
 				}
 			}
 
-			challenge(w)
+			refuseWithReason(w, refusal)
 		})
 	}
 }

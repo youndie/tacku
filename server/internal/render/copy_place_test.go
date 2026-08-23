@@ -32,6 +32,11 @@ import (
 //  3. Time is formatted only in copy.go. A date is text about data, and two layouts on two screens
 //     is the smallest version of the same drift.
 //
+// One shape is exempt: a `Bearer …` challenge. It is a protocol header whose grammar belongs to
+// RFC 6750, read by a program and by whoever holds the token, and never by somebody using the
+// product. The exemption is on the value rather than on the file, so a sentence written beside it
+// is still caught — an exemption the width of a file is how a guard stops guarding.
+//
 // What the rules do not catch is written down rather than pretended away: a stand-in like
 // "No description yet." is chosen by data without being assembled, and only the discipline of the
 // decision puts it in copy.go. The guard holds the line it can hold and says which line that is.
@@ -227,6 +232,13 @@ func readSource(t *testing.T, path string) *sourceFile {
 		}
 		value, err := strconv.Unquote(lit.Value)
 		if err != nil {
+			return true
+		}
+		// An authentication challenge is a protocol header, not interface text: it is read by a
+		// program and by whoever is holding the token, never by somebody using the product, and its
+		// grammar is RFC 6750's rather than ours. Skipped by the shape of the value and not by the
+		// file it sits in, so a sentence written next to it is still caught.
+		if strings.HasPrefix(value, "Bearer ") {
 			return true
 		}
 
