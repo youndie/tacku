@@ -3,6 +3,7 @@ package httpsrv
 import (
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -39,7 +40,12 @@ func page(dir string) (http.Handler, error) {
 		// The API is mounted on its own prefixes and this handler never sees those; what does reach
 		// here is the page, its bundle, its fonts, and typos.
 		if strings.HasSuffix(r.URL.Path, "/") || r.URL.Path == "" {
-			http.ServeFile(w, r, index)
+			if !precompressed(w, r, dir, "index.html") {
+				http.ServeFile(w, r, index)
+			}
+			return
+		}
+		if precompressed(w, r, dir, strings.TrimPrefix(path.Clean(r.URL.Path), "/")) {
 			return
 		}
 		files.ServeHTTP(w, r)
