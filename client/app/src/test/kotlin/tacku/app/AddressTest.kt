@@ -48,12 +48,14 @@ class PrefixedDestinationsTest {
     fun `a task and an edit screen both resolve`() {
         assertEquals("/forms/task/TAC-2", Navigator.resolvePrefixed("app://task/TAC-2"))
         assertEquals("/forms/edit-task/TAC-2", Navigator.resolvePrefixed("app://edit-task/TAC-2"))
+        assertEquals("/screens/docs-item/B-171", Navigator.resolvePrefixed("app://docs-item/B-171"))
     }
 
     @Test
     fun `a prefix with nothing after it names no screen`() {
         assertNull(Navigator.resolvePrefixed("app://task/"))
         assertNull(Navigator.resolvePrefixed("app://edit-task/"))
+        assertNull(Navigator.resolvePrefixed("app://docs-item/"))
         assertNull(Navigator.resolvePrefixed("app://board"))
     }
 }

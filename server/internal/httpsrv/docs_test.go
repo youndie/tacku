@@ -31,7 +31,10 @@ func fixtureArchive(t *testing.T) []byte {
 	files := map[string]string{
 		"backlog.md": fixtureIndex,
 		"backlog/B-02-overdue-notices.md": "---\nid: B-02\ntitle: \"A failed overdue notice is recorded as sent\"\n" +
-			"status: open\npriority: P1\nsize: S\nstage: stage-one\n---\n",
+			"status: open\npriority: P1\nsize: S\nstage: stage-one\n---\n\n# B-02\n\n" +
+			"The loans service records a notice as sent before the mail gateway has accepted it, so\n" +
+			"a notice that was never delivered is indistinguishable from one that was.\n\n" +
+			"- the sending is retried while the gateway refuses\n",
 		"backlog/B-01-hold-positions.md": "---\nid: B-01\ntitle: \"Queue positions are recomputed on every read\"\n" +
 			"status: done\npriority: P2\nsize: M\nstage: stage-one\n---\n",
 	}
@@ -202,5 +205,44 @@ func TestTheViewOffersNothingThatWrites(t *testing.T) {
 		if strings.Contains(string(screen), forbidden) {
 			t.Errorf("витрина несёт действие %s — она обязана быть окном, а не доской", forbidden)
 		}
+	}
+}
+
+// A card that names an item and cannot open it is a dead end, and the board was a wall of them: the
+// vocabulary has no action that leaves the application, so this screen is the only place the item's
+// own text can be read.
+func TestAnItemCanBeRead(t *testing.T) {
+	stand, _ := sourceStand(t)
+	r := newResourceWith(t, withSource(t, stand, time.Hour))
+	token := r.reader(t)
+
+	_, board := r.get(t, render.DocsBoardPath, token, "")
+	if !strings.Contains(string(board), render.LinkDocsItem+"B-02") {
+		t.Fatal("карточка никуда не ведёт")
+	}
+
+	response, screen := r.get(t, render.DocsItemPath+"B-02", token, "")
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("экран задачи ответил %d", response.StatusCode)
+	}
+	for _, expected := range []string{
+		"A failed overdue notice",           // заголовок
+		"B-02 · P1 · S",                     // та же метастрока, что на карточке
+		"a notice that was never delivered", // текст самой задачи, из файла
+		"· the sending is retried",          // список, маркер выставлен нами
+	} {
+		if !strings.Contains(string(screen), expected) {
+			t.Errorf("на экране нет %q", expected)
+		}
+	}
+}
+
+func TestAnItemNobodyReadIsNotAScreen(t *testing.T) {
+	stand, _ := sourceStand(t)
+	r := newResourceWith(t, withSource(t, stand, time.Hour))
+
+	response, _ := r.get(t, render.DocsItemPath+"B-999", r.reader(t), "")
+	if response.StatusCode != http.StatusNotFound {
+		t.Errorf("выдуманный идентификатор ответил %d, а не 404", response.StatusCode)
 	}
 }

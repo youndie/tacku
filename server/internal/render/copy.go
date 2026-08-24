@@ -645,6 +645,12 @@ func DocsSource(repo, ref, root string) string {
 	return fmt.Sprintf("Reading %s at %s, under %s.", repo, ref, root)
 }
 
+// DocsBullet is one item of a list as the source wrote it.
+//
+// The marker is put back rather than kept, because the source spells it three ways — `-`, `*`, `+`
+// — and a screen that carried each through would show which character the author happened to type.
+func DocsBullet(line string) string { return "· " + line }
+
 // DocsBlockedBy names what an item is waiting for.
 func DocsBlockedBy(ids []string) string {
 	return "waits for " + strings.Join(ids, ", ")

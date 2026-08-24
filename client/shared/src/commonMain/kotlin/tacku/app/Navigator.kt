@@ -311,6 +311,11 @@ class Navigator(
         const val EDIT_TASK_PREFIX = "app://edit-task/"
         const val EDIT_TASK_PATH = "/forms/edit-task/"
 
+        // One item of a backlog kept in another repository. A screen and not a form: it takes no
+        // input, because there is nothing here that may change it — the repository owns it.
+        const val DOCS_ITEM_PREFIX = "app://docs-item/"
+        const val DOCS_ITEM_PATH = "/screens/docs-item/"
+
         /**
          * The one address this client assembles instead of looking up.
          *
@@ -333,6 +338,7 @@ class Navigator(
             listOf(
                 TASK_PREFIX to TASK_PATH,
                 EDIT_TASK_PREFIX to EDIT_TASK_PATH,
+                DOCS_ITEM_PREFIX to DOCS_ITEM_PATH,
             )
 
         fun resolvePrefixed(deeplink: String): String? =

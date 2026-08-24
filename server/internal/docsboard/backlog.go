@@ -35,10 +35,18 @@ type Item struct {
 	Epic      string
 	BlockedBy []string
 
-	// Path is where the file sits inside the repository, so that a card can lead to it. Kept from
-	// the archive rather than rebuilt from the identifier: the item file name carries a slug this
-	// package has no way to reconstruct.
+	// Path is where the file sits inside the repository. Kept from the archive rather than rebuilt
+	// from the identifier: the item file name carries a slug this package has no way to
+	// reconstruct.
 	Path string
+
+	// Body is the item as it is written, below the frontmatter, in the source's own markup.
+	//
+	// Kept because a card that cannot be opened is a dead end, and the vocabulary has no way to
+	// leave the application (Q-72) — so the only place this text can be read is a screen of ours.
+	// A repository's worth of them is a few hundred kilobytes, which is the size of the archive it
+	// was read from.
+	Body string
 }
 
 // Done reports whether the item is finished, which is the one status this package acts on.
@@ -66,12 +74,13 @@ var (
 // are ignored rather than refused — a repository is free to carry fields of its own, and a board
 // that fell over on the first unknown one would be a board nobody could point at their repository.
 func ParseItem(path, text string) (Item, error) {
-	block := frontmatterBlock.FindStringSubmatch(text)
-	if block == nil {
+	where := frontmatterBlock.FindStringSubmatchIndex(text)
+	if where == nil {
 		return Item{}, fmt.Errorf("docsboard: %s has no frontmatter", path)
 	}
+	block := []string{text[where[0]:where[1]], text[where[2]:where[3]]}
 
-	item := Item{Path: path}
+	item := Item{Path: path, Body: strings.TrimSpace(text[where[1]:])}
 	for _, line := range strings.Split(block[1], "\n") {
 		key, value, ok := strings.Cut(strings.TrimSpace(line), ":")
 		if !ok {

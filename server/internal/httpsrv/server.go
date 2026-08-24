@@ -202,6 +202,7 @@ func New(config Config) (http.Handler, error) {
 	screens.Handle("GET "+updatesPath, updates(config.Deps.Store, config.Seen, config.UpdateInterval))
 	if config.DocsBoard != nil {
 		screens.Handle("GET "+docsBoardPath, docsBoard(config.DocsBoard, now))
+		screens.Handle("GET "+docsItemPath+"{item}", docsItem(config.DocsBoard))
 	}
 	screens.Handle("GET /graph", navigationGraph())
 

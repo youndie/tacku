@@ -57,3 +57,51 @@ func TestAFinishedStageIsNotDrawnAsAnEmptyColumn(t *testing.T) {
 		t.Error("этап без открытых задач занял колонку — на живом источнике таких больше, чем работающих")
 	}
 }
+
+// Both rules here were written by looking at a real item rather than at the fixture, and neither
+// was visible in the fixture at all.
+func TestAnItemKeepsTheShapeItWasWrittenIn(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-171", Title: "Rules are off by name", Status: "open", Path: "backlog/B-171-x.md",
+		Body: "# B-171 — Rules are off by name\n\nOne paragraph\nover two lines.\n\n" +
+			"| Rule | Places |\n|---|---|\n| naming | 42 |\n",
+	}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var texts []string
+	for _, line := range strings.Split(string(tree), `"text":"`)[1:] {
+		texts = append(texts, line[:strings.Index(line, `"`)])
+	}
+
+	// Заголовок файла повторяет заголовок задачи, который уже стоит наверху экрана: шаблон метода
+	// открывает каждую задачу строкой `# B-NN — <title>`.
+	for _, text := range texts {
+		if strings.HasPrefix(text, "B-171 —") {
+			t.Errorf("собственный заголовок файла нарисован вторым заголовком: %q", text)
+		}
+	}
+	// Строка таблицы — это строка. Склеенная в абзац с соседними, таблица превращается в одно
+	// нечитаемое предложение, что и произошло на живой задаче.
+	rows := 0
+	for _, text := range texts {
+		if strings.HasPrefix(text, "| ") {
+			rows++
+		}
+		if strings.Count(text, "|") > 3 {
+			t.Errorf("строки таблицы склеились: %q", text)
+		}
+	}
+	if rows != 2 {
+		t.Errorf("строк таблицы %d, а их две", rows)
+	}
+	joined := false
+	for _, text := range texts {
+		joined = joined || text == "One paragraph over two lines."
+	}
+	if !joined {
+		t.Errorf("абзац не собрался из двух строк: %v", texts)
+	}
+}
