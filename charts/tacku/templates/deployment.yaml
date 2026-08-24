@@ -39,6 +39,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secrets
                   key: session-key
+            # Which build this is, and it is not decoration. The server reports it as its own
+            # version to an agent client and writes it into every change an agent makes — the
+            # question "which build did that" is the first one asked of a history nobody trusts.
+            # It was unset until a deployment could not answer "is this the image I just pushed"
+            # any way except by inferring it from behaviour.
+            - name: TACKU_AGENT_VERSION
+              value: {{ .Values.server.version | quote }}
             - name: TACKU_ISSUER
               value: {{ include "tacku.require" (dict "name" "auth.issuer" "because" "the server refuses to start without it, which arrives as a successful deploy and a service that is down" "value" .Values.auth.issuer) | quote }}
             - name: TACKU_JWKS_URL
