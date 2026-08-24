@@ -132,20 +132,26 @@ web:
 # The client as a measuring instrument: a response can satisfy the schema and still not decode, and
 # only the code that will actually draw the screen can say so.
 probe:
-	@lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true
+	@lsof -ti:8477 -ti:8478 -ti:8479 2>/dev/null | xargs kill -9 2>/dev/null || true
 	@rm -f /tmp/tacku-probe.db
 	@cd server && go run ./cmd/tacku seed -db /tmp/tacku-probe.db
 	@cd server && go run ./cmd/devauth -addr :8478 >/dev/null 2>&1 & sleep 4
+	@# A stand-in for the forge, so the walk meets the read-only view over another repository's
+	@# backlog. Without a source that board is absent from the graph and its card is never pressed —
+	@# which is how a client that asked for the wrong shape of body reached a person first.
+	@python3 scripts/docs_stub.py --root scripts/fixtures/docs-source --addr 127.0.0.1:8479 >/dev/null 2>&1 & sleep 1
 	@# Built with the instrument's door, which is what a stand is: a release build serves no sign-in
 	@# form, and this walk signs in through one. Without the tag the server starts and answers
 	@# `unauthenticated` to every screen — a stand that is up and useless.
 	@cd server && TACKU_RESOURCE=http://localhost:8477 \
 		TACKU_ISSUER=http://localhost:8478 TACKU_JWKS_URL=http://localhost:8478/jwks \
 		TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
+		TACKU_DOCS_API=http://127.0.0.1:8479 TACKU_DOCS_REPO=example/docs \
+		TACKU_DOCS_ROOT=backlog TACKU_DOCS_TOKEN=a-fixture-needs-none \
 		go run -tags debugdoor ./cmd/tacku serve -db /tmp/tacku-probe.db -addr :8477 >/dev/null 2>&1 & sleep 5
 	@cd client && ./gradlew --quiet :app:probe --console=plain; \
 		status=$$?; \
-		lsof -ti:8477 -ti:8478 2>/dev/null | xargs kill -9 2>/dev/null || true; \
+		lsof -ti:8477 -ti:8478 -ti:8479 2>/dev/null | xargs kill -9 2>/dev/null || true; \
 		exit $$status
 
 # Not in the gate: it rewrites committed files. Run it when the wire types change, then review the

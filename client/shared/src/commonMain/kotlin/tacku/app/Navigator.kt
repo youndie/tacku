@@ -238,7 +238,7 @@ class Navigator(
 
             // The one destination the graph cannot carry: its endpoints are literal paths, so a
             // screen addressed by naming a thing is assembled here from a prefix and an identifier.
-            else -> resolveTaskPath(deeplink)?.let { Target.Open(it, "form") }
+            else -> resolvePrefixed(deeplink)
         }
     }
 
@@ -317,16 +317,10 @@ class Navigator(
         const val DOCS_ITEM_PATH = "/screens/docs-item/"
 
         /**
-         * The one address this client assembles instead of looking up.
+         * Every destination addressed by naming a thing, in one table, and public.
          *
-         * In the companion so that the probe can ask the same function the application asks. A probe
-         * that spells the address itself keeps passing after the client stops resolving it — which
-         * is exactly the failure this exists to catch.
-         */
-        fun resolveTaskPath(deeplink: String): String? = resolvePrefixed(deeplink)
-
-        /**
-         * Every destination addressed by naming a thing, in one table.
+         * Public so that a check can read the table instead of restating it: a guard written out by
+         * hand goes stale exactly when a row is added, which is the moment it exists for.
          *
          * It is a table because it was two branches and only one of them existed: `EDIT_TASK_PREFIX`
          * was declared, the server listed it among the destinations it trusts this client to
@@ -334,17 +328,31 @@ class Navigator(
          * and quietly opened the first screen instead. Declared and never called, and the only
          * thing that would have caught it is somebody following such a link.
          */
-        private val prefixed =
+        val prefixed =
             listOf(
-                TASK_PREFIX to TASK_PATH,
-                EDIT_TASK_PREFIX to EDIT_TASK_PATH,
-                DOCS_ITEM_PREFIX to DOCS_ITEM_PATH,
+                Target.Open(TASK_PATH, "form") to TASK_PREFIX,
+                Target.Open(EDIT_TASK_PATH, "form") to EDIT_TASK_PREFIX,
+                Target.Open(DOCS_ITEM_PATH, "screen") to DOCS_ITEM_PREFIX,
             )
 
-        fun resolvePrefixed(deeplink: String): String? =
-            prefixed.firstNotNullOfOrNull { (prefix, path) ->
+        /**
+         * Where a prefixed deeplink leads, **and what is behind it**.
+         *
+         * In the companion so that the probe can ask the same function the application asks. A
+         * probe that spells the address itself keeps passing after the client stops resolving it —
+         * which is exactly the failure this exists to catch.
+         *
+         * The kind travels with the address because it used to be written once, beside the call,
+         * as `"form"` — true of the two destinations that existed and false of the third the day it
+         * was added. The client then asked for a form envelope, the server answered a bare tree,
+         * and the application died on `Fields [schema, screen] not found` the first time somebody
+         * pressed a card. A graph route has carried its kind since the protocol grew the field;
+         * these are the destinations the graph cannot carry, so they carry it here.
+         */
+        fun resolvePrefixed(deeplink: String): Target.Open? =
+            prefixed.firstNotNullOfOrNull { (target, prefix) ->
                 if (deeplink.startsWith(prefix) && deeplink.length > prefix.length) {
-                    path + deeplink.removePrefix(prefix)
+                    Target.Open(target.path + deeplink.removePrefix(prefix), target.kind)
                 } else {
                     null
                 }

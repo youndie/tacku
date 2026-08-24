@@ -1,5 +1,6 @@
 package tacku.app
 
+import io.github.youndie.kompot.KompotAction
 import io.github.youndie.kompot.KompotComponent
 import io.github.youndie.kompot.commands.PerformAction
 import io.github.youndie.kompot.form.FieldValue
@@ -68,10 +69,10 @@ fun main() {
         val card = firstCard(board) ?: error("the board carries no card, so this probe pressed nothing")
 
         val opened =
-            Navigator.resolveTaskPath(card.deeplink)
+            Navigator.resolvePrefixed(card.deeplink)
                 ?: error("nothing in this client resolves \"${card.deeplink}\": opening a card does nothing")
-        report(opened, transport.form(opened))
-        println("  opened ${card.deeplink} through $opened")
+        open(transport, opened)
+        println("  opened ${card.deeplink} through ${opened.path}")
 
         val moved = transport.perform(card.moveUrl, card.movePayload)
         println("  moved ${card.taskId}, and the server answered ${moved::class.simpleName}")
@@ -83,6 +84,24 @@ fun main() {
         val reloaded = transport.screen("/screens/board")
         val column = columnOf(reloaded, card.taskId)
         println("  reloaded the board, and ${card.taskId} is now in ${column ?: "no column at all"}")
+
+        // The read-only view over another repository's backlog, where a deployment carries one. Its
+        // card is the reason this walk stopped trusting a written-down kind: the two destinations
+        // that existed were forms, the third is a screen, and the client asked for the wrong shape
+        // — which nothing here noticed, because nothing here opened one.
+        val docs = graph.routes.firstOrNull { it.deeplink == "app://docs-board" }
+        if (docs == null) {
+            println("  no docs board on this deployment, so its card was not pressed")
+        } else {
+            val item =
+                firstDeeplink(transport.screen(docs.endpoint), "app://docs-item/")
+                    ?: error("the docs board carries no card, so this probe pressed nothing on it")
+            val target =
+                Navigator.resolvePrefixed(item)
+                    ?: error("nothing in this client resolves \"$item\": opening an item does nothing")
+            open(transport, target)
+            println("  opened $item through ${target.path} as ${target.kind}")
+        }
     }
 }
 
@@ -96,6 +115,47 @@ private fun report(
         )} nodes",
     )
     walkPages(response.screen)
+}
+
+/** Fetches a destination the way the application would, which is the point: the kind is not ours. */
+private suspend fun open(
+    transport: Transport,
+    target: Navigator.Target.Open,
+) {
+    when (target.kind) {
+        "form" -> report(target.path, transport.form(target.path))
+        else -> report(target.path, transport.screen(target.path))
+    }
+}
+
+/** Whatever the node does when it is pressed, whichever component it happens to be. */
+private fun actionOf(node: KompotComponent): KompotAction? =
+    when (node) {
+        is ColumnComponent -> node.action
+        is RowComponent -> node.action
+        is ButtonComponent -> node.action
+        else -> null
+    }
+
+/** The first deeplink under a prefix, read out of the tree rather than written down here. */
+private fun firstDeeplink(
+    root: KompotComponent,
+    prefix: String,
+): String? {
+    var found: String? = null
+
+    fun walk(node: KompotComponent) {
+        if (found != null) return
+        val deeplink = (actionOf(node) as? NavigateAction)?.deeplink
+        if (deeplink != null && deeplink.startsWith(prefix)) {
+            found = deeplink
+            return
+        }
+        children(node).forEach(::walk)
+    }
+
+    walk(root)
+    return found
 }
 
 private fun report(
@@ -155,12 +215,15 @@ private fun firstCard(root: KompotComponent): Card? {
                 else -> emptyList()
             }
 
+        // Asked of whatever carries an action rather than of a particular component. It used to
+        // ask a ColumnComponent for the deeplink and a ButtonComponent for the move, and the move
+        // became a row carrying an action — after which this walk found no card on a board full of
+        // them, and said so to nobody, because the probe is not in the gate.
         val deeplink =
             children
-                .filterIsInstance<ColumnComponent>()
-                .firstNotNullOfOrNull { (it.action as? NavigateAction)?.deeplink }
+                .firstNotNullOfOrNull { (actionOf(it) as? NavigateAction)?.deeplink }
                 ?.takeIf { it.startsWith(Navigator.TASK_PREFIX) }
-        val move = children.filterIsInstance<ButtonComponent>().firstNotNullOfOrNull { it.action as? PerformAction }
+        val move = children.firstNotNullOfOrNull { actionOf(it) as? PerformAction }
 
         if (deeplink != null && move != null) {
             found =

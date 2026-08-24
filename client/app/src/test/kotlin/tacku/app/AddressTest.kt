@@ -44,11 +44,30 @@ class AddressTest {
  * with each other while one of them was fiction.
  */
 class PrefixedDestinationsTest {
+    /**
+     * The kind and the address agree.
+     *
+     * Written after they did not: the kind was `"form"` for every prefixed destination, which was
+     * true of the two that existed and false of the third the day it was added. The client asked
+     * for an envelope, the server sent a tree, and the application died on
+     * `Fields [schema, screen] not found` the first time somebody pressed a card — while a test
+     * that compared only addresses stayed green.
+     *
+     * The rule is the server's own: a form is served under `/forms/`, a screen under `/screens/`.
+     */
+    @Test
+    fun `every prefixed destination declares the kind its address implies`() {
+        for ((target, prefix) in Navigator.prefixed) {
+            val implied = if (target.path.startsWith("/forms/")) "form" else "screen"
+            assertEquals(implied, target.kind, "$prefix leads to ${target.path}")
+        }
+    }
+
     @Test
     fun `a task and an edit screen both resolve`() {
-        assertEquals("/forms/task/TAC-2", Navigator.resolvePrefixed("app://task/TAC-2"))
-        assertEquals("/forms/edit-task/TAC-2", Navigator.resolvePrefixed("app://edit-task/TAC-2"))
-        assertEquals("/screens/docs-item/B-171", Navigator.resolvePrefixed("app://docs-item/B-171"))
+        assertEquals("/forms/task/TAC-2", Navigator.resolvePrefixed("app://task/TAC-2")?.path)
+        assertEquals("/forms/edit-task/TAC-2", Navigator.resolvePrefixed("app://edit-task/TAC-2")?.path)
+        assertEquals("/screens/docs-item/B-171", Navigator.resolvePrefixed("app://docs-item/B-171")?.path)
     }
 
     @Test
