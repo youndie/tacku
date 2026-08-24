@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -217,6 +218,9 @@ func (d DocsItem) Screen() Component {
 // line, and so does everything inside a fence. And the file's own first heading repeats the title
 // that is already at the top of the screen, since the method's template opens every item with
 // `# B-NN — <title>`: it is dropped, by matching the identifier rather than the words.
+// numbered is a list item the author numbered: `1. `, `2) `.
+var numbered = regexp.MustCompile(`^[0-9]+[.)]\s`)
+
 func prose(id, body, item string) []Component {
 	var out []Component
 	var paragraph, code []string
@@ -226,17 +230,19 @@ func prose(id, body, item string) []Component {
 	node := func() string { return fmt.Sprintf("%s-%d", id, len(out)) }
 
 	// One flush for every block this understands, because a block ends the same way whatever it is:
-	// something that is not it comes next. Three separate ones drifted apart the first time — a
-	// table followed by a heading kept its rows open and swallowed the heading.
+	// something that is not it comes next. It closes all of them rather than the first non-empty
+	// one: a `switch` here meant that a table written straight under a paragraph, with no blank
+	// line between them, flushed the paragraph and dropped every row of the table without a word.
 	flush := func() {
-		switch {
-		case len(paragraph) > 0:
+		if len(paragraph) > 0 {
 			out = append(out, Text(node(), strings.Join(paragraph, " "), TextBody))
 			paragraph = nil
-		case len(rows) > 0:
+		}
+		if len(rows) > 0 {
 			out = append(out, Table(node(), rows, FillWidth()))
 			rows = nil
-		case len(code) > 0:
+		}
+		if len(code) > 0 {
 			lines := make([]Component, 0, len(code))
 			for _, line := range code {
 				lines = append(lines, Text(fmt.Sprintf("%s-code-%d", node(), len(lines)), line, TextBodyMuted))
@@ -245,6 +251,19 @@ func prose(id, body, item string) []Component {
 				[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)}, lines...))
 			code = nil
 		}
+	}
+
+	// A line of a list keeps the depth it was written at. Two spaces to a level, which is what the
+	// sources use; a deeper nesting than three is drawn at three rather than marching off the edge.
+	indented := func(line string) []Modifier {
+		depth := (len(line) - len(strings.TrimLeft(line, " "))) / 2
+		if depth > 3 {
+			depth = 3
+		}
+		if depth == 0 {
+			return nil
+		}
+		return []Modifier{PaddingXY(0, 12*depth)}
 	}
 
 	for _, line := range strings.Split(body, "\n") {
@@ -265,6 +284,9 @@ func prose(id, body, item string) []Component {
 			flush()
 			fenced = true
 		case strings.HasPrefix(trimmed, "|"):
+			if len(rows) == 0 {
+				flush()
+			}
 			if row, ok := tableRow(trimmed); ok {
 				rows = append(rows, row)
 			} else if len(rows) > 0 {
@@ -287,7 +309,18 @@ func prose(id, body, item string) []Component {
 			out = append(out, Text(node(), heading, TextSubtitle))
 		case strings.HasPrefix(trimmed, "- "), strings.HasPrefix(trimmed, "* "), strings.HasPrefix(trimmed, "+ "):
 			flush()
-			out = append(out, Text(node(), DocsBullet(trimmed[2:]), TextBody))
+			out = append(out, Text(node(), DocsBullet(trimmed[2:]), TextBody, indented(line)...))
+		case numbered.MatchString(trimmed):
+			// Kept exactly as written, number and all. A list whose items are numbered by the author
+			// is numbered for a reason — the third step refers to the first — and renumbering it
+			// here would be this server having an opinion about somebody else's document.
+			//
+			// It was a paragraph line until now, which is worse than it sounds: paragraph lines are
+			// joined, so five steps became one sentence of a thousand characters, and a person
+			// reading it saw the markup fail rather than a long paragraph. Measured on a live item
+			// before the fix: 1091 characters in one node.
+			flush()
+			out = append(out, Text(node(), trimmed, TextBody, indented(line)...))
 		default:
 			if len(rows) > 0 || len(code) > 0 {
 				flush()
