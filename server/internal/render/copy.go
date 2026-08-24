@@ -592,11 +592,11 @@ func DocsWhyUnread(err error) string {
 
 	switch refusal.Status {
 	case http.StatusUnauthorized:
-		return "The credential was not accepted (401). A token that an organisation has not yet approved answers exactly like this."
+		return "The credential was not accepted (401). It has expired, been revoked, or was not copied whole."
 	case http.StatusForbidden:
 		return "The credential is not allowed to read this (403). Check that it carries read access to the contents of that repository."
 	case http.StatusNotFound:
-		return "Nothing was found under that name (404). Either the repository or the branch is spelled differently, or the credential cannot see the repository at all — a private one answers a stranger the same way it answers nobody."
+		return "Nothing was found under that name (404). A private repository answers a stranger exactly as it answers nobody, so this is either a name — the repository or the branch — or a credential that cannot see it: waiting for an organisation to approve it, issued against the wrong owner, or not granted this repository. Measured: a token pending approval answers 404 and not 401."
 	}
 	return fmt.Sprintf("The source answered %d, which is neither data nor a refusal this build knows.", refusal.Status)
 }
