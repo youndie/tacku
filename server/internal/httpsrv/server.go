@@ -110,6 +110,9 @@ func New(config Config) (http.Handler, error) {
 		return nil, fmt.Errorf("httpsrv: no member directory, so nobody could ever sign in")
 	}
 
+	// The agent surface sees the same board a person does, where there is one.
+	config.Deps.Docs = config.DocsBoard
+
 	readWrite, err := mcpsrv.New(config.Deps)
 	if err != nil {
 		return nil, err

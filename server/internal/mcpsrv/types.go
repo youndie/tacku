@@ -72,3 +72,47 @@ func actorOf(p domain.Provenance) actor {
 		OnBehalfOf: string(p.OnBehalfOf),
 	}
 }
+
+// docsBrief is one item of a backlog kept in another repository, as a list shows it.
+//
+// The fields are the source's own words and are passed through rather than mapped onto this
+// product's vocabulary: a status outside the method's list, a size spelled `S/M` and a priority
+// that is a word all occur in a live repository, and a value quietly rewritten into the nearest
+// local one would be a lie a model cannot check.
+type docsBrief struct {
+	ID       string `json:"id" jsonschema:"the identifier the repository quotes, for example B-171"`
+	Title    string `json:"title"`
+	Status   string `json:"status" jsonschema:"as the source writes it: usually open, wip, done, question or dropped"`
+	Priority string `json:"priority,omitempty"`
+	Size     string `json:"size,omitempty"`
+	Stage    string `json:"stage,omitempty" jsonschema:"the stage this item belongs to, which is what the board uses as a column"`
+}
+
+type docsFull struct {
+	docsBrief
+	BlockedBy []string `json:"blockedBy"`
+	Epic      string   `json:"epic,omitempty"`
+	// Body is the item as written, in the source's own markup.
+	Body string `json:"body,omitempty"`
+	// Path is where the file sits in that repository, so that a person told about it can open it.
+	Path string `json:"path"`
+}
+
+type docsListOut struct {
+	// Source is what the repository calls its own backlog, so that an answer can be attributed.
+	Source string      `json:"source"`
+	Items  []docsBrief `json:"items"`
+	// ReadAt is when this reading was taken, because it is a cached copy of somebody else's
+	// repository and "how old" is a question the caller is entitled to.
+	ReadAt string `json:"readAt" jsonschema:"RFC 3339"`
+}
+
+type docsListIn struct {
+	Stage  string `json:"stage,omitempty" jsonschema:"only items of this stage"`
+	Status string `json:"status,omitempty" jsonschema:"only items with this status, as the source spells it"`
+	Open   bool   `json:"open,omitempty" jsonschema:"only what is not done, which is usually what is being asked"`
+}
+
+type docsGetIn struct {
+	ID string `json:"id" jsonschema:"the identifier, for example B-171"`
+}

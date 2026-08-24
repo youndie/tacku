@@ -58,6 +58,47 @@ func TestAFinishedStageIsNotDrawnAsAnEmptyColumn(t *testing.T) {
 	}
 }
 
+// tableIn pulls the one table out of a rendered tree.
+func tableIn(t *testing.T, tree []byte) []byte {
+	t.Helper()
+
+	var walk func(any) []byte
+	walk = func(node any) []byte {
+		switch value := node.(type) {
+		case map[string]any:
+			if value["type"] == "table" {
+				found, err := json.Marshal(value)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return found
+			}
+			for _, child := range value {
+				if found := walk(child); found != nil {
+					return found
+				}
+			}
+		case []any:
+			for _, child := range value {
+				if found := walk(child); found != nil {
+					return found
+				}
+			}
+		}
+		return nil
+	}
+
+	var parsed any
+	if err := json.Unmarshal(tree, &parsed); err != nil {
+		t.Fatal(err)
+	}
+	found := walk(parsed)
+	if found == nil {
+		t.Fatal("в дереве нет ни одной таблицы")
+	}
+	return found
+}
+
 // Both rules here were written by looking at a real item rather than at the fixture, and neither
 // was visible in the fixture at all.
 func TestAnItemKeepsTheShapeItWasWrittenIn(t *testing.T) {
@@ -83,19 +124,31 @@ func TestAnItemKeepsTheShapeItWasWrittenIn(t *testing.T) {
 			t.Errorf("собственный заголовок файла нарисован вторым заголовком: %q", text)
 		}
 	}
-	// Строка таблицы — это строка. Склеенная в абзац с соседними, таблица превращается в одно
-	// нечитаемое предложение, что и произошло на живой задаче.
-	rows := 0
-	for _, text := range texts {
-		if strings.HasPrefix(text, "| ") {
-			rows++
-		}
-		if strings.Count(text, "|") > 3 {
-			t.Errorf("строки таблицы склеились: %q", text)
-		}
+	// Таблица — это таблица. Сначала она склеивалась в одно нечитаемое предложение, потом ехала
+	// строками текста — при том, что в словаре есть `table`, и он объявлен профилем этой сборки.
+	var grid struct {
+		Rows []struct {
+			Cells  []string `json:"cells"`
+			Header bool     `json:"header"`
+		} `json:"rows"`
 	}
-	if rows != 2 {
-		t.Errorf("строк таблицы %d, а их две", rows)
+	table := tableIn(t, tree)
+	if err := json.Unmarshal(table, &grid); err != nil {
+		t.Fatal(err)
+	}
+	if len(grid.Rows) != 2 {
+		t.Fatalf("строк в таблице %d, а их две: %s", len(grid.Rows), table)
+	}
+	if !grid.Rows[0].Header {
+		t.Error("первая строка не помечена заголовком — черта под ней только это и означает")
+	}
+	if len(grid.Rows[1].Cells) != 2 || grid.Rows[1].Cells[1] != "42" {
+		t.Errorf("ячейки разобраны неверно: %v", grid.Rows[1].Cells)
+	}
+	for _, text := range texts {
+		if strings.Contains(text, "|") {
+			t.Errorf("строка таблицы всё ещё нарисована текстом: %q", text)
+		}
 	}
 	joined := false
 	for _, text := range texts {

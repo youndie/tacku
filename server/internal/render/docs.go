@@ -219,35 +219,64 @@ func (d DocsItem) Screen() Component {
 // `# B-NN — <title>`: it is dropped, by matching the identifier rather than the words.
 func prose(id, body, item string) []Component {
 	var out []Component
-	var paragraph []string
-	fenced := false
-	dropped := false
+	var paragraph, code []string
+	var rows []TableRow
+	fenced, dropped := false, false
 
+	node := func() string { return fmt.Sprintf("%s-%d", id, len(out)) }
+
+	// One flush for every block this understands, because a block ends the same way whatever it is:
+	// something that is not it comes next. Three separate ones drifted apart the first time — a
+	// table followed by a heading kept its rows open and swallowed the heading.
 	flush := func() {
-		if len(paragraph) == 0 {
-			return
+		switch {
+		case len(paragraph) > 0:
+			out = append(out, Text(node(), strings.Join(paragraph, " "), TextBody))
+			paragraph = nil
+		case len(rows) > 0:
+			out = append(out, Table(node(), rows, FillWidth()))
+			rows = nil
+		case len(code) > 0:
+			lines := make([]Component, 0, len(code))
+			for _, line := range code {
+				lines = append(lines, Text(fmt.Sprintf("%s-code-%d", node(), len(lines)), line, TextBodyMuted))
+			}
+			out = append(out, Column(node(), 0,
+				[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)}, lines...))
+			code = nil
 		}
-		out = append(out, Text(fmt.Sprintf("%s-%d", id, len(out)),
-			strings.Join(paragraph, " "), TextBody))
-		paragraph = nil
 	}
 
 	for _, line := range strings.Split(body, "\n") {
 		trimmed := strings.TrimSpace(line)
-		node := fmt.Sprintf("%s-%d", id, len(out))
+
+		if fenced {
+			if strings.HasPrefix(trimmed, "```") {
+				fenced = false
+				flush()
+			} else {
+				code = append(code, line)
+			}
+			continue
+		}
 
 		switch {
 		case strings.HasPrefix(trimmed, "```"):
 			flush()
-			fenced = !fenced
-			out = append(out, Text(node, trimmed, TextBody))
-		case fenced, strings.HasPrefix(trimmed, "|"):
-			// A line that is part of a structure: kept as a line, because joining it into a
-			// paragraph is what turned a table into one unreadable sentence.
-			flush()
-			out = append(out, Text(node, line, TextBody))
+			fenced = true
+		case strings.HasPrefix(trimmed, "|"):
+			if row, ok := tableRow(trimmed); ok {
+				rows = append(rows, row)
+			} else if len(rows) > 0 {
+				// The dashes under the first row say it was the heading, and say nothing else.
+				rows[len(rows)-1].Header = true
+			}
 		case trimmed == "":
 			flush()
+		case strings.HasPrefix(trimmed, ">"):
+			flush()
+			out = append(out, Text(node(), strings.TrimSpace(strings.TrimPrefix(trimmed, ">")),
+				TextBodyMuted, PaddingXY(12, 0)))
 		case strings.HasPrefix(trimmed, "#"):
 			flush()
 			heading := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
@@ -255,14 +284,37 @@ func prose(id, body, item string) []Component {
 				dropped = true
 				continue
 			}
-			out = append(out, Text(node, heading, TextSubtitle))
+			out = append(out, Text(node(), heading, TextSubtitle))
 		case strings.HasPrefix(trimmed, "- "), strings.HasPrefix(trimmed, "* "), strings.HasPrefix(trimmed, "+ "):
 			flush()
-			out = append(out, Text(node, DocsBullet(trimmed[2:]), TextBody))
+			out = append(out, Text(node(), DocsBullet(trimmed[2:]), TextBody))
 		default:
+			if len(rows) > 0 || len(code) > 0 {
+				flush()
+			}
 			paragraph = append(paragraph, trimmed)
 		}
 	}
 	flush()
 	return out
+}
+
+// tableRow reads one row of a markdown table, and reports the separator as not a row at all.
+//
+// Cells are plain strings by the wire type, so whatever is inside one — a link, a name in
+// backticks — stays as the author typed it. That is the same limit a text node has and the reason
+// the markup here stops at blocks.
+func tableRow(line string) (TableRow, bool) {
+	cells := strings.Split(strings.Trim(line, "|"), "|")
+	separator := true
+	row := TableRow{Cells: make([]string, 0, len(cells))}
+
+	for _, cell := range cells {
+		cell = strings.TrimSpace(cell)
+		row.Cells = append(row.Cells, cell)
+		if strings.Trim(cell, ":-") != "" || cell == "" {
+			separator = false
+		}
+	}
+	return row, !separator
 }

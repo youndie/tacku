@@ -45,7 +45,7 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (10)
+## Open (11)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
@@ -56,6 +56,7 @@
 | [B-54](docs/backlog/B-54-screen-corpus-goes-stale-unseen.md) `[ ]` | Корпус тел экранов протухает молча: сверять его с сервером в гейте | P2 | M | - |
 | [B-55](docs/backlog/B-55-read-a-docs-item.md) `[~]` | Провалиться в задачу витрины: карточка открывает её текст | P2 | M | - |
 | [B-56](docs/backlog/B-56-probe-is-not-in-the-gate.md) `[ ]` | Проба не в гейте, и она уже протухла незаметно | P2 | S | - |
+| [B-57](docs/backlog/B-57-agent-sees-the-showcase.md) `[~]` | Агент видит витрину: два инструмента поверх того же источника | P2 | S | - |
 | [B-30](docs/backlog/B-30-git-backed-backlog-adapter.md) `[?]` | Читать бэклог docs-as-code как доску: git — хранилище, tacku — вид и аренда | P3 | XL | B-07, B-15 |
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
