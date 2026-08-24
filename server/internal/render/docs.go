@@ -225,6 +225,16 @@ func prose(id, body, item string) []Component {
 	var out []Component
 	var paragraph, code []string
 	var rows []TableRow
+
+	// The line of a list item being built, and the indent it was written at.
+	//
+	// Buffered rather than emitted where it starts, because a source wraps: an item is written
+	// across as many lines as it needs, the ones after the first carrying no marker. Emitted line
+	// by line, the second half of every item became a paragraph of its own — and the second halves
+	// of neighbouring items were then joined into one. That is what "the markdown does not render"
+	// looked like from the outside.
+	var listItem []string
+	var listAt []Modifier
 	fenced, dropped := false, false
 
 	node := func() string { return fmt.Sprintf("%s-%d", id, len(out)) }
@@ -237,6 +247,10 @@ func prose(id, body, item string) []Component {
 		if len(paragraph) > 0 {
 			out = append(out, Text(node(), strings.Join(paragraph, " "), TextBody))
 			paragraph = nil
+		}
+		if len(listItem) > 0 {
+			out = append(out, Text(node(), strings.Join(listItem, " "), TextBody, listAt...))
+			listItem, listAt = nil, nil
 		}
 		if len(rows) > 0 {
 			out = append(out, Table(node(), rows, FillWidth()))
@@ -297,8 +311,8 @@ func prose(id, body, item string) []Component {
 			flush()
 		case strings.HasPrefix(trimmed, ">"):
 			flush()
-			out = append(out, Text(node(), strings.TrimSpace(strings.TrimPrefix(trimmed, ">")),
-				TextBodyMuted, PaddingXY(12, 0)))
+			out = append(out, Text(node(), plain(strings.TrimSpace(strings.TrimPrefix(trimmed, ">"))),
+				TextBodyMuted, PaddingXY(0, 12)))
 		case strings.HasPrefix(trimmed, "#"):
 			flush()
 			heading := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
@@ -306,10 +320,10 @@ func prose(id, body, item string) []Component {
 				dropped = true
 				continue
 			}
-			out = append(out, Text(node(), heading, TextSubtitle))
+			out = append(out, Text(node(), plain(heading), TextSubtitle))
 		case strings.HasPrefix(trimmed, "- "), strings.HasPrefix(trimmed, "* "), strings.HasPrefix(trimmed, "+ "):
 			flush()
-			out = append(out, Text(node(), DocsBullet(trimmed[2:]), TextBody, indented(line)...))
+			listItem, listAt = []string{DocsBullet(plain(trimmed[2:]))}, indented(line)
 		case numbered.MatchString(trimmed):
 			// Kept exactly as written, number and all. A list whose items are numbered by the author
 			// is numbered for a reason — the third step refers to the first — and renumbering it
@@ -320,12 +334,18 @@ func prose(id, body, item string) []Component {
 			// reading it saw the markup fail rather than a long paragraph. Measured on a live item
 			// before the fix: 1091 characters in one node.
 			flush()
-			out = append(out, Text(node(), trimmed, TextBody, indented(line)...))
+			listItem, listAt = []string{plain(trimmed)}, indented(line)
 		default:
+			// A line with no marker of its own continues whatever is open. That is what a wrapped
+			// line is, and a list item is the case where getting it wrong shows.
+			if len(listItem) > 0 {
+				listItem = append(listItem, plain(trimmed))
+				continue
+			}
 			if len(rows) > 0 || len(code) > 0 {
 				flush()
 			}
-			paragraph = append(paragraph, trimmed)
+			paragraph = append(paragraph, plain(trimmed))
 		}
 	}
 	flush()
@@ -350,4 +370,20 @@ func tableRow(line string) (TableRow, bool) {
 		}
 	}
 	return row, !separator
+}
+
+// emphasis is what a source uses to make part of a line stand out.
+var emphasis = regexp.MustCompile(`\*\*([^*]+)\*\*|__([^_]+)__`)
+
+// plain takes the emphasis markers off a line.
+//
+// The line this draws is narrower than it looks. Emphasis is decoration: without it the sentence
+// still says what it said, and with the asterisks left on it the reader is shown markup instead —
+// which is what "it renders the markdown raw" means from the other side of the screen. A link is
+// the opposite case and is left exactly as written: drawn as a link it would promise something this
+// vocabulary cannot do (Q-73, kompot#56), and the address is the only part of it worth anything to
+// somebody who cannot press it. Backticks stay for the same reason — they say "this is a name", and
+// nothing else here can.
+func plain(line string) string {
+	return emphasis.ReplaceAllString(line, "$1$2")
 }
