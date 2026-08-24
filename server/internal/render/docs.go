@@ -199,7 +199,18 @@ func (d DocsItem) Screen() Component {
 		// The padding is inside the list rather than on it: a list insets its viewport, so padding
 		// put here clips the scroll at both ends instead of framing it.
 		PaginatedList("docs-item-scroll", []Component{
-			Column("docs-item", 16, []Modifier{FillWidth(), Padding(32)}, body...),
+			// A share of the width rather than a limit on it, because the vocabulary has no maximum
+			// width — only "fill" and a fixed number of points (Q-74). A fixed one would be the
+			// honest thing to want and the wrong thing to send: the server cannot know the window,
+			// and a column wider than it is clipped, there being no horizontal scroll either.
+			//
+			// Two thirds, which on the window the design is drawn at leaves a line of about eighty
+			// characters — the width prose is read at. A full-width line of running text is the
+			// thing a person gives up on rather than reads.
+			Row("docs-item-measure", 0, []Modifier{FillWidth()},
+				Column("docs-item", 16, []Modifier{Weight(2), Padding(32)}, body...),
+				Spacer("docs-item-gutter"),
+			),
 		}, "", nil, Weight(1)),
 	)
 }
