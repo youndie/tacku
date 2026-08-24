@@ -283,6 +283,9 @@ func docsSource() (*docsboard.Source, error) {
 		Index: os.Getenv("TACKU_DOCS_INDEX"),
 		Token: os.Getenv("TACKU_DOCS_TOKEN"),
 		TTL:   ttl,
+		Log: func(format string, args ...any) {
+			fmt.Fprintf(os.Stderr, "tacku: "+format+"\n", args...)
+		},
 	}), nil
 }
 

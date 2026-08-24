@@ -592,11 +592,11 @@ func DocsWhyUnread(err error) string {
 
 	switch refusal.Status {
 	case http.StatusUnauthorized:
-		return "The credential was not accepted (401). A token that an organisation has not yet approved answers exactly like this."
+		return "The credential was not accepted (401). It has expired, been revoked, or was not copied whole."
 	case http.StatusForbidden:
 		return "The credential is not allowed to read this (403). Check that it carries read access to the contents of that repository."
 	case http.StatusNotFound:
-		return "Nothing was found under that name (404). Either the repository or the branch is spelled differently, or the credential cannot see the repository at all — a private one answers a stranger the same way it answers nobody."
+		return "Nothing was found under that name (404). A private repository answers a stranger exactly as it answers nobody, so this is either a name — the repository or the branch — or a credential that cannot see it: waiting for an organisation to approve it, issued against the wrong owner, or not granted this repository. Measured: a token pending approval answers 404 and not 401."
 	}
 	return fmt.Sprintf("The source answered %d, which is neither data nor a refusal this build knows.", refusal.Status)
 }
@@ -633,6 +633,16 @@ func DocsStageName(stage string) string {
 		return "No stage"
 	}
 	return stage
+}
+
+// DocsSource is the coordinates the reading was attempted at.
+//
+// On the screen because the first question under "could not be read" is which repository this
+// deployment believes it is reading, and that is a question about its own configuration rather than
+// about the source. A person who can see the name can tell a refused credential from a value that
+// never arrived — and telling those apart from the outside is otherwise impossible.
+func DocsSource(repo, ref, root string) string {
+	return fmt.Sprintf("Reading %s at %s, under %s.", repo, ref, root)
 }
 
 // DocsBlockedBy names what an item is waiting for.

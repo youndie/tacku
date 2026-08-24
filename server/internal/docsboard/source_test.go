@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -206,5 +207,48 @@ func TestTheCredentialIsCarried(t *testing.T) {
 func TestWithoutARepositoryThereIsNoSource(t *testing.T) {
 	if (Config{Ref: "main", Token: "t"}).Configured() {
 		t.Fatal("источник считается заданным без репозитория")
+	}
+}
+
+// A line when the outcome changes, and not one per visit: the board is read on every visit, and a
+// log with a line each is one nobody greps twice.
+func TestOnlyAChangeOfOutcomeIsWrittenDown(t *testing.T) {
+	stand := newStand(t, files)
+
+	var lines []string
+	config := sourceOn(stand, time.Nanosecond).Config()
+	config.Log = func(format string, args ...any) {
+		lines = append(lines, fmt.Sprintf(format, args...))
+	}
+	source := New(config)
+
+	for range 3 {
+		source.Load(context.Background())
+	}
+	if len(lines) != 1 {
+		t.Fatalf("три удачных чтения дали %d строк: %v", len(lines), lines)
+	}
+
+	stand.down.Store(true)
+	for range 3 {
+		source.Load(context.Background())
+	}
+	if len(lines) != 2 {
+		t.Fatalf("падение и два повтора дали %d строк всего: %v", len(lines), lines)
+	}
+
+	// Координаты в строке: первый вопрос под «не прочиталось» — какой репозиторий процесс вообще
+	// пытается читать, а это вопрос к его собственной конфигурации.
+	if !strings.Contains(lines[1], "example/docs") || !strings.Contains(lines[1], "backlog") {
+		t.Errorf("строка не назвала, что читалось: %q", lines[1])
+	}
+	if strings.Contains(lines[1], "a-secret-value") {
+		t.Errorf("учётные данные попали в лог: %q", lines[1])
+	}
+
+	stand.down.Store(false)
+	source.Load(context.Background())
+	if len(lines) != 3 {
+		t.Errorf("восстановление не записано: %v", lines)
 	}
 }
