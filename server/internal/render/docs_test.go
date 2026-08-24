@@ -239,3 +239,61 @@ func TestBlocksComeOutInTheOrderTheyWereWritten(t *testing.T) {
 		t.Errorf("порядок блоков нарушен: абзац %d, таблица %d, заголовок %d", paragraph, table, heading)
 	}
 }
+
+// What "the markdown does not render" turned out to be: a source wraps its lines, and a list item
+// written across two of them lost its second half to a paragraph — with the second halves of
+// neighbouring items then joined into one.
+func TestAWrappedListItemStaysOneItem(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-80", Title: "Ratings", Status: "open", Path: "backlog/B-80-x.md",
+		Body: "- **Not decoration.** Stars take an hour, but behind them is: who may leave\n" +
+			"  a review, moderation, the owner's reply, recomputing the average.\n" +
+			"- **Only a buyer.** A review with no order behind it turns the shop into\n" +
+			"  a noticeboard.\n",
+	}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var body []string
+	for _, line := range strings.Split(string(tree), `"text":"`)[1:] {
+		text := line[:strings.Index(line, `"`)]
+		if strings.HasPrefix(text, "·") {
+			body = append(body, text)
+		}
+	}
+
+	if len(body) != 2 {
+		t.Fatalf("пунктов %d, а их два: %v", len(body), body)
+	}
+	for _, one := range body {
+		if !strings.Contains(one, "moderation") && !strings.Contains(one, "noticeboard") {
+			t.Errorf("пункт потерял продолжение: %q", one)
+		}
+	}
+
+	// Маркеры выделения — разметка, показанная читателю вместо оформления.
+	if strings.Contains(string(tree), "**") {
+		t.Error("звёздочки доехали до экрана")
+	}
+	if !strings.Contains(body[0], "Not decoration.") {
+		t.Errorf("выделение снято вместе с текстом: %q", body[0])
+	}
+}
+
+// A link is left exactly as written: drawn as a link it would promise what this vocabulary cannot
+// do, and the address is the only part of it worth anything to somebody who cannot press it.
+func TestALinkKeepsItsAddress(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md",
+		Body: "See [B-97](B-97-images.md) for the root of it.\n",
+	}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(tree), "B-97-images.md") {
+		t.Error("адрес ссылки потерян — нажать её нельзя, и найти теперь тоже")
+	}
+}
