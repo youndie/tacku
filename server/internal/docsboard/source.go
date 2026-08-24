@@ -110,6 +110,16 @@ type Snapshot struct {
 	TakenAt time.Time
 }
 
+// Item finds one item by its identifier.
+func (s Snapshot) Item(id string) (Item, bool) {
+	for _, item := range s.Items {
+		if item.ID == id {
+			return item, true
+		}
+	}
+	return Item{}, false
+}
+
 // Empty reports a snapshot that has never been filled.
 func (s Snapshot) Empty() bool { return s.Head == "" }
 

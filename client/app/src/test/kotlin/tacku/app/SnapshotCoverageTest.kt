@@ -35,10 +35,11 @@ class SnapshotCoverageTest {
             "Screens_My_tasks.png",
             "Screens_Sign_in.png",
             "Screens_Docs_backlog.png",
-            // `Screens_Task` and `Screens_New_task` are missing on purpose, and this list is where
-            // that is said out loud: both carry a back link, the harness's font has no `←`, and the
-            // host draws that one glyph — so everything after it sits differently on each machine.
-            // Eleven compared screens look exactly like thirteen from the outside. B-51.
+            // `Screens_Task`, `Screens_New_task` and the docs item screen are missing on purpose,
+            // and this list is where that is said out loud: each carries a back link, the harness's
+            // font has no `←`, and the host draws that one glyph — so everything after it sits
+            // differently on each machine. Twelve compared screens look exactly like fifteen from
+            // the outside. B-51.
         )
 
     @Test

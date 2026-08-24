@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/youndie/tacku/server/internal/docsboard"
@@ -104,11 +105,11 @@ func (d DocsBoard) column(stage string, items []docsboard.Item) Component {
 		body...)
 }
 
-// card is the item, and it opens nothing.
+// card is the item, and it opens the item's own screen.
 //
-// Not an oversight and not laziness: the vocabulary has no action that leaves the application, so a
-// card cannot lead to the file it stands for — see the question log. What it can do is name the item
-// the way the repository names it, which is what a person searches for in their checkout.
+// Not the file it stands for: the vocabulary has no action that leaves the application (Q-72), so
+// the text is brought here instead of the reader being sent there. Which is not only a
+// consolation — the file is in a repository the reader may not have checked out.
 func (d DocsBoard) card(item docsboard.Item) Component {
 	id := "docs-card-" + item.ID
 
@@ -120,9 +121,12 @@ func (d DocsBoard) card(item docsboard.Item) Component {
 		body = append(body, Text(id+"-blocked", DocsBlockedBy(item.BlockedBy), TextMeta))
 	}
 
-	return Spaced(id, Column(id+"-body", 6,
-		[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
-		body...))
+	return Spaced(id, Opens(
+		Column(id+"-body", 6,
+			[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
+			body...),
+		Navigate(LinkDocsItem+item.ID),
+	))
 }
 
 func (d DocsBoard) open() int {
@@ -161,4 +165,104 @@ func UnreadableDocsBoard(person domain.MemberID, failure error, repo, ref, root 
 			Spacer("docs-unreadable-tail"),
 		),
 	)
+}
+
+// DocsItem is one item of that backlog, read inside the application.
+//
+// It exists because the alternative does not: the vocabulary has no action that leaves the
+// application (Q-72), so a card could name an item and nothing more, and the board was a wall of
+// dead ends. The text is the source's, rendered rather than linked to.
+type DocsItem struct {
+	Person domain.MemberID
+	Item   docsboard.Item
+}
+
+func (d DocsItem) Screen() Component {
+	body := []Component{
+		BackLink(LinkDocsBoard, RouteTitle(LinkDocsBoard)),
+		Column("docs-item-heading", 6, nil,
+			Text("docs-item-title", d.Item.Title, TextDisplay),
+			Text("docs-item-meta", DocsCardMeta(d.Item), TextMeta),
+		),
+	}
+	if len(d.Item.BlockedBy) > 0 {
+		body = append(body, Text("docs-item-blocked", DocsBlockedBy(d.Item.BlockedBy), TextBodyMuted))
+	}
+	body = append(body, prose("docs-item-body", d.Item.Body, d.Item.ID)...)
+	body = append(body, Text("docs-item-path", d.Item.Path, TextMeta))
+
+	return Row("screen-docs-item", 0,
+		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
+		Navigation(d.Person, LinkDocsBoard),
+		Rule("docs-item-nav-rule", RuleDp, ColorDivider, false),
+		// The padding is inside the list rather than on it: a list insets its viewport, so padding
+		// put here clips the scroll at both ends instead of framing it.
+		PaginatedList("docs-item-scroll", []Component{
+			Column("docs-item", 16, []Modifier{FillWidth(), Padding(32)}, body...),
+		}, "", nil, Weight(1)),
+	)
+}
+
+// prose turns the source's markup into what the vocabulary has: lines of text carrying a token.
+//
+// Deliberately shallow. A heading becomes a heading, a list item becomes a line with one marker, a
+// paragraph becomes a paragraph, and the markers inside a line — emphasis, code, links — are left
+// as the author typed them. Anything more would be a markdown renderer built out of `text`, and the
+// first thing it could not do is the thing it exists for: a link inside a paragraph is not
+// pressable in this vocabulary at all, so a renderer that dressed one up would be lying about it.
+//
+// Shallow is not the same as careless, and two rules here were written by looking at a real item
+// rather than at the fixture. A table came out as one long line, because joining a paragraph is
+// what happens to any run of non-blank lines and a table is exactly that — so a row keeps its own
+// line, and so does everything inside a fence. And the file's own first heading repeats the title
+// that is already at the top of the screen, since the method's template opens every item with
+// `# B-NN — <title>`: it is dropped, by matching the identifier rather than the words.
+func prose(id, body, item string) []Component {
+	var out []Component
+	var paragraph []string
+	fenced := false
+	dropped := false
+
+	flush := func() {
+		if len(paragraph) == 0 {
+			return
+		}
+		out = append(out, Text(fmt.Sprintf("%s-%d", id, len(out)),
+			strings.Join(paragraph, " "), TextBody))
+		paragraph = nil
+	}
+
+	for _, line := range strings.Split(body, "\n") {
+		trimmed := strings.TrimSpace(line)
+		node := fmt.Sprintf("%s-%d", id, len(out))
+
+		switch {
+		case strings.HasPrefix(trimmed, "```"):
+			flush()
+			fenced = !fenced
+			out = append(out, Text(node, trimmed, TextBody))
+		case fenced, strings.HasPrefix(trimmed, "|"):
+			// A line that is part of a structure: kept as a line, because joining it into a
+			// paragraph is what turned a table into one unreadable sentence.
+			flush()
+			out = append(out, Text(node, line, TextBody))
+		case trimmed == "":
+			flush()
+		case strings.HasPrefix(trimmed, "#"):
+			flush()
+			heading := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
+			if !dropped && strings.HasPrefix(heading, item) {
+				dropped = true
+				continue
+			}
+			out = append(out, Text(node, heading, TextSubtitle))
+		case strings.HasPrefix(trimmed, "- "), strings.HasPrefix(trimmed, "* "), strings.HasPrefix(trimmed, "+ "):
+			flush()
+			out = append(out, Text(node, DocsBullet(trimmed[2:]), TextBody))
+		default:
+			paragraph = append(paragraph, trimmed)
+		}
+	}
+	flush()
+	return out
 }

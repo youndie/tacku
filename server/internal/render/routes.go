@@ -26,6 +26,10 @@ const (
 	// a source configured — see [WithDocsBoard].
 	LinkDocsBoard = "app://docs-board"
 
+	// One item of that backlog, addressed by its identifier and therefore resolved by the client
+	// from a prefix, like a task.
+	LinkDocsItem = "app://docs-item/"
+
 	// Known to the client rather than carried by the graph.
 	//
 	// Signing in cannot be in the graph by construction: fetching the graph needs a session, and
@@ -95,9 +99,13 @@ var Graph = base
 // route and the endpoint behind it — are decided in one place (httpsrv.New) because a route
 // promising an endpoint nobody registered is a button that does nothing, in silence, for as long as
 // nobody presses it while watching.
-// DocsBoardPath is where that view is served. A constant because the route and the handler must
-// agree on it, and they are registered in two packages.
-const DocsBoardPath = "/screens/docs-board"
+// DocsBoardPath is where that view is served, and DocsItemPath what one item's identifier goes
+// after. Constants because the route and the handler must agree on them, and they are registered in
+// two packages.
+const (
+	DocsBoardPath = "/screens/docs-board"
+	DocsItemPath  = "/screens/docs-item/"
+)
 
 var DocsRoute = Route{
 	Deeplink: LinkDocsBoard, Endpoint: DocsBoardPath, Kind: "screen",
@@ -112,10 +120,11 @@ var DocsRoute = Route{
 // function of the argument instead of a function of the history.
 func WithDocsBoard(on bool) {
 	if !on {
-		Graph = base
+		Graph, ClientNativePrefixes = base, basePrefixes
 		return
 	}
 	Graph = append(append([]Route(nil), base...), DocsRoute)
+	ClientNativePrefixes = append(append([]string(nil), basePrefixes...), LinkDocsItem)
 }
 
 // ClientNative are the destinations a client resolves without the graph. Listed rather than left
@@ -127,7 +136,13 @@ var ClientNative = []string{LinkSignIn, LinkSignOut}
 //
 // Listed separately because the graph cannot express them at all: a route's endpoint is a literal
 // path, so anything addressed by naming a thing is resolved by the client from a prefix it knows.
-var ClientNativePrefixes = []string{LinkTask, LinkEditTask}
+//
+// Assembled with the graph and for the same reason: the item screen exists only where a source
+// does, and a prefix listed by a deployment that cannot serve it is an address that answers 404
+// after the client has already navigated.
+var ClientNativePrefixes = basePrefixes
+
+var basePrefixes = []string{LinkTask, LinkEditTask}
 
 // ClientPaths are the addresses a page can be standing at, as a browser writes them.
 //
