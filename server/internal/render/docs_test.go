@@ -297,3 +297,30 @@ func TestALinkKeepsItsAddress(t *testing.T) {
 		t.Error("адрес ссылки потерян — нажать её нельзя, и найти теперь тоже")
 	}
 }
+
+// The text of an item takes a share of the width and not all of it.
+//
+// A share because the vocabulary has no maximum width (Q-74): a fixed one would be clipped on a
+// window narrower than itself, and there is no horizontal scroll to recover from that. What is
+// pinned here is that the column does not fill — a full-width line of running text is the thing a
+// person gives up on rather than reads, and "fill" is one modifier away from being back.
+func TestTheTextOfAnItemDoesNotFillTheWidth(t *testing.T) {
+	item := docsboard.Item{ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md", Body: "A line.\n"}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := string(tree)
+	column := strings.Index(body, `"id":"docs-item"`)
+	gutter := strings.Index(body, `"id":"docs-item-gutter"`)
+	if column < 0 || gutter < 0 {
+		t.Fatalf("колонка или поле рядом с ней исчезли: %s", body)
+	}
+	if gutter < column {
+		t.Error("поле стоит перед текстом, а не после него")
+	}
+	if !strings.Contains(body[column:gutter], `"type":"weight"`) {
+		t.Errorf("колонка текста без доли ширины: %s", body[column:gutter])
+	}
+}
