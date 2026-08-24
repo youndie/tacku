@@ -635,6 +635,16 @@ func DocsStageName(stage string) string {
 	return stage
 }
 
+// DocsSource is the coordinates the reading was attempted at.
+//
+// On the screen because the first question under "could not be read" is which repository this
+// deployment believes it is reading, and that is a question about its own configuration rather than
+// about the source. A person who can see the name can tell a refused credential from a value that
+// never arrived — and telling those apart from the outside is otherwise impossible.
+func DocsSource(repo, ref, root string) string {
+	return fmt.Sprintf("Reading %s at %s, under %s.", repo, ref, root)
+}
+
 // DocsBlockedBy names what an item is waiting for.
 func DocsBlockedBy(ids []string) string {
 	return "waits for " + strings.Join(ids, ", ")

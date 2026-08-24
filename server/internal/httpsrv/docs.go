@@ -32,7 +32,9 @@ func docsBoard(source *docsboard.Source, now func() time.Time) http.HandlerFunc 
 		// saying so, because an empty board and a dead connection look identical and the difference
 		// is what a person came for.
 		if snapshot.Empty() {
-			respond(w, r, render.UnreadableDocsBoard(principal.Provenance.OnBehalfOf, failure))
+			where := source.Config()
+			respond(w, r, render.UnreadableDocsBoard(
+				principal.Provenance.OnBehalfOf, failure, where.Repo, where.Ref, where.Root))
 			return
 		}
 

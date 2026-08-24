@@ -142,7 +142,7 @@ func (d DocsBoard) done() int { return len(d.Snapshot.Items) - d.open() }
 // A screen and not an error status: the client would turn a 5xx into its own message, and the person
 // looking at it is the one who can fix this — the repository, the branch or the credential is wrong,
 // or the source is down. It says which of those it cannot tell apart rather than pretending to know.
-func UnreadableDocsBoard(person domain.MemberID, failure error) Component {
+func UnreadableDocsBoard(person domain.MemberID, failure error, repo, ref, root string) Component {
 	return Row("screen-docs", 0,
 		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
 		Navigation(person, LinkDocsBoard),
@@ -153,6 +153,7 @@ func UnreadableDocsBoard(person domain.MemberID, failure error) Component {
 				[]Modifier{Padding(32), Background(ColorSurfaceBlock)},
 				Text("docs-unreadable-title", "The backlog could not be read", TextTitle),
 				Text("docs-unreadable-why", DocsWhyUnread(failure), TextBody),
+				Text("docs-unreadable-source", DocsSource(repo, ref, root), TextMeta),
 				Text("docs-unreadable-body",
 					"Nothing has been read from the source since this server started, so there is not even an old reading to show.",
 					TextBodyMuted),

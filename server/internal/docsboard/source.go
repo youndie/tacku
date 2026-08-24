@@ -57,6 +57,17 @@ type Config struct {
 	// second production value.
 	API string
 
+	// Log is where a change of outcome is written, or nil for a process that writes nothing.
+	//
+	// A change and not every reading: the board is read on every visit, and a line per visit is a
+	// log nobody greps twice. What is worth a line is the transition — the first failure and the
+	// recovery — because between them the screen already says what is wrong to whoever is looking
+	// at it, and the log exists for whoever is not.
+	//
+	// Written at all because this board was deployed without it: the source could not be read, the
+	// screen said so, and there was nothing on the other side of the wall to compare it against.
+	Log func(format string, args ...any)
+
 	Client *http.Client
 }
 
@@ -114,6 +125,13 @@ type Source struct {
 	mu       sync.Mutex
 	snapshot Snapshot
 	checked  time.Time
+
+	// failing is what the last attempt said, and reported whether there has been one at all. Two
+	// fields because "nothing failed" and "nothing has happened yet" are the same empty string, and
+	// the first successful reading is the line most worth having: it is the one that says the
+	// configuration is right.
+	failing  string
+	reported bool
 }
 
 func New(config Config) *Source { return &Source{config: config.withDefaults()} }
@@ -142,20 +160,49 @@ func (s *Source) Load(ctx context.Context) (Snapshot, error) {
 
 	head, err := s.head(ctx)
 	if err != nil {
-		return s.snapshot, err
+		return s.snapshot, s.report(err)
 	}
 	s.checked = time.Now()
 
 	if head == s.snapshot.Head {
-		return s.snapshot, nil
+		return s.snapshot, s.report(nil)
 	}
 
 	snapshot, err := s.read(ctx, head)
 	if err != nil {
-		return s.snapshot, err
+		return s.snapshot, s.report(err)
 	}
 	s.snapshot = snapshot
+	s.report(nil)
 	return s.snapshot, nil
+}
+
+// report writes a line when the outcome changes, and gives the error back unchanged.
+//
+// The coordinates go into the line with it. "could not be read" is not actionable on its own, and
+// the first question anybody asks is which repository the process actually thinks it is reading —
+// which is a question about configuration and not about GitHub.
+func (s *Source) report(err error) error {
+	current := ""
+	if err != nil {
+		current = err.Error()
+	}
+	if s.reported && current == s.failing {
+		return err
+	}
+	s.failing, s.reported = current, true
+
+	if s.config.Log == nil {
+		return err
+	}
+	if err != nil {
+		s.config.Log("docsboard: %s at %s under %s could not be read: %v",
+			s.config.Repo, s.config.Ref, s.config.Root, err)
+	} else {
+		s.config.Log("docsboard: read %d items from %s at %s",
+			len(s.snapshot.Items), s.config.Repo, s.config.Ref)
+	}
+	return err
 }
 
 func (s *Source) request(ctx context.Context, url, accept, what string) (*http.Response, error) {
