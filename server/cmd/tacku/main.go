@@ -99,6 +99,14 @@ func runMCP(args []string) error {
 	)
 	deps := mcpsrv.Deps{Version: version, Fallback: &fallback}
 
+	// The same board over stdio as over HTTP, where one is configured. An agent running beside a
+	// person should not see less of the work than the person does.
+	docs, err := docsSource()
+	if err != nil {
+		return err
+	}
+	deps.Docs = docs
+
 	store, err := sqlite.Open(*path)
 	if err != nil {
 		return err

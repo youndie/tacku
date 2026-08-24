@@ -222,6 +222,30 @@ func Text(id, body, style string, modifiers ...Modifier) Component {
 	return text{Type: "text", ID: id, Modifiers: canonical(modifiers), Text: body, Style: style}
 }
 
+type table struct {
+	Type      string     `json:"type"`
+	ID        string     `json:"id"`
+	Modifiers []Modifier `json:"modifiers,omitempty"`
+	Rows      []TableRow `json:"rows"`
+}
+
+// TableRow is one row of a table: cells as written, and whether it is the heading.
+type TableRow struct {
+	Cells  []string `json:"cells"`
+	Header bool     `json:"header,omitempty"`
+}
+
+// Table is a grid of strings.
+//
+// Used for one thing and reached for late: an item of a backlog kept in another repository often
+// carries a markdown table, and this server was drawing its rows as lines of text — `| Rule | Places
+// |` and a row of dashes under it — while the vocabulary had a table all along. A cell is a plain
+// string, so nothing inside one can be emphasised or pressed, which is the same limit every text
+// node has.
+func Table(id string, rows []TableRow, modifiers ...Modifier) Component {
+	return table{Type: "table", ID: id, Modifiers: canonical(modifiers), Rows: rows}
+}
+
 func Button(id, label string, action Action, modifiers ...Modifier) Component {
 	return button{Type: "button", ID: id, Modifiers: canonical(modifiers), Text: label, Action: action}
 }

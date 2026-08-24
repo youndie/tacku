@@ -1,15 +1,22 @@
 package mcpsrv_test
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/youndie/tacku/server/internal/docsboard"
 	"github.com/youndie/tacku/server/internal/domain"
 	"github.com/youndie/tacku/server/internal/mcpsrv"
 	"github.com/youndie/tacku/server/internal/store/sqlite"
@@ -26,7 +33,9 @@ type harness struct {
 	ctx     context.Context
 }
 
-func start(t *testing.T) harness {
+func start(t *testing.T) harness { return startWith(t, nil) }
+
+func startWith(t *testing.T, docs *docsboard.Source) harness {
 	t.Helper()
 
 	store, err := sqlite.Open(filepath.Join(t.TempDir(), "tacku.db"))
@@ -37,7 +46,7 @@ func start(t *testing.T) harness {
 
 	fallback := domain.Agent(robot, "0.1.0", anna)
 	server, err := mcpsrv.New(mcpsrv.Deps{
-		Store: store, Attempts: store,
+		Store: store, Attempts: store, Docs: docs,
 		Version: "0.1.0", Fallback: &fallback,
 	})
 	if err != nil {
@@ -361,4 +370,111 @@ func TestAToolMoveIsRecordedAsTheAgentSurface(t *testing.T) {
 	if moves != 1 {
 		t.Fatalf("the task's history holds %d status moves, want the one just made", moves)
 	}
+}
+
+// The board a person sees and an agent does not is the one place this product's claim is checkable,
+// and it was false: nine tools, and not one of them knew the docs board existed.
+func TestTheAgentSeesTheDocumentedBacklog(t *testing.T) {
+	h := startWith(t, docsFixture(t))
+
+	var listed struct {
+		Source string `json:"source"`
+		ReadAt string `json:"readAt"`
+		Items  []struct {
+			ID     string `json:"id"`
+			Stage  string `json:"stage"`
+			Status string `json:"status"`
+		} `json:"items"`
+	}
+	h.call(t, "list_docs_items", map[string]any{"open": true}, &listed)
+
+	if len(listed.Items) != 1 || listed.Items[0].ID != "B-02" {
+		t.Fatalf("открытых задач %d: %+v", len(listed.Items), listed.Items)
+	}
+	if listed.Items[0].Stage != "stage-one" {
+		t.Errorf("этап не приехал: %q", listed.Items[0].Stage)
+	}
+	if listed.ReadAt == "" || listed.Source == "" {
+		t.Errorf("ответ не называет ни источник, ни время чтения: %+v", listed)
+	}
+
+	var item struct {
+		Body string `json:"body"`
+		Path string `json:"path"`
+	}
+	h.call(t, "get_docs_item", map[string]any{"id": "B-02"}, &item)
+	if !strings.Contains(item.Body, "never delivered") {
+		t.Errorf("текст задачи не приехал: %q", item.Body)
+	}
+	if item.Path == "" {
+		t.Error("путь к файлу не назван — его нечего процитировать человеку с чекаутом")
+	}
+
+	if refusal := h.callExpectingFailure(t, "get_docs_item", map[string]any{"id": "B-999"}); !strings.Contains(refusal, "B-999") {
+		t.Errorf("отказ не назвал, какого идентификатора нет: %q", refusal)
+	}
+}
+
+// Without a source the tools are absent rather than refusing: a model that cannot see a tool does
+// not spend a turn discovering that it may not use it.
+func TestWithoutASourceTheAgentIsNotOfferedTheTools(t *testing.T) {
+	h := start(t)
+
+	listed, err := h.session.ListTools(h.ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tool := range listed.Tools {
+		if strings.Contains(tool.Name, "docs") {
+			t.Errorf("контур без источника предлагает %q", tool.Name)
+		}
+	}
+}
+
+// A repository of the same shape as the ones this reads, and of nobody's: an index with a stage
+// table and two items, served the way the forge serves them.
+func docsFixture(t *testing.T) *docsboard.Source {
+	t.Helper()
+
+	files := map[string]string{
+		"backlog.md": "# A lending system\n\n| Identifier | Stage |\n|---|---|\n| `stage-one` | First |\n",
+		"backlog/B-01-holds.md": "---\nid: B-01\ntitle: \"Queue positions are recomputed on every read\"\n" +
+			"status: done\npriority: P2\nsize: M\nstage: stage-one\n---\n",
+		"backlog/B-02-notices.md": "---\nid: B-02\ntitle: \"A failed notice is recorded as sent\"\n" +
+			"status: open\npriority: P1\nsize: S\nstage: stage-one\n---\n\n" +
+			"A notice that was never delivered reads exactly like one that was.\n",
+	}
+
+	var buffer bytes.Buffer
+	zipped := gzip.NewWriter(&buffer)
+	archive := tar.NewWriter(zipped)
+	for name, body := range files {
+		header := &tar.Header{Name: "example-docs-abc1234/" + name, Mode: 0o644, Size: int64(len(body))}
+		if err := archive.WriteHeader(header); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := archive.Write([]byte(body)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := archive.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := zipped.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "/commits/") {
+			w.Write([]byte("abc1234"))
+			return
+		}
+		w.Write(buffer.Bytes())
+	}))
+	t.Cleanup(server.Close)
+
+	return docsboard.New(docsboard.Config{
+		Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
+		TTL: time.Hour, API: server.URL, Client: server.Client(),
+	})
 }

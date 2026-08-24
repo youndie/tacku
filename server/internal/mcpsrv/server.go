@@ -19,6 +19,7 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/youndie/tacku/server/internal/auth"
+	"github.com/youndie/tacku/server/internal/docsboard"
 
 	"github.com/youndie/tacku/server/internal/domain"
 )
@@ -31,6 +32,15 @@ type Deps struct {
 
 	// Version of this build, reported as the server's own.
 	Version string
+
+	// Docs is the read-only view over a backlog kept in another repository, or nil where this
+	// deployment shows none.
+	//
+	// Optional and read-only on both surfaces. It is here because it was not: the board was on the
+	// screens and invisible to agents, and this product's whole claim is that an agent is a member
+	// of the team looking at the same work. A board only a person can see makes that claim false in
+	// the one place it is checkable.
+	Docs *docsboard.Source
 
 	// Fallback is the actor to record when the request carries no principal, and it is set by the
 	// stdio transport alone: there the agent runs beside the person it serves and its identity comes
@@ -81,6 +91,9 @@ func build(deps Deps, writes bool) (*mcp.Server, error) {
 
 	server := mcp.NewServer(&mcp.Implementation{Name: "tacku", Version: deps.Version}, nil)
 	registerReads(server, deps)
+	if deps.Docs != nil {
+		registerDocs(server, deps)
+	}
 	if writes {
 		registerWrites(server, deps)
 	}
