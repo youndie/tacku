@@ -158,3 +158,84 @@ func TestAnItemKeepsTheShapeItWasWrittenIn(t *testing.T) {
 		t.Errorf("абзац не собрался из двух строк: %v", texts)
 	}
 }
+
+// The defect that reached a person: a numbered list is a run of non-blank lines, and a run of
+// non-blank lines is a paragraph — so five steps became one sentence. Measured on a live item at
+// 1091 characters in a single node before this.
+func TestANumberedListIsAListAndNotOneLongSentence(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-102", Title: "Store the key", Status: "open", Path: "backlog/B-102-x.md",
+		Body: "What to do.\n\n1. Store the object key, which already exists.\n" +
+			"2. Build the URL when showing it.\n" +
+			"3. Migrate what is already stored.\n",
+	}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var steps int
+	var longest string
+	for _, line := range strings.Split(string(tree), `"text":"`)[1:] {
+		text := line[:strings.Index(line, `"`)]
+		if len(text) > len(longest) {
+			longest = text
+		}
+		if strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") || strings.HasPrefix(text, "3.") {
+			steps++
+		}
+	}
+
+	if steps != 3 {
+		t.Errorf("пунктов на экране %d, а их три: список склеился в абзац", steps)
+	}
+	if strings.Contains(longest, "2.") && strings.Contains(longest, "3.") {
+		t.Errorf("два пункта в одном узле: %q", longest)
+	}
+}
+
+// A nested item keeps the depth it was written at; flattened, a list of tariffs and their contents
+// reads as one list of unrelated lines.
+func TestANestedItemIsIndented(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-01", Title: "Tariffs", Status: "open", Path: "backlog/B-01-x.md",
+		Body: "- Plans:\n  - Free, up to ten items\n  - Paid, without a limit\n",
+	}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Count(string(tree), `"start":12`) < 2 {
+		t.Errorf("вложенные пункты нарисованы вровень с родителем: %s", tree)
+	}
+}
+
+// A table written straight under a paragraph, and a heading straight under the table.
+//
+// The first version of this test asserted that the table survives, and passed against a flush that
+// closed only the first non-empty block — because the body ends in a newline, that empty last line
+// flushed once more and the table came out anyway. What such a flush actually breaks is the
+// **order**: the heading closes the paragraph, the table is still pending, and it lands after the
+// heading it was written above. So the order is what is pinned here.
+func TestBlocksComeOutInTheOrderTheyWereWritten(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-01", Title: "Rules", Status: "open", Path: "backlog/B-01-x.md",
+		Body: "Here they are:\n| Rule | Places |\n|---|---|\n| naming | 42 |\n## What to do\n",
+	}
+	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := string(tree)
+	paragraph := strings.Index(body, "Here they are:")
+	table := strings.Index(body, `"type":"table"`)
+	heading := strings.Index(body, "What to do")
+
+	if table < 0 {
+		t.Fatalf("таблица исчезла целиком: %s", body)
+	}
+	if !(paragraph < table && table < heading) {
+		t.Errorf("порядок блоков нарушен: абзац %d, таблица %d, заголовок %d", paragraph, table, heading)
+	}
+}
