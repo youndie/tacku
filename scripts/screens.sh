@@ -83,9 +83,7 @@ TACKU_RESOURCE=http://localhost:$port \
   TACKU_JWKS_URL=http://localhost:$authport/jwks \
   TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
   TACKU_DOCS_API=http://127.0.0.1:$docsport \
-  TACKU_DOCS_REPO=example/docs \
-  TACKU_DOCS_ROOT=backlog \
-  TACKU_DOCS_TOKEN=a-fixture-needs-none \
+  TACKU_DOCS_SOURCES='[{"key":"example","title":"A lending system","repo":"example/docs","root":"backlog"}]' \
   "$bin/tacku-door" serve -db "$db" -addr :$port >/dev/null 2>&1 &
 started="$started $!"
 sleep 6
@@ -119,7 +117,7 @@ fetch board screens/board
 fetch my-tasks forms/my-tasks
 fetch new-task forms/new-task
 fetch new-board forms/new-board
-fetch docs-board screens/docs-board
+fetch docs-board screens/docs-board/example
 
 # The task screen needs a task, and which one it is comes from the board rather than from a constant
 # that would go stale the first time the seed changed.

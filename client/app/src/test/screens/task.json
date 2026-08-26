@@ -170,7 +170,7 @@
      },
      {
       "type": "row",
-      "id": "nav-docs",
+      "id": "nav-docs-example",
       "modifiers": [
        {
         "type": "size",
@@ -180,7 +180,7 @@
       "children": [
        {
         "type": "text",
-        "id": "nav-docs-label",
+        "id": "nav-docs-example-label",
         "modifiers": [
          {
           "type": "padding",
@@ -190,13 +190,13 @@
           "end": 20
          }
         ],
-        "text": "Docs backlog",
+        "text": "A lending system",
         "style": "nav"
        }
       ],
       "action": {
        "type": "navigate",
-       "deeplink": "app://docs-board"
+       "deeplink": "app://docs-board/example"
       }
      },
      {
@@ -556,7 +556,7 @@
             ],
             "label": "Status",
             "value": "To do",
-            "helperText": "Changed by anna 13 hours ago"
+            "helperText": "Changed by anna 3 days ago"
            },
            {
             "type": "read_only_field",
@@ -589,7 +589,7 @@
             ],
             "label": "Due",
             "value": "29 Aug",
-            "helperText": "In 5 days"
+            "helperText": "In 3 days"
            },
            {
             "type": "read_only_field",

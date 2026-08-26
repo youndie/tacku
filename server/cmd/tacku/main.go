@@ -8,6 +8,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -101,7 +102,7 @@ func runMCP(args []string) error {
 
 	// The same board over stdio as over HTTP, where one is configured. An agent running beside a
 	// person should not see less of the work than the person does.
-	docs, err := docsSource()
+	docs, err := docsSources()
 	if err != nil {
 		return err
 	}
@@ -152,7 +153,7 @@ func runServe(args []string) error {
 		return err
 	}
 
-	docs, err := docsSource()
+	docs, err := docsSources()
 	if err != nil {
 		return err
 	}
@@ -164,7 +165,7 @@ func runServe(args []string) error {
 		SessionKey: key,
 		WizardTTL:  ttl,
 		PageDir:    *web,
-		DocsBoard:  docs,
+		DocsBoards: docs,
 		// The same issuer as the agent surface — two would be two sets of people — and an audience
 		// of its own, so that a token minted for the agents cannot open a screen.
 		Page: httpsrv.PageAuth{
@@ -249,52 +250,75 @@ func wizardTTL() (time.Duration, error) {
 	return ttl, nil
 }
 
-// docsSource is the backlog the read-only view looks at, or nothing where none is configured.
+// docsSources are the backlogs the read-only views look at, or none.
 //
-// Every part of it comes from the environment and none of it has a default that names anything. This
-// repository is public and stands beside closed ones; a repository name committed here cannot be
-// taken back out of the clones, and scripts/no_private_names.py keeps fingerprints of the names that
-// must not appear so that forgetting is caught by the gate rather than by a reader.
+// One environment variable carrying a list, because there is more than one and they are ordered:
+// the order is the order of the navigation. Everything about a source is in it except the
+// credential, which arrives separately and is sent only to the sources that say they need it — a
+// token scoped to one account is not neutral at somebody else's public repository, it is a 404.
 //
-// A repository named without a credential is not corrected: a private source answers 404 to an
-// anonymous request, which arrives as "there is no such repository" and sends whoever configured it
-// looking for a typo.
-func docsSource() (*docsboard.Source, error) {
-	repo := os.Getenv("TACKU_DOCS_REPO")
-	if repo == "" {
+// Nothing here has a default that names anything. This repository is public and stands beside
+// closed ones; a repository name committed here cannot be taken back out of the clones, and
+// scripts/no_private_names.py keeps fingerprints of the names that must not appear.
+func docsSources() (docsboard.Sources, error) {
+	configured := os.Getenv("TACKU_DOCS_SOURCES")
+	if configured == "" {
 		return nil, nil
 	}
-	if !strings.Contains(repo, "/") {
-		return nil, fmt.Errorf("TACKU_DOCS_REPO must be owner/name, got %q", repo)
+
+	var described []struct {
+		Key     string `json:"key"`
+		Title   string `json:"title"`
+		Repo    string `json:"repo"`
+		Ref     string `json:"ref"`
+		Root    string `json:"root"`
+		Index   string `json:"index"`
+		Private bool   `json:"private"`
+	}
+	if err := json.Unmarshal([]byte(configured), &described); err != nil {
+		return nil, fmt.Errorf("TACKU_DOCS_SOURCES is not a list of sources: %w", err)
 	}
 
 	ttl := time.Duration(0)
-	if configured := os.Getenv("TACKU_DOCS_TTL"); configured != "" {
-		parsed, err := time.ParseDuration(configured)
+	if value := os.Getenv("TACKU_DOCS_TTL"); value != "" {
+		parsed, err := time.ParseDuration(value)
 		if err != nil {
 			return nil, fmt.Errorf("TACKU_DOCS_TTL is not a duration: %w", err)
 		}
 		if parsed <= 0 {
-			return nil, fmt.Errorf("TACKU_DOCS_TTL must be positive, got %s", configured)
+			return nil, fmt.Errorf("TACKU_DOCS_TTL must be positive, got %s", value)
 		}
 		ttl = parsed
 	}
 
-	return docsboard.New(docsboard.Config{
-		Repo: repo,
-		// Where the forge is. Set by the script that records the screen bodies, which points it at a
-		// stub so that photographing this board needs neither a real repository nor a network — see
-		// scripts/docs_stub.py. Empty everywhere else, which is the address of GitHub.
-		API:   os.Getenv("TACKU_DOCS_API"),
-		Ref:   os.Getenv("TACKU_DOCS_REF"),
-		Root:  os.Getenv("TACKU_DOCS_ROOT"),
-		Index: os.Getenv("TACKU_DOCS_INDEX"),
-		Token: os.Getenv("TACKU_DOCS_TOKEN"),
-		TTL:   ttl,
-		Log: func(format string, args ...any) {
-			fmt.Fprintf(os.Stderr, "tacku: "+format+"\n", args...)
-		},
-	}), nil
+	seen := map[string]bool{}
+	sources := make(docsboard.Sources, 0, len(described))
+	for _, one := range described {
+		// A key is an address, so it is checked here rather than met later as a screen nobody can
+		// reach: two sources under one key would each answer for the other's items.
+		if one.Key == "" || !strings.ContainsRune(one.Repo, '/') {
+			return nil, fmt.Errorf("a source needs a key and an owner/name repository, got %q and %q", one.Key, one.Repo)
+		}
+		if seen[one.Key] {
+			return nil, fmt.Errorf("two sources under the key %q", one.Key)
+		}
+		seen[one.Key] = true
+
+		sources = append(sources, docsboard.New(docsboard.Config{
+			Key: one.Key, Title: one.Title, Repo: one.Repo, Ref: one.Ref,
+			Root: one.Root, Index: one.Index, Private: one.Private,
+			Token: os.Getenv("TACKU_DOCS_TOKEN"),
+			TTL:   ttl,
+			// Where the forge is. Set by the script that records the screen bodies, which points it
+			// at a stub so that photographing these boards needs neither a real repository nor a
+			// network. Empty everywhere else, which is the address of GitHub.
+			API: os.Getenv("TACKU_DOCS_API"),
+			Log: func(format string, args ...any) {
+				fmt.Fprintf(os.Stderr, "tacku: "+format+"\n", args...)
+			},
+		}))
+	}
+	return sources, nil
 }
 
 func version() string {

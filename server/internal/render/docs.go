@@ -19,7 +19,12 @@ import (
 // fields and a move button that had to be suppressed — a screen that has to hide what it inherited
 // is one release away from showing it.
 type DocsBoard struct {
-	Person   domain.MemberID
+	Person domain.MemberID
+
+	// Source is the key this backlog is addressed by, and every link on this screen carries it: an
+	// identifier alone names a different task in every repository that uses this method.
+	Source string
+
 	Snapshot docsboard.Snapshot
 	Now      time.Time
 
@@ -32,7 +37,7 @@ type DocsBoard struct {
 func (d DocsBoard) Screen() Component {
 	return Row("screen-docs", 0,
 		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
-		Navigation(d.Person, LinkDocsBoard),
+		Navigation(d.Person, LinkDocsBoard+d.Source),
 		Rule("docs-nav-rule", RuleDp, ColorDivider, false),
 		Column("docs", 20,
 			[]Modifier{Weight(1), Padding(32)},
@@ -127,7 +132,7 @@ func (d DocsBoard) card(item docsboard.Item) Component {
 		Column(id+"-body", 6,
 			[]Modifier{FillWidth(), Padding(12), Background(ColorSurfaceField)},
 			body...),
-		Navigate(LinkDocsItem+item.ID),
+		Navigate(LinkDocsItem+d.Source+"/"+item.ID),
 	))
 }
 
@@ -148,10 +153,10 @@ func (d DocsBoard) done() int { return len(d.Snapshot.Items) - d.open() }
 // A screen and not an error status: the client would turn a 5xx into its own message, and the person
 // looking at it is the one who can fix this — the repository, the branch or the credential is wrong,
 // or the source is down. It says which of those it cannot tell apart rather than pretending to know.
-func UnreadableDocsBoard(person domain.MemberID, failure error, repo, ref, root string) Component {
+func UnreadableDocsBoard(person domain.MemberID, source string, failure error, repo, ref, root string) Component {
 	return Row("screen-docs", 0,
 		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
-		Navigation(person, LinkDocsBoard),
+		Navigation(person, LinkDocsBoard+source),
 		Rule("docs-nav-rule", RuleDp, ColorDivider, false),
 		Column("docs", 24,
 			[]Modifier{Weight(1), Padding(32)},
@@ -176,7 +181,12 @@ func UnreadableDocsBoard(person domain.MemberID, failure error, repo, ref, root 
 // dead ends. The text is the source's, rendered rather than linked to.
 type DocsItem struct {
 	Person domain.MemberID
-	Item   docsboard.Item
+
+	// Source is the key of the backlog this item belongs to. It stands in every address built here,
+	// including the way back to the board.
+	Source string
+
+	Item docsboard.Item
 
 	// Files is what a link in the text can point at.
 	Files DocsFiles
@@ -197,7 +207,7 @@ type DocsFiles struct {
 
 func (d DocsItem) Screen() Component {
 	body := []Component{
-		BackLink(LinkDocsBoard, RouteTitle(LinkDocsBoard)),
+		BackLink(LinkDocsBoard+d.Source, RouteTitle(LinkDocsBoard+d.Source)),
 		Column("docs-item-heading", 6, nil,
 			Text("docs-item-title", d.Item.Title, TextDisplay),
 			Text("docs-item-meta", DocsCardMeta(d.Item), TextMeta),
@@ -223,7 +233,7 @@ func (d DocsItem) Screen() Component {
 
 	return Row("screen-docs-item", 0,
 		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
-		Navigation(d.Person, LinkDocsBoard),
+		Navigation(d.Person, LinkDocsBoard+d.Source),
 		Rule("docs-item-nav-rule", RuleDp, ColorDivider, false),
 		// The padding is inside the list rather than on it: a list insets its viewport, so padding
 		// put here clips the scroll at both ends instead of framing it.
@@ -471,7 +481,7 @@ func (d DocsItem) link(label, target string) TextSpan {
 	default:
 		resolved := path.Join(path.Dir(d.Item.Path), target)
 		if id := ItemOf(resolved); id != "" && d.Files.Items[id] {
-			action = Navigate(LinkDocsItem + id)
+			action = Navigate(LinkDocsItem + d.Source + "/" + id)
 		} else if d.Files.Base != "" {
 			action = OpenURL(d.Files.Base + resolved)
 		}

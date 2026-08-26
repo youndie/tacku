@@ -98,8 +98,8 @@ var files = map[string]string{
 
 func sourceOn(s *stand, ttl time.Duration) *Source {
 	return New(Config{
-		Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
-		Token: "a-secret-value", TTL: ttl, API: s.server.URL, Client: s.server.Client(),
+		Key: "example", Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
+		Private: true, Token: "a-secret-value", TTL: ttl, API: s.server.URL, Client: s.server.Client(),
 	})
 }
 

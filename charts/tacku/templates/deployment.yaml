@@ -63,27 +63,22 @@ spec:
             - name: TACKU_WIZARD_TTL
               value: {{ .Values.wizardTtl | quote }}
             {{- end }}
-            {{- if .Values.docs.repo }}
-            # The source of the read-only view. Set together or not at all: the server treats an
-            # empty repository as "this deployment shows no such board".
-            - name: TACKU_DOCS_REPO
-              value: {{ .Values.docs.repo | quote }}
+            {{- if .Values.docs.sources }}
+            {{- range .Values.docs.sources }}
+            {{- if and .private (not $.Values.docs.token) }}
+            {{- fail (printf "tacku: the source %s is private and docs.token is empty. A closed repository answers an anonymous request with 404, so the board would report it as missing rather than as unreadable" .key) }}
+            {{- end }}
+            {{- end }}
+            # The sources of the read-only views, as one value: there is more than one of them and
+            # they are ordered — the order is the order of the navigation rail.
+            - name: TACKU_DOCS_SOURCES
+              value: {{ .Values.docs.sources | toJson | quote }}
+            {{- with .Values.docs.token }}
             - name: TACKU_DOCS_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-secrets
+                  name: {{ $.Release.Name }}-secrets
                   key: docs-token
-            {{- with .Values.docs.ref }}
-            - name: TACKU_DOCS_REF
-              value: {{ . | quote }}
-            {{- end }}
-            {{- with .Values.docs.root }}
-            - name: TACKU_DOCS_ROOT
-              value: {{ . | quote }}
-            {{- end }}
-            {{- with .Values.docs.index }}
-            - name: TACKU_DOCS_INDEX
-              value: {{ . | quote }}
             {{- end }}
             {{- with .Values.docs.ttl }}
             - name: TACKU_DOCS_TTL

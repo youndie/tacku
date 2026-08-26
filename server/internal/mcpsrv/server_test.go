@@ -35,7 +35,7 @@ type harness struct {
 
 func start(t *testing.T) harness { return startWith(t, nil) }
 
-func startWith(t *testing.T, docs *docsboard.Source) harness {
+func startWith(t *testing.T, docs docsboard.Sources) harness {
 	t.Helper()
 
 	store, err := sqlite.Open(filepath.Join(t.TempDir(), "tacku.db"))
@@ -378,9 +378,13 @@ func TestTheAgentSeesTheDocumentedBacklog(t *testing.T) {
 	h := startWith(t, docsFixture(t))
 
 	var listed struct {
-		Source string `json:"source"`
-		ReadAt string `json:"readAt"`
-		Items  []struct {
+		Sources []struct {
+			Key    string `json:"key"`
+			Title  string `json:"title"`
+			ReadAt string `json:"readAt"`
+		} `json:"sources"`
+		Items []struct {
+			Source string `json:"source"`
 			ID     string `json:"id"`
 			Stage  string `json:"stage"`
 			Status string `json:"status"`
@@ -394,15 +398,18 @@ func TestTheAgentSeesTheDocumentedBacklog(t *testing.T) {
 	if listed.Items[0].Stage != "stage-one" {
 		t.Errorf("этап не приехал: %q", listed.Items[0].Stage)
 	}
-	if listed.ReadAt == "" || listed.Source == "" {
+	if len(listed.Sources) != 1 || listed.Sources[0].ReadAt == "" || listed.Sources[0].Title == "" {
 		t.Errorf("ответ не называет ни источник, ни время чтения: %+v", listed)
+	}
+	if listed.Items[0].Source != "example" {
+		t.Errorf("задача не называет, из какого она бэклога: %q", listed.Items[0].Source)
 	}
 
 	var item struct {
 		Body string `json:"body"`
 		Path string `json:"path"`
 	}
-	h.call(t, "get_docs_item", map[string]any{"id": "B-02"}, &item)
+	h.call(t, "get_docs_item", map[string]any{"source": "example", "id": "B-02"}, &item)
 	if !strings.Contains(item.Body, "never delivered") {
 		t.Errorf("текст задачи не приехал: %q", item.Body)
 	}
@@ -410,7 +417,7 @@ func TestTheAgentSeesTheDocumentedBacklog(t *testing.T) {
 		t.Error("путь к файлу не назван — его нечего процитировать человеку с чекаутом")
 	}
 
-	if refusal := h.callExpectingFailure(t, "get_docs_item", map[string]any{"id": "B-999"}); !strings.Contains(refusal, "B-999") {
+	if refusal := h.callExpectingFailure(t, "get_docs_item", map[string]any{"source": "example", "id": "B-999"}); !strings.Contains(refusal, "B-999") {
 		t.Errorf("отказ не назвал, какого идентификатора нет: %q", refusal)
 	}
 }
@@ -433,7 +440,7 @@ func TestWithoutASourceTheAgentIsNotOfferedTheTools(t *testing.T) {
 
 // A repository of the same shape as the ones this reads, and of nobody's: an index with a stage
 // table and two items, served the way the forge serves them.
-func docsFixture(t *testing.T) *docsboard.Source {
+func docsFixture(t *testing.T) docsboard.Sources {
 	t.Helper()
 
 	files := map[string]string{
@@ -473,8 +480,10 @@ func docsFixture(t *testing.T) *docsboard.Source {
 	}))
 	t.Cleanup(server.Close)
 
-	return docsboard.New(docsboard.Config{
-		Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
-		TTL: time.Hour, API: server.URL, Client: server.Client(),
-	})
+	return docsboard.Sources{
+		docsboard.New(docsboard.Config{
+			Key: "example", Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
+			TTL: time.Hour, API: server.URL, Client: server.Client(),
+		}),
+	}
 }

@@ -73,14 +73,14 @@ type Config struct {
 	// so this is the distance between a change being written and being sent, and nothing else.
 	UpdateInterval time.Duration
 
-	// DocsBoard is the source behind the read-only view over a backlog kept in a repository, or nil
-	// for a deployment that shows none.
+	// DocsBoards are the backlogs this deployment shows, in the order they appear in the rail, or
+	// empty for a deployment that shows none.
 	//
-	// Its presence decides two things at once — the route in the navigation graph and the endpoint
-	// behind it — and they are decided here together on purpose: a route promising an endpoint that
-	// was never registered is a dead button, and an endpoint outside the graph is a screen nobody
-	// can reach.
-	DocsBoard *docsboard.Source
+	// Their presence decides two things at once — the routes in the navigation graph and the
+	// endpoints behind them — and they are decided here together on purpose: a route promising an
+	// endpoint that was never registered is a dead button, and an endpoint outside the graph is a
+	// screen nobody can reach.
+	DocsBoards docsboard.Sources
 
 	// WizardTTL is how long an untouched multi-step scenario is kept. Zero means wizard.DefaultTTL.
 	//
@@ -110,8 +110,8 @@ func New(config Config) (http.Handler, error) {
 		return nil, fmt.Errorf("httpsrv: no member directory, so nobody could ever sign in")
 	}
 
-	// The agent surface sees the same board a person does, where there is one.
-	config.Deps.Docs = config.DocsBoard
+	// The agent surface sees the same boards a person does.
+	config.Deps.Docs = config.DocsBoards
 
 	readWrite, err := mcpsrv.New(config.Deps)
 	if err != nil {
@@ -174,7 +174,11 @@ func New(config Config) (http.Handler, error) {
 	// spending a credential bound by audience to somewhere else is the confused deputy arriving
 	// through the front door.
 	// The graph this deployment carries, assembled before anything is served.
-	render.WithDocsBoard(config.DocsBoard != nil)
+	boards := make([]render.Route, 0, len(config.DocsBoards))
+	for _, source := range config.DocsBoards {
+		boards = append(boards, render.DocsBoardRoute(source.Key(), source.Title()))
+	}
+	render.WithDocsBoards(boards)
 
 	screens := http.NewServeMux()
 	screens.Handle("GET /screens/catch-up", catchUp(config.Deps.Store, config.Seen, gap, now))
@@ -203,9 +207,9 @@ func New(config Config) (http.Handler, error) {
 	// The live channel is mounted beside the screens and behind the same session guard, which is
 	// what makes its topic the token's member rather than anything the caller names.
 	screens.Handle("GET "+updatesPath, updates(config.Deps.Store, config.Seen, config.UpdateInterval))
-	if config.DocsBoard != nil {
-		screens.Handle("GET "+docsBoardPath, docsBoard(config.DocsBoard, now))
-		screens.Handle("GET "+docsItemPath+"{item}", docsItem(config.DocsBoard))
+	if len(config.DocsBoards) > 0 {
+		screens.Handle("GET "+docsBoardPath+"{source}", docsBoard(config.DocsBoards, now))
+		screens.Handle("GET "+docsItemPath+"{source}/{item}", docsItem(config.DocsBoards))
 	}
 	screens.Handle("GET /graph", navigationGraph())
 

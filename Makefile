@@ -146,8 +146,8 @@ probe:
 	@cd server && TACKU_RESOURCE=http://localhost:8477 \
 		TACKU_ISSUER=http://localhost:8478 TACKU_JWKS_URL=http://localhost:8478/jwks \
 		TACKU_SESSION_KEY=a-key-of-at-least-thirty-two-characters \
-		TACKU_DOCS_API=http://127.0.0.1:8479 TACKU_DOCS_REPO=example/docs \
-		TACKU_DOCS_ROOT=backlog TACKU_DOCS_TOKEN=a-fixture-needs-none \
+		TACKU_DOCS_API=http://127.0.0.1:8479 \
+		TACKU_DOCS_SOURCES='[{"key":"example","title":"A lending system","repo":"example/docs","root":"backlog"}]' \
 		go run -tags debugdoor ./cmd/tacku serve -db /tmp/tacku-probe.db -addr :8477 >/dev/null 2>&1 & sleep 5
 	@cd client && ./gradlew --quiet :app:probe --console=plain; \
 		status=$$?; \

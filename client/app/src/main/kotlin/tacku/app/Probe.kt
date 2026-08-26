@@ -89,7 +89,7 @@ fun main() {
         // card is the reason this walk stopped trusting a written-down kind: the two destinations
         // that existed were forms, the third is a screen, and the client asked for the wrong shape
         // — which nothing here noticed, because nothing here opened one.
-        val docs = graph.routes.firstOrNull { it.deeplink == "app://docs-board" }
+        val docs = graph.routes.firstOrNull { it.deeplink.startsWith("app://docs-board/") }
         if (docs == null) {
             println("  no docs board on this deployment, so its card was not pressed")
         } else {
