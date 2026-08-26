@@ -68,8 +68,12 @@ func TestProfileCarriesEveryHierarchy(t *testing.T) {
 		// Sixteen. It was seventeen while this deployment carried a component of its own for
 		// multiline text; kompot 0.21 put the same thing on `text_input` as a flag, so the type
 		// went away and the count came down with it — a number that moves when a decision moves.
-		"KompotComponent":     16,
-		"KompotAction":        11,
+		"KompotComponent": 16,
+		// Twelve. `open_url` arrived in kompot 0.32, and it arrived because this project asked for
+		// it: the vocabulary had no way to leave the application, so a card standing for a file in
+		// another repository could not lead to it (Q-72, kompot#55). A count that moves when the
+		// protocol moves is the point of writing it down.
+		"KompotAction":        12,
 		"FormFieldDefinition": 6,
 		"ValidationRule":      4,
 		"FieldValue":          4,

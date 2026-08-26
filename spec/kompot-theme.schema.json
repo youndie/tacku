@@ -47,6 +47,12 @@
             "number",
             "null"
           ]
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [],

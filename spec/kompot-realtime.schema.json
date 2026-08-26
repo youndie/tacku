@@ -2,9 +2,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kompot.workinprogress.ru/schema/kompot-realtime.schema.json",
   "title": "kompot-realtime",
-  "description": "One frame of the component live-update channel",
+  "description": "The live-update channel: the screen envelope that names a topic, and one frame of the channel itself",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
   "$defs": {
+    "KompotScreenResponse": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "screen": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        },
+        "realtimeTopic": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_]*(:[A-Za-z0-9._-]+)*$",
+          "description": "The live-update topic of this screen. The string is opaque to the client; a server must make it per-subject wherever the data is personal (see SPEC.md §10.4)"
+        }
+      },
+      "required": [
+        "screen"
+      ],
+      "additionalProperties": true
+    },
     "UpdateComponentMessage": {
       "x-kompot-kind": "object",
       "type": "object",

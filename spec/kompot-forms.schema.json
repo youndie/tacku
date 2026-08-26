@@ -169,6 +169,12 @@
         },
         "label": {
           "type": "string"
+        },
+        "variant": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
