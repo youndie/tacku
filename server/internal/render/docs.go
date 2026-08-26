@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -176,6 +177,22 @@ func UnreadableDocsBoard(person domain.MemberID, failure error, repo, ref, root 
 type DocsItem struct {
 	Person domain.MemberID
 	Item   docsboard.Item
+
+	// Files is what a link in the text can point at.
+	Files DocsFiles
+}
+
+// DocsFiles is where the source's files are read, and which identifiers it holds.
+//
+// Both are needed to turn a link the author wrote into something pressable, and they answer
+// different halves of it: a link to another item of the same backlog stays inside the application
+// and opens that item's screen; anything else is a file in somebody's repository and leaves.
+type DocsFiles struct {
+	// Base is the address a path is appended to, ending in a slash.
+	Base string
+	// Items are the identifiers this backlog holds. A link to one that is not here — a renamed
+	// item, a mistyped number — leads to the file instead of to a screen that would answer 404.
+	Items map[string]bool
 }
 
 func (d DocsItem) Screen() Component {
@@ -189,8 +206,20 @@ func (d DocsItem) Screen() Component {
 	if len(d.Item.BlockedBy) > 0 {
 		body = append(body, Text("docs-item-blocked", DocsBlockedBy(d.Item.BlockedBy), TextBodyMuted))
 	}
-	body = append(body, prose("docs-item-body", d.Item.Body, d.Item.ID)...)
-	body = append(body, Text("docs-item-path", d.Item.Path, TextMeta))
+	body = append(body, d.prose("docs-item-body", d.Item.Body, d.Item.ID)...)
+	// The file itself, and it opens now. Until kompot 0.32 this line was a path a person copied and
+	// went looking for in a checkout, because nothing in the vocabulary could leave the application
+	// (Q-72). It is the same line, and it presses.
+	//
+	// Built directly rather than through the link resolver, which would recognise the item in its
+	// own path and send the reader to the screen they are already on.
+	if d.Files.Base != "" {
+		body = append(body, Rich("docs-item-path",
+			[]TextSpan{{Text: d.Item.Path, Style: TextButtonQuiet, Action: OpenURL(d.Files.Base + d.Item.Path)}},
+			TextMeta))
+	} else {
+		body = append(body, Text("docs-item-path", d.Item.Path, TextMeta))
+	}
 
 	return Row("screen-docs-item", 0,
 		[]Modifier{FillWidth(), FillHeight(), Background(ColorSurface)},
@@ -199,18 +228,15 @@ func (d DocsItem) Screen() Component {
 		// The padding is inside the list rather than on it: a list insets its viewport, so padding
 		// put here clips the scroll at both ends instead of framing it.
 		PaginatedList("docs-item-scroll", []Component{
-			// A share of the width rather than a limit on it, because the vocabulary has no maximum
-			// width — only "fill" and a fixed number of points (Q-74). A fixed one would be the
-			// honest thing to want and the wrong thing to send: the server cannot know the window,
-			// and a column wider than it is clipped, there being no horizontal scroll either.
+			// The measure prose is read at, as an upper bound rather than a share of the width.
+			// It was two thirds and a spacer until kompot 0.32 grew `maxWidthDp` — which this
+			// project asked for, having no way to say "at most" (Q-74, kompot#77).
 			//
-			// Two thirds, which on the window the design is drawn at leaves a line of about eighty
-			// characters — the width prose is read at. A full-width line of running text is the
-			// thing a person gives up on rather than reads.
-			Row("docs-item-measure", 0, []Modifier{FillWidth()},
-				Column("docs-item", 16, []Modifier{Weight(2), Padding(32)}, body...),
-				Spacer("docs-item-gutter"),
-			),
+			// Six hundred and forty, and the number is measured rather than chosen: a line of the
+			// source's own prose laid out at body size takes 7.55 points per character, so what is
+			// left after the padding on both sides carries about seventy-six. A full-width line of
+			// running text is the thing a person gives up on rather than reads.
+			Column("docs-item", 16, []Modifier{FillWidth(), MaxWidthDp(640), Padding(32)}, body...),
 		}, "", nil, Weight(1)),
 	)
 }
@@ -232,7 +258,7 @@ func (d DocsItem) Screen() Component {
 // numbered is a list item the author numbered: `1. `, `2) `.
 var numbered = regexp.MustCompile(`^[0-9]+[.)]\s`)
 
-func prose(id, body, item string) []Component {
+func (d DocsItem) prose(id, body, item string) []Component {
 	var out []Component
 	var paragraph, code []string
 	var rows []TableRow
@@ -256,11 +282,11 @@ func prose(id, body, item string) []Component {
 	// line between them, flushed the paragraph and dropped every row of the table without a word.
 	flush := func() {
 		if len(paragraph) > 0 {
-			out = append(out, Text(node(), strings.Join(paragraph, " "), TextBody))
+			out = append(out, d.line(node(), strings.Join(paragraph, " "), TextBody))
 			paragraph = nil
 		}
 		if len(listItem) > 0 {
-			out = append(out, Text(node(), strings.Join(listItem, " "), TextBody, listAt...))
+			out = append(out, d.line(node(), strings.Join(listItem, " "), TextBody, listAt...))
 			listItem, listAt = nil, nil
 		}
 		if len(rows) > 0 {
@@ -322,7 +348,7 @@ func prose(id, body, item string) []Component {
 			flush()
 		case strings.HasPrefix(trimmed, ">"):
 			flush()
-			out = append(out, Text(node(), plain(strings.TrimSpace(strings.TrimPrefix(trimmed, ">"))),
+			out = append(out, d.line(node(), strings.TrimSpace(strings.TrimPrefix(trimmed, ">")),
 				TextBodyMuted, PaddingXY(0, 12)))
 		case strings.HasPrefix(trimmed, "#"):
 			flush()
@@ -331,10 +357,10 @@ func prose(id, body, item string) []Component {
 				dropped = true
 				continue
 			}
-			out = append(out, Text(node(), plain(heading), TextSubtitle))
+			out = append(out, d.line(node(), heading, TextSubtitle))
 		case strings.HasPrefix(trimmed, "- "), strings.HasPrefix(trimmed, "* "), strings.HasPrefix(trimmed, "+ "):
 			flush()
-			listItem, listAt = []string{DocsBullet(plain(trimmed[2:]))}, indented(line)
+			listItem, listAt = []string{DocsBullet(trimmed[2:])}, indented(line)
 		case numbered.MatchString(trimmed):
 			// Kept exactly as written, number and all. A list whose items are numbered by the author
 			// is numbered for a reason — the third step refers to the first — and renumbering it
@@ -345,18 +371,18 @@ func prose(id, body, item string) []Component {
 			// reading it saw the markup fail rather than a long paragraph. Measured on a live item
 			// before the fix: 1091 characters in one node.
 			flush()
-			listItem, listAt = []string{plain(trimmed)}, indented(line)
+			listItem, listAt = []string{trimmed}, indented(line)
 		default:
 			// A line with no marker of its own continues whatever is open. That is what a wrapped
 			// line is, and a list item is the case where getting it wrong shows.
 			if len(listItem) > 0 {
-				listItem = append(listItem, plain(trimmed))
+				listItem = append(listItem, trimmed)
 				continue
 			}
 			if len(rows) > 0 || len(code) > 0 {
 				flush()
 			}
-			paragraph = append(paragraph, plain(trimmed))
+			paragraph = append(paragraph, trimmed)
 		}
 	}
 	flush()
@@ -383,18 +409,91 @@ func tableRow(line string) (TableRow, bool) {
 	return row, !separator
 }
 
-// emphasis is what a source uses to make part of a line stand out.
-var emphasis = regexp.MustCompile(`\*\*([^*]+)\*\*|__([^_]+)__`)
-
-// plain takes the emphasis markers off a line.
+// markup is what a source writes inside a line: emphasis, and a link.
 //
-// The line this draws is narrower than it looks. Emphasis is decoration: without it the sentence
-// still says what it said, and with the asterisks left on it the reader is shown markup instead —
-// which is what "it renders the markdown raw" means from the other side of the screen. A link is
-// the opposite case and is left exactly as written: drawn as a link it would promise something this
-// vocabulary cannot do (Q-73, kompot#56), and the address is the only part of it worth anything to
-// somebody who cannot press it. Backticks stay for the same reason — they say "this is a name", and
-// nothing else here can.
-func plain(line string) string {
-	return emphasis.ReplaceAllString(line, "$1$2")
+// Backticks are not here on purpose. The design system has no role for code — no token says "this
+// is an identifier" — and inventing one on the server would be appearance travelling on the wire,
+// which is the thing this repository refuses everywhere else. A name in backticks keeps them, and
+// they say it themselves.
+var markup = regexp.MustCompile(`\*\*([^*]+)\*\*|__([^_]+)__|\[([^]]+)\]\(([^)]+)\)`)
+
+// line builds one line of the source's prose, as runs where it has any.
+//
+// This is where the workaround came off. Emphasis used to have its markers stripped and a link was
+// left exactly as written — brackets, address and all — because a text node was one string with one
+// style, and drawing a link as a link would have promised a press the vocabulary could not deliver
+// (Q-73). kompot 0.32 carries spans with a style, a colour **and an action**, so both are now the
+// thing they say they are.
+func (d DocsItem) line(id, body, style string, modifiers ...Modifier) Component {
+	found := markup.FindAllStringSubmatchIndex(body, -1)
+	if found == nil {
+		return Text(id, body, style, modifiers...)
+	}
+
+	spans := make([]TextSpan, 0, len(found)*2+1)
+	at := 0
+	for _, m := range found {
+		if m[0] > at {
+			spans = append(spans, TextSpan{Text: body[at:m[0]]})
+		}
+		switch {
+		case m[2] >= 0:
+			spans = append(spans, TextSpan{Text: body[m[2]:m[3]], Style: TextValue})
+		case m[4] >= 0:
+			spans = append(spans, TextSpan{Text: body[m[4]:m[5]], Style: TextValue})
+		default:
+			spans = append(spans, d.link(body[m[6]:m[7]], body[m[8]:m[9]]))
+		}
+		at = m[1]
+	}
+	if at < len(body) {
+		spans = append(spans, TextSpan{Text: body[at:]})
+	}
+	return Rich(id, spans, style, modifiers...)
+}
+
+// link is one pressable run.
+//
+// Three destinations, and which one it is decides whether the reader leaves. A link to another item
+// of the same backlog stays here and opens that item — the source cross-references itself
+// constantly, and following one used to mean going to a checkout. Anything else is a file or a page
+// somebody else owns, and `open_url` is what says so: leaving is explicit, and a client may put a
+// confirmation in front of it.
+//
+// An unknown identifier leads to the file rather than to a screen that would answer 404: a renamed
+// item or a mistyped number is exactly the link that should still land somewhere a person can read.
+func (d DocsItem) link(label, target string) TextSpan {
+	var action Action
+
+	switch {
+	case strings.HasPrefix(target, "http://"), strings.HasPrefix(target, "https://"):
+		action = OpenURL(target)
+	default:
+		resolved := path.Join(path.Dir(d.Item.Path), target)
+		if id := ItemOf(resolved); id != "" && d.Files.Items[id] {
+			action = Navigate(LinkDocsItem + id)
+		} else if d.Files.Base != "" {
+			action = OpenURL(d.Files.Base + resolved)
+		}
+	}
+
+	// Nothing to press means nothing is hidden either: the link keeps the shape the author typed,
+	// address included. Painting it like a link and leaving it dead would be the promise this whole
+	// change exists to stop making, and dropping the address to keep it tidy would take away the
+	// only part of it a reader could still act on.
+	if action == nil {
+		return TextSpan{Text: "[" + label + "](" + target + ")"}
+	}
+	return TextSpan{Text: label, Style: TextButtonQuiet, Action: action}
+}
+
+// itemFile is how the method names an item: the identifier, then a slug.
+var itemFile = regexp.MustCompile(`^(B-[0-9]+)-.*\.md$`)
+
+// ItemOf is the identifier a file name carries, or empty when it names no item.
+func ItemOf(filePath string) string {
+	if m := itemFile.FindStringSubmatch(path.Base(filePath)); m != nil {
+		return m[1]
+	}
+	return ""
 }
