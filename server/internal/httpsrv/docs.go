@@ -71,7 +71,18 @@ func docsItem(source *docsboard.Source) http.HandlerFunc {
 			return
 		}
 
-		screen := render.DocsItem{Person: principal.Provenance.OnBehalfOf, Item: item}
+		// What a link in the text can reach: the files of this source, and the identifiers it
+		// actually holds — a link to a neighbour stays inside the application, anything else leaves.
+		known := make(map[string]bool, len(snapshot.Items))
+		for _, one := range snapshot.Items {
+			known[one.ID] = true
+		}
+
+		screen := render.DocsItem{
+			Person: principal.Provenance.OnBehalfOf,
+			Item:   item,
+			Files:  render.DocsFiles{Base: source.Base(), Items: known},
+		}
 		respond(w, r, screen.Screen())
 	}
 }

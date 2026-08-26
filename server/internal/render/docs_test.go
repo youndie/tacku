@@ -2,6 +2,7 @@ package render_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -257,9 +258,8 @@ func TestAWrappedListItemStaysOneItem(t *testing.T) {
 	}
 
 	var body []string
-	for _, line := range strings.Split(string(tree), `"text":"`)[1:] {
-		text := line[:strings.Index(line, `"`)]
-		if strings.HasPrefix(text, "·") {
+	for _, node := range nodesIn(t, tree, "text") {
+		if text, _ := node["text"].(string); strings.HasPrefix(text, "·") {
 			body = append(body, text)
 		}
 	}
@@ -282,29 +282,133 @@ func TestAWrappedListItemStaysOneItem(t *testing.T) {
 	}
 }
 
-// A link is left exactly as written: drawn as a link it would promise what this vocabulary cannot
-// do, and the address is the only part of it worth anything to somebody who cannot press it.
-func TestALinkKeepsItsAddress(t *testing.T) {
+// A link goes where it points, and the three destinations are different things.
+//
+// This used to be "a link keeps its address", because a text node was one string and one style and
+// a link could only be drawn as the brackets the author typed. Spans arrived in kompot 0.32 at this
+// project's asking (Q-73), so what is checked now is that the press exists and lands correctly.
+func TestALinkGoesWhereItPoints(t *testing.T) {
 	item := docsboard.Item{
 		ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md",
-		Body: "See [B-97](B-97-images.md) for the root of it.\n",
+		Body: "See [B-97](B-97-images.md), then [the checklist](../launch.md), then [the docs](https://example.com/x).\n" +
+			"And [B-404](B-404-never-existed.md).\n",
+	}
+	drawn := render.DocsItem{
+		Item:  item,
+		Files: render.DocsFiles{Base: "https://example.com/repo/blob/main/", Items: map[string]bool{"B-97": true}},
+	}
+	tree, err := json.Marshal(drawn.Screen())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actions := linksIn(t, tree)
+
+	// Внутрь приложения: источник ссылается сам на себя постоянно, и раньше пройти по такой ссылке
+	// значило пойти в чекаут.
+	if got := actions["B-97"]; got != "app://docs-item/B-97<nil>" {
+		t.Errorf("ссылка на соседнюю задачу ведёт в %q", got)
+	}
+	// Наружу — файл в чужом репозитории, и выход обозначен явно.
+	if got := actions["the checklist"]; got != "<nil>https://example.com/repo/blob/main/launch.md" {
+		t.Errorf("ссылка на файл источника ведёт в %q", got)
+	}
+	if got := actions["the docs"]; got != "<nil>https://example.com/x" {
+		t.Errorf("внешняя ссылка ведёт в %q", got)
+	}
+	// Идентификатор, которого в бэклоге нет, ведёт на файл, а не на экран, который ответит 404:
+	// переименованная задача или опечатка в номере — ровно та ссылка, которой лучше куда-то приехать.
+	if got := actions["B-404"]; got != "<nil>https://example.com/repo/blob/main/backlog/B-404-never-existed.md" {
+		t.Errorf("неизвестный идентификатор ведёт в %q", got)
+	}
+}
+
+// Without a source configured there is nothing to point at, and then the link keeps the shape the
+// author typed — address included. Painting it like a link and leaving it dead would be the promise
+// this whole change exists to stop making; dropping the address to keep it tidy would take away the
+// only part a reader could still act on.
+func TestALinkThatCanGoNowhereKeepsItsAddress(t *testing.T) {
+	item := docsboard.Item{
+		ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md",
+		Body: "See [B-97](B-97-images.md).\n",
 	}
 	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(tree), "B-97-images.md") {
-		t.Error("адрес ссылки потерян — нажать её нельзя, и найти теперь тоже")
+
+	if !strings.Contains(string(tree), "[B-97](B-97-images.md)") {
+		t.Errorf("ссылке некуда вести, и адрес потерян: %s", tree)
+	}
+	if len(linksIn(t, tree)) != 0 {
+		t.Error("нажимаемая ссылка, ведущая в никуда")
 	}
 }
 
-// The text of an item takes a share of the width and not all of it.
+// linksIn is every pressable run of the tree, by its label.
+func linksIn(t *testing.T, tree []byte) map[string]string {
+	t.Helper()
+
+	found := map[string]string{}
+	for _, node := range nodesIn(t, tree, "text") {
+		spans, _ := node["spans"].([]any)
+		for _, span := range spans {
+			one, ok := span.(map[string]any)
+			if !ok {
+				continue
+			}
+			if action, ok := one["action"].(map[string]any); ok {
+				label, _ := one["text"].(string)
+				found[label] = fmt.Sprint(action["deeplink"], action["url"])
+			}
+		}
+	}
+	return found
+}
+
+// nodesIn walks the tree and hands back the nodes of one wire type.
 //
-// A share because the vocabulary has no maximum width (Q-74): a fixed one would be clipped on a
-// window narrower than itself, and there is no horizontal scroll to recover from that. What is
-// pinned here is that the column does not fill — a full-width line of running text is the thing a
-// person gives up on rather than reads, and "fill" is one modifier away from being back.
-func TestTheTextOfAnItemDoesNotFillTheWidth(t *testing.T) {
+// Written after a check that scanned the JSON for `"text":"` counted spans as nodes — a span
+// carries a text of its own, so the string search saw four list items where the screen has two.
+func nodesIn(t *testing.T, tree []byte, wireType string) []map[string]any {
+	t.Helper()
+
+	var parsed any
+	if err := json.Unmarshal(tree, &parsed); err != nil {
+		t.Fatal(err)
+	}
+
+	var found []map[string]any
+	var walk func(any)
+	walk = func(node any) {
+		switch value := node.(type) {
+		case map[string]any:
+			if value["type"] == wireType {
+				found = append(found, value)
+			}
+			for _, child := range value {
+				walk(child)
+			}
+		case []any:
+			for _, child := range value {
+				walk(child)
+			}
+		}
+	}
+	walk(parsed)
+	return found
+}
+
+// The text of an item is bounded, not filled.
+//
+// It was a share of the width — two thirds and a spacer — until kompot 0.32 grew `maxWidthDp`,
+// which this project asked for. A share was never clipped and never bounded either; this is the
+// constraint the case needs, applied by the half that knows how much room there is.
+//
+// The number is measured: a line of real prose at body size takes 7.55 points per character, so
+// 640 less the padding carries about seventy-six of them. What is pinned is that the bound is
+// there at all — "fill" alone is one deleted modifier away.
+func TestTheTextOfAnItemIsBounded(t *testing.T) {
 	item := docsboard.Item{ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md", Body: "A line.\n"}
 	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
 	if err != nil {
@@ -313,14 +417,10 @@ func TestTheTextOfAnItemDoesNotFillTheWidth(t *testing.T) {
 
 	body := string(tree)
 	column := strings.Index(body, `"id":"docs-item"`)
-	gutter := strings.Index(body, `"id":"docs-item-gutter"`)
-	if column < 0 || gutter < 0 {
-		t.Fatalf("колонка или поле рядом с ней исчезли: %s", body)
+	if column < 0 {
+		t.Fatalf("колонка текста исчезла: %s", body)
 	}
-	if gutter < column {
-		t.Error("поле стоит перед текстом, а не после него")
-	}
-	if !strings.Contains(body[column:gutter], `"type":"weight"`) {
-		t.Errorf("колонка текста без доли ширины: %s", body[column:gutter])
+	if !strings.Contains(body[column:column+300], `"maxWidthDp"`) {
+		t.Errorf("текст без верхней границы ширины: %s", body[column:column+300])
 	}
 }

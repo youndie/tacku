@@ -6,6 +6,8 @@
 // an identifier.
 package render
 
+import "strings"
+
 // Component is a node of the tree. Any of the concrete types below.
 type Component any
 
@@ -78,11 +80,12 @@ type background struct {
 }
 
 type size struct {
-	Type     string  `json:"type"`
-	Width    *string `json:"width,omitempty"`
-	Height   *string `json:"height,omitempty"`
-	WidthDp  *int    `json:"widthDp,omitempty"`
-	HeightDp *int    `json:"heightDp,omitempty"`
+	Type       string  `json:"type"`
+	Width      *string `json:"width,omitempty"`
+	Height     *string `json:"height,omitempty"`
+	WidthDp    *int    `json:"widthDp,omitempty"`
+	HeightDp   *int    `json:"heightDp,omitempty"`
+	MaxWidthDp *int    `json:"maxWidthDp,omitempty"`
 }
 
 type weight struct {
@@ -114,6 +117,15 @@ func Background(token string) Modifier { return background{Type: "background", C
 // the schema carried only Fill and Wrap. A number on an axis outranks a symbolic value on the same
 // axis, so the two are never set together here.
 func WidthDp(dp int) Modifier { return size{Type: "size", WidthDp: intPtr(dp)} }
+
+// MaxWidthDp bounds a node without fixing it: as wide as the parent allows, and no wider than this.
+//
+// It arrived in kompot 0.32 because this project asked for it (Q-74, kompot#77). Before it, a
+// reading measure could only be a fixed width — which the server cannot choose, not knowing the
+// window, and which is clipped when it exceeds one — or a share of the width, which is never
+// clipped and never bounded either. This is the constraint the case actually needs: an upper bound
+// applied by the half that knows how much room there is.
+func MaxWidthDp(dp int) Modifier { return size{Type: "size", MaxWidthDp: intPtr(dp)} }
 
 // FillWidth makes a node as wide as its parent allows.
 //
@@ -162,8 +174,21 @@ type text struct {
 	Modifiers []Modifier `json:"modifiers,omitempty"`
 	Text      string     `json:"text"`
 	Style     string     `json:"style,omitempty"`
+	Spans     []TextSpan `json:"spans,omitempty"`
 	MaxLines  *int       `json:"maxLines,omitempty"`
 	Ellipsis  bool       `json:"ellipsis,omitempty"`
+}
+
+// TextSpan is a run inside a line, with a style, a colour and an action of its own.
+//
+// It arrived in kompot 0.32 at this project's asking (Q-73, kompot#56). Before it a text node was
+// one string and one style, so authored prose could not be rendered at all: emphasis reached the
+// screen as asterisks and a link as brackets around an address nobody could press.
+type TextSpan struct {
+	Text   string `json:"text"`
+	Style  string `json:"style,omitempty"`
+	Color  string `json:"color,omitempty"`
+	Action Action `json:"action,omitempty"`
 }
 
 type button struct {
@@ -244,6 +269,22 @@ type TableRow struct {
 // node has.
 func Table(id string, rows []TableRow, modifiers ...Modifier) Component {
 	return table{Type: "table", ID: id, Modifiers: canonical(modifiers), Rows: rows}
+}
+
+// Rich is a line built of runs.
+//
+// The node keeps a plain `text` beside them, and the schema requires it: a client that does not
+// know spans draws that instead, which is the whole sentence with its emphasis lost rather than
+// nothing. Assembled here from the runs themselves, so the two cannot say different things.
+func Rich(id string, spans []TextSpan, style string, modifiers ...Modifier) Component {
+	plain := strings.Builder{}
+	for _, span := range spans {
+		plain.WriteString(span.Text)
+	}
+	return text{
+		Type: "text", ID: id, Modifiers: canonical(modifiers),
+		Text: plain.String(), Style: style, Spans: spans,
+	}
 }
 
 func Button(id, label string, action Action, modifiers ...Modifier) Component {
@@ -366,6 +407,23 @@ type loadPageAction struct {
 // Navigate opens a screen of this application. The deeplink is an application URI and must not be a
 // web address — the schema refuses one, which is what stops a server sending a client off-site.
 func Navigate(deeplink string) Action { return navigateAction{Type: "navigate", Deeplink: deeplink} }
+
+type openURLAction struct {
+	Type string `json:"type"`
+	URL  string `json:"url"`
+}
+
+// OpenURL leaves the application.
+//
+// The one action that does, and it exists because this project had nowhere to put an address: a
+// card standing for a file in another repository could name it and not lead to it (Q-72,
+// kompot#55). The schema says plainly that `navigate` must not carry an external address and this
+// must — so leaving is explicit on the wire, and a client is free to put a confirmation or an
+// allowlist in front of it.
+//
+// The address has to be http or https: the schema carries the pattern, and a client refusing a
+// `file://` or a `javascript:` should not have to be the first thing that notices.
+func OpenURL(url string) Action { return openURLAction{Type: "open_url", URL: url} }
 
 // LoadPageAt is the polymorphic form, for a button.
 func LoadPageAt(url string) Action { return loadPageAction{Type: "load_page", URL: url} }

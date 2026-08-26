@@ -149,9 +149,13 @@ func New(config Config) *Source { return &Source{config: config.withDefaults()} 
 // Config gives back the settings in use, defaults filled in.
 func (s *Source) Config() Config { return s.config }
 
-// FileURL is where a person goes to read the item itself.
-func (s *Source) FileURL(item Item) string {
-	return fmt.Sprintf("https://github.com/%s/blob/%s/%s", s.config.Repo, s.config.Ref, item.Path)
+// Base is where a path of this source is read, with the path appended.
+//
+// A base rather than a whole address, because what needs one is not only the item's own file: the
+// text of an item links to its neighbours by file name, and each of those is a path in the same
+// repository.
+func (s *Source) Base() string {
+	return fmt.Sprintf("https://github.com/%s/blob/%s/", s.config.Repo, s.config.Ref)
 }
 
 // Load returns what the board should draw.
