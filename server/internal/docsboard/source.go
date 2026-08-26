@@ -38,6 +38,25 @@ func (r Refusal) Error() string {
 // that must not appear (scripts/no_private_names.py), but the reason the gate has nothing to catch
 // is that the source is configuration and not code.
 type Config struct {
+	// Key names this source in an address: `app://docs-item/<key>/B-01`.
+	//
+	// It exists because identifiers are a repository's own and collide across them — B-01 is the
+	// first item of every backlog written by this method. An address without the key names two
+	// different tasks as soon as there is a second source, and an address already in use is the
+	// expensive thing to change.
+	Key string
+
+	// Title is what the navigation calls this source, before anything has been read from it.
+	//
+	// From configuration rather than from the index's own heading, because the rail is built when
+	// the server starts and the heading arrives with the first reading — a deployment that cannot
+	// reach its source would otherwise have a nameless entry.
+	Title string
+
+	// Private says whether the credential is sent to this source. A public repository is read
+	// without one: a token scoped to somebody else's account is not neutral there, it is a 404.
+	Private bool
+
 	// Repo is `owner/name`.
 	Repo string
 	// Ref is a branch, tag or commit; empty means the repository's default branch.
@@ -76,6 +95,9 @@ type Config struct {
 func (c Config) Configured() bool { return c.Repo != "" }
 
 func (c Config) withDefaults() Config {
+	if c.Title == "" {
+		c.Title = c.Key
+	}
 	if c.Ref == "" {
 		c.Ref = "main"
 	}
@@ -146,8 +168,27 @@ type Source struct {
 
 func New(config Config) *Source { return &Source{config: config.withDefaults()} }
 
+// Sources are the backlogs one deployment shows, in the order they were configured.
+//
+// A list rather than a map, because the order is the order of the navigation and a map has none.
+type Sources []*Source
+
+// Find is the source with this key, or nil.
+func (s Sources) Find(key string) *Source {
+	for _, one := range s {
+		if one.config.Key == key {
+			return one
+		}
+	}
+	return nil
+}
+
 // Config gives back the settings in use, defaults filled in.
 func (s *Source) Config() Config { return s.config }
+
+// Key names this source in an address, and Title names it in the navigation.
+func (s *Source) Key() string   { return s.config.Key }
+func (s *Source) Title() string { return s.config.Title }
 
 // Base is where a path of this source is read, with the path appended.
 //
@@ -227,7 +268,7 @@ func (s *Source) request(ctx context.Context, url, accept, what string) (*http.R
 	request.Header.Set("Accept", accept)
 	request.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 	request.Header.Set("User-Agent", "tacku")
-	if s.config.Token != "" {
+	if s.config.Private && s.config.Token != "" {
 		request.Header.Set("Authorization", "Bearer "+s.config.Token)
 	}
 

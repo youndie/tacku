@@ -20,11 +20,17 @@ const (
 // There is no submit beside it and no store behind it. The repository is where such an item is
 // argued about, reviewed and merged; this end of the wire is a window, and a window that could write
 // would owe an answer to "which of the two is right" — see docs/backlog/B-53.
-func docsBoard(source *docsboard.Source, now func() time.Time) http.HandlerFunc {
+func docsBoard(sources docsboard.Sources, now func() time.Time) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
 			unauthenticated(w)
+			return
+		}
+
+		source := sources.Find(r.PathValue("source"))
+		if source == nil {
+			http.Error(w, `{"error":"no such source"}`, http.StatusNotFound)
 			return
 		}
 
@@ -37,12 +43,13 @@ func docsBoard(source *docsboard.Source, now func() time.Time) http.HandlerFunc 
 		if snapshot.Empty() {
 			where := source.Config()
 			respond(w, r, render.UnreadableDocsBoard(
-				principal.Provenance.OnBehalfOf, failure, where.Repo, where.Ref, where.Root))
+				principal.Provenance.OnBehalfOf, source.Key(), failure, where.Repo, where.Ref, where.Root))
 			return
 		}
 
 		screen := render.DocsBoard{
 			Person:   principal.Provenance.OnBehalfOf,
+			Source:   source.Key(),
 			Snapshot: snapshot,
 			Now:      now(),
 			Failure:  failure,
@@ -56,11 +63,17 @@ func docsBoard(source *docsboard.Source, now func() time.Time) http.HandlerFunc 
 // The identifier is checked against what was read rather than against a shape: the item screen can
 // only ever show something the board showed, and a request for anything else is a stale link or an
 // invented one. Answering 404 says which.
-func docsItem(source *docsboard.Source) http.HandlerFunc {
+func docsItem(sources docsboard.Sources) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		principal, err := principalOf(r)
 		if err != nil {
 			unauthenticated(w)
+			return
+		}
+
+		source := sources.Find(r.PathValue("source"))
+		if source == nil {
+			http.Error(w, `{"error":"no such source"}`, http.StatusNotFound)
 			return
 		}
 
@@ -80,6 +93,7 @@ func docsItem(source *docsboard.Source) http.HandlerFunc {
 
 		screen := render.DocsItem{
 			Person: principal.Provenance.OnBehalfOf,
+			Source: source.Key(),
 			Item:   item,
 			Files:  render.DocsFiles{Base: source.Base(), Items: known},
 		}

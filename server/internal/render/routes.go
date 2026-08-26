@@ -22,12 +22,15 @@ const (
 	// The selection mode, which is a screen because the vocabulary has no mode. See render.BulkMove.
 	LinkBulkMove = "app://bulk-move"
 
-	// The read-only view over a backlog kept in a repository. Carried only by a deployment that has
-	// a source configured — see [WithDocsBoard].
-	LinkDocsBoard = "app://docs-board"
+	// The read-only view over a backlog kept in a repository, with the source's key after it.
+	// Carried once per configured source — see [WithDocsBoards].
+	LinkDocsBoard = "app://docs-board/"
 
-	// One item of that backlog, addressed by its identifier and therefore resolved by the client
-	// from a prefix, like a task.
+	// One item of a backlog: the source's key, then the identifier. Resolved by the client from a
+	// prefix, like a task.
+	//
+	// The key is in the address because identifiers are a repository's own and collide across them:
+	// B-01 is the first item of every backlog written by this method.
 	LinkDocsItem = "app://docs-item/"
 
 	// Known to the client rather than carried by the graph.
@@ -99,32 +102,42 @@ var Graph = base
 // route and the endpoint behind it — are decided in one place (httpsrv.New) because a route
 // promising an endpoint nobody registered is a button that does nothing, in silence, for as long as
 // nobody presses it while watching.
-// DocsBoardPath is where that view is served, and DocsItemPath what one item's identifier goes
-// after. Constants because the route and the handler must agree on them, and they are registered in
-// two packages.
+// DocsBoardPath is where a board is served, with the source's key after it, and DocsItemPath what a
+// key and an identifier go after. Constants because the route and the handler must agree on them,
+// and they are registered in two packages.
 const (
-	DocsBoardPath = "/screens/docs-board"
+	DocsBoardPath = "/screens/docs-board/"
 	DocsItemPath  = "/screens/docs-item/"
 )
 
-var DocsRoute = Route{
-	Deeplink: LinkDocsBoard, Endpoint: DocsBoardPath, Kind: "screen",
-	Title: "Docs backlog", Rail: "nav-docs",
+// DocsBoardRoute is the route of one source's board.
+//
+// One per source rather than one screen taking a parameter, because the graph carries literal paths
+// and has none. That is not a workaround: which backlogs a deployment shows is exactly the kind of
+// thing a graph is for, and each gets its own entry in the rail under the name its configuration
+// gives it.
+func DocsBoardRoute(key, title string) Route {
+	return Route{
+		Deeplink: LinkDocsBoard + key,
+		Endpoint: DocsBoardPath + key,
+		Kind:     "screen",
+		Title:    title,
+		Rail:     "nav-docs-" + key,
+	}
 }
 
-// WithDocsBoard assembles the graph of a deployment that does or does not show the docs view.
+// WithDocsBoards assembles the graph of a deployment showing these backlogs, in this order.
 //
 // It assigns rather than appends, and that is the whole reason it is written out: a process that
-// builds a server twice — which every test binary does — would otherwise end up carrying the route
-// twice, or carrying it in a server configured without a source. Assigning makes the graph a
+// builds a server twice — which every test binary does — would otherwise carry a route twice, or
+// carry one in a server configured without the source behind it. Assigning makes the graph a
 // function of the argument instead of a function of the history.
-func WithDocsBoard(on bool) {
-	if !on {
-		Graph, ClientNativePrefixes = base, basePrefixes
-		return
+func WithDocsBoards(sources []Route) {
+	Graph = append(append([]Route(nil), base...), sources...)
+	ClientNativePrefixes = basePrefixes
+	if len(sources) > 0 {
+		ClientNativePrefixes = append(append([]string(nil), basePrefixes...), LinkDocsItem)
 	}
-	Graph = append(append([]Route(nil), base...), DocsRoute)
-	ClientNativePrefixes = append(append([]string(nil), basePrefixes...), LinkDocsItem)
 }
 
 // ClientNative are the destinations a client resolves without the graph. Listed rather than left

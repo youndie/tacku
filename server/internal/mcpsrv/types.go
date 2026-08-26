@@ -80,6 +80,10 @@ func actorOf(p domain.Provenance) actor {
 // that is a word all occur in a live repository, and a value quietly rewritten into the nearest
 // local one would be a lie a model cannot check.
 type docsBrief struct {
+	// Source is which backlog this came from, and it is not decoration: an identifier is unique
+	// inside one repository and nowhere else — B-01 is the first item of every backlog written by
+	// this method.
+	Source   string `json:"source"`
 	ID       string `json:"id" jsonschema:"the identifier the repository quotes, for example B-171"`
 	Title    string `json:"title"`
 	Status   string `json:"status" jsonschema:"as the source writes it: usually open, wip, done, question or dropped"`
@@ -99,20 +103,29 @@ type docsFull struct {
 }
 
 type docsListOut struct {
-	// Source is what the repository calls its own backlog, so that an answer can be attributed.
-	Source string      `json:"source"`
-	Items  []docsBrief `json:"items"`
-	// ReadAt is when this reading was taken, because it is a cached copy of somebody else's
-	// repository and "how old" is a question the caller is entitled to.
-	ReadAt string `json:"readAt" jsonschema:"RFC 3339"`
+	// Sources are the backlogs this answer covers, each with what it calls itself and when it was
+	// last read — these are cached copies of somebody else's repositories, and "how old" is a
+	// question the caller is entitled to. A source that could not be read says so here rather than
+	// being left out, because an answer missing a whole repository reads as "nothing there".
+	Sources []docsSourceView `json:"sources"`
+	Items   []docsBrief      `json:"items"`
+}
+
+type docsSourceView struct {
+	Key    string `json:"key" jsonschema:"what to pass as source to get_docs_item"`
+	Title  string `json:"title"`
+	ReadAt string `json:"readAt,omitempty" jsonschema:"RFC 3339"`
+	Unread string `json:"unread,omitempty" jsonschema:"why this backlog could not be read, when it could not"`
 }
 
 type docsListIn struct {
+	Source string `json:"source,omitempty" jsonschema:"only this backlog, by its key; all of them when absent"`
 	Stage  string `json:"stage,omitempty" jsonschema:"only items of this stage"`
 	Status string `json:"status,omitempty" jsonschema:"only items with this status, as the source spells it"`
 	Open   bool   `json:"open,omitempty" jsonschema:"only what is not done, which is usually what is being asked"`
 }
 
 type docsGetIn struct {
-	ID string `json:"id" jsonschema:"the identifier, for example B-171"`
+	Source string `json:"source" jsonschema:"which backlog, by the key list_docs_items reports"`
+	ID     string `json:"id" jsonschema:"the identifier inside that backlog, for example B-171"`
 }

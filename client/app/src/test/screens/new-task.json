@@ -195,7 +195,7 @@
      },
      {
       "type": "row",
-      "id": "nav-docs",
+      "id": "nav-docs-example",
       "modifiers": [
        {
         "type": "size",
@@ -205,7 +205,7 @@
       "children": [
        {
         "type": "text",
-        "id": "nav-docs-label",
+        "id": "nav-docs-example-label",
         "modifiers": [
          {
           "type": "padding",
@@ -215,13 +215,13 @@
           "end": 20
          }
         ],
-        "text": "Docs backlog",
+        "text": "A lending system",
         "style": "nav"
        }
       ],
       "action": {
        "type": "navigate",
-       "deeplink": "app://docs-board"
+       "deeplink": "app://docs-board/example"
       }
      },
      {

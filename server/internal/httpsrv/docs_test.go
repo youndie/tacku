@@ -84,10 +84,13 @@ func sourceStand(t *testing.T) (*httptest.Server, *int) {
 
 func withSource(t *testing.T, server *httptest.Server, ttl time.Duration) func(*httpsrv.Config) {
 	return func(config *httpsrv.Config) {
-		config.DocsBoard = docsboard.New(docsboard.Config{
-			Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
-			Token: "a-secret-value", TTL: ttl, API: server.URL, Client: server.Client(),
-		})
+		config.DocsBoards = docsboard.Sources{
+			docsboard.New(docsboard.Config{
+				Key: "example", Title: "The lending backlog",
+				Repo: "example/docs", Ref: "main", Root: "backlog", Index: "backlog.md",
+				Private: true, Token: "a-secret-value", TTL: ttl, API: server.URL, Client: server.Client(),
+			}),
+		}
 	}
 }
 
@@ -95,13 +98,13 @@ func TestWithoutASourceTheViewDoesNotExist(t *testing.T) {
 	r := newResource(t)
 	token := r.reader(t)
 
-	response, _ := r.get(t, render.DocsBoardPath, token, "")
+	response, _ := r.get(t, render.DocsBoardPath+"example", token, "")
 	if response.StatusCode != http.StatusNotFound {
 		t.Errorf("экран отдан кодом %d, хотя источник не задан", response.StatusCode)
 	}
 
 	_, body := r.get(t, "/graph", token, "")
-	if strings.Contains(string(body), render.LinkDocsBoard) {
+	if strings.Contains(string(body), render.LinkDocsBoard+"example") {
 		t.Error("граф называет экран, которого этот контур не обслуживает — это кнопка в никуда")
 	}
 }
@@ -120,7 +123,7 @@ func TestWithASourceTheViewIsReachable(t *testing.T) {
 	}
 	var carried *render.Route
 	for i, route := range graph.Routes {
-		if route.Deeplink == render.LinkDocsBoard {
+		if route.Deeplink == render.LinkDocsBoard+"example" {
 			carried = &graph.Routes[i]
 		}
 	}
@@ -156,12 +159,12 @@ func TestAnUnreachableSourceSaysSoOverTheLastReading(t *testing.T) {
 	r := newResourceWith(t, withSource(t, stand, time.Nanosecond))
 	token := r.reader(t)
 
-	if _, screen := r.get(t, render.DocsBoardPath, token, ""); !strings.Contains(string(screen), "A failed overdue notice") {
+	if _, screen := r.get(t, render.DocsBoardPath+"example", token, ""); !strings.Contains(string(screen), "A failed overdue notice") {
 		t.Fatal("первое чтение не удалось — дальше проверять нечего")
 	}
 
 	*refuse = http.StatusNotFound
-	response, screen := r.get(t, render.DocsBoardPath, token, "")
+	response, screen := r.get(t, render.DocsBoardPath+"example", token, "")
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("экран ответил %d, а прошлый снимок был в руках", response.StatusCode)
 	}
@@ -179,7 +182,7 @@ func TestASourceThatWasNeverReadIsAScreenAndNotAnError(t *testing.T) {
 	r := newResourceWith(t, withSource(t, stand, time.Hour))
 	token := r.reader(t)
 
-	response, screen := r.get(t, render.DocsBoardPath, token, "")
+	response, screen := r.get(t, render.DocsBoardPath+"example", token, "")
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("экран ответил %d: клиент покажет свою ошибку вместо объяснения", response.StatusCode)
 	}
@@ -200,7 +203,7 @@ func TestTheViewOffersNothingThatWrites(t *testing.T) {
 	stand, _ := sourceStand(t)
 	r := newResourceWith(t, withSource(t, stand, time.Hour))
 
-	_, screen := r.get(t, render.DocsBoardPath, r.reader(t), "")
+	_, screen := r.get(t, render.DocsBoardPath+"example", r.reader(t), "")
 	for _, forbidden := range []string{`"perform"`, `"submit_form"`} {
 		if strings.Contains(string(screen), forbidden) {
 			t.Errorf("витрина несёт действие %s — она обязана быть окном, а не доской", forbidden)
@@ -216,12 +219,12 @@ func TestAnItemCanBeRead(t *testing.T) {
 	r := newResourceWith(t, withSource(t, stand, time.Hour))
 	token := r.reader(t)
 
-	_, board := r.get(t, render.DocsBoardPath, token, "")
-	if !strings.Contains(string(board), render.LinkDocsItem+"B-02") {
+	_, board := r.get(t, render.DocsBoardPath+"example", token, "")
+	if !strings.Contains(string(board), render.LinkDocsItem+"example/B-02") {
 		t.Fatal("карточка никуда не ведёт")
 	}
 
-	response, screen := r.get(t, render.DocsItemPath+"B-02", token, "")
+	response, screen := r.get(t, render.DocsItemPath+"example/B-02", token, "")
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("экран задачи ответил %d", response.StatusCode)
 	}
@@ -241,7 +244,7 @@ func TestAnItemNobodyReadIsNotAScreen(t *testing.T) {
 	stand, _ := sourceStand(t)
 	r := newResourceWith(t, withSource(t, stand, time.Hour))
 
-	response, _ := r.get(t, render.DocsItemPath+"B-999", r.reader(t), "")
+	response, _ := r.get(t, render.DocsItemPath+"example/B-999", r.reader(t), "")
 	if response.StatusCode != http.StatusNotFound {
 		t.Errorf("выдуманный идентификатор ответил %d, а не 404", response.StatusCode)
 	}

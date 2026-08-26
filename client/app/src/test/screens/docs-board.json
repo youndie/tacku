@@ -151,7 +151,7 @@
     },
     {
      "type": "row",
-     "id": "nav-docs",
+     "id": "nav-docs-example",
      "modifiers": [
       {
        "type": "background",
@@ -165,7 +165,7 @@
      "children": [
       {
        "type": "text",
-       "id": "nav-docs-label",
+       "id": "nav-docs-example-label",
        "modifiers": [
         {
          "type": "padding",
@@ -175,13 +175,13 @@
          "end": 20
         }
        ],
-       "text": "Docs backlog",
+       "text": "A lending system",
        "style": "nav_current"
       }
      ],
      "action": {
       "type": "navigate",
-      "deeplink": "app://docs-board"
+      "deeplink": "app://docs-board/example"
      }
     },
     {
@@ -416,7 +416,11 @@
                "style": "body"
               }
              ],
-             "spacing": 6
+             "spacing": 6,
+             "action": {
+              "type": "navigate",
+              "deeplink": "app://docs-item/example/B-01"
+             }
             }
            ]
           },
@@ -468,7 +472,11 @@
                "style": "body"
               }
              ],
-             "spacing": 6
+             "spacing": 6,
+             "action": {
+              "type": "navigate",
+              "deeplink": "app://docs-item/example/B-02"
+             }
             }
            ]
           }
@@ -582,7 +590,11 @@
                "style": "body"
               }
              ],
-             "spacing": 6
+             "spacing": 6,
+             "action": {
+              "type": "navigate",
+              "deeplink": "app://docs-item/example/B-04"
+             }
             }
            ]
           },
@@ -640,7 +652,11 @@
                "style": "meta"
               }
              ],
-             "spacing": 6
+             "spacing": 6,
+             "action": {
+              "type": "navigate",
+              "deeplink": "app://docs-item/example/B-05"
+             }
             }
            ]
           }
@@ -754,7 +770,11 @@
                "style": "body"
               }
              ],
-             "spacing": 6
+             "spacing": 6,
+             "action": {
+              "type": "navigate",
+              "deeplink": "app://docs-item/example/B-07"
+             }
             }
            ]
           }

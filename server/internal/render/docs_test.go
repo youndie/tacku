@@ -37,7 +37,7 @@ func drawn(t *testing.T, board render.DocsBoard) string {
 // screen. The tally was there for one build and nobody could see it; the tree said nothing and the
 // screenshot did.
 func TestTheTallyStandsAboveTheListAndNotBelowIt(t *testing.T) {
-	tree := drawn(t, render.DocsBoard{Snapshot: snapshot(), Now: time.Now()})
+	tree := drawn(t, render.DocsBoard{Source: "example", Snapshot: snapshot(), Now: time.Now()})
 
 	tally := strings.Index(tree, `"docs-column-one-done"`)
 	list := strings.Index(tree, `"docs-column-one-list"`)
@@ -54,7 +54,7 @@ func TestAFinishedStageIsNotDrawnAsAnEmptyColumn(t *testing.T) {
 	shot.Stages = append(shot.Stages, "two")
 	shot.Items = append(shot.Items, docsboard.Item{ID: "B-03", Number: 3, Title: "t", Status: "done", Stage: "two"})
 
-	if strings.Contains(drawn(t, render.DocsBoard{Snapshot: shot, Now: time.Now()}), `"two"`) {
+	if strings.Contains(drawn(t, render.DocsBoard{Source: "example", Snapshot: shot, Now: time.Now()}), `"two"`) {
 		t.Error("этап без открытых задач занял колонку — на живом источнике таких больше, чем работающих")
 	}
 }
@@ -108,7 +108,7 @@ func TestAnItemKeepsTheShapeItWasWrittenIn(t *testing.T) {
 		Body: "# B-171 — Rules are off by name\n\nOne paragraph\nover two lines.\n\n" +
 			"| Rule | Places |\n|---|---|\n| naming | 42 |\n",
 	}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,7 +170,7 @@ func TestANumberedListIsAListAndNotOneLongSentence(t *testing.T) {
 			"2. Build the URL when showing it.\n" +
 			"3. Migrate what is already stored.\n",
 	}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +202,7 @@ func TestANestedItemIsIndented(t *testing.T) {
 		ID: "B-01", Title: "Tariffs", Status: "open", Path: "backlog/B-01-x.md",
 		Body: "- Plans:\n  - Free, up to ten items\n  - Paid, without a limit\n",
 	}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,7 +223,7 @@ func TestBlocksComeOutInTheOrderTheyWereWritten(t *testing.T) {
 		ID: "B-01", Title: "Rules", Status: "open", Path: "backlog/B-01-x.md",
 		Body: "Here they are:\n| Rule | Places |\n|---|---|\n| naming | 42 |\n## What to do\n",
 	}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -252,7 +252,7 @@ func TestAWrappedListItemStaysOneItem(t *testing.T) {
 			"- **Only a buyer.** A review with no order behind it turns the shop into\n" +
 			"  a noticeboard.\n",
 	}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,8 +294,9 @@ func TestALinkGoesWhereItPoints(t *testing.T) {
 			"And [B-404](B-404-never-existed.md).\n",
 	}
 	drawn := render.DocsItem{
-		Item:  item,
-		Files: render.DocsFiles{Base: "https://example.com/repo/blob/main/", Items: map[string]bool{"B-97": true}},
+		Source: "example",
+		Item:   item,
+		Files:  render.DocsFiles{Base: "https://example.com/repo/blob/main/", Items: map[string]bool{"B-97": true}},
 	}
 	tree, err := json.Marshal(drawn.Screen())
 	if err != nil {
@@ -306,7 +307,7 @@ func TestALinkGoesWhereItPoints(t *testing.T) {
 
 	// Внутрь приложения: источник ссылается сам на себя постоянно, и раньше пройти по такой ссылке
 	// значило пойти в чекаут.
-	if got := actions["B-97"]; got != "app://docs-item/B-97<nil>" {
+	if got := actions["B-97"]; got != "app://docs-item/example/B-97<nil>" {
 		t.Errorf("ссылка на соседнюю задачу ведёт в %q", got)
 	}
 	// Наружу — файл в чужом репозитории, и выход обозначен явно.
@@ -332,7 +333,7 @@ func TestALinkThatCanGoNowhereKeepsItsAddress(t *testing.T) {
 		ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md",
 		Body: "See [B-97](B-97-images.md).\n",
 	}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -410,7 +411,7 @@ func nodesIn(t *testing.T, tree []byte, wireType string) []map[string]any {
 // there at all — "fill" alone is one deleted modifier away.
 func TestTheTextOfAnItemIsBounded(t *testing.T) {
 	item := docsboard.Item{ID: "B-01", Title: "t", Status: "open", Path: "backlog/B-01-x.md", Body: "A line.\n"}
-	tree, err := json.Marshal(render.DocsItem{Item: item}.Screen())
+	tree, err := json.Marshal(render.DocsItem{Source: "example", Item: item}.Screen())
 	if err != nil {
 		t.Fatal(err)
 	}

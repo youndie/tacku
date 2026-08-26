@@ -57,29 +57,33 @@ db:
 # How long an untouched multi-step scenario is kept. Empty leaves the server's own default.
 wizardTtl: ""
 
-# The read-only view over a backlog that lives in another repository: one file per item, the method
-# this project documents itself with. Empty `repo` means the deployment shows none — no endpoint, no
-# route in the navigation graph, nothing in the rail — which is the shape every deployment had until
-# this existed.
+# The read-only views: backlogs kept by the docs-as-code method in **other** repositories, drawn as
+# boards. An empty list means this deployment shows none — no endpoints, no routes in the navigation
+# graph, nothing in the rail — which is the shape every deployment had until this existed.
 #
-# The repository is named here rather than in the image because it is a property of a deployment and
-# not of the product: this chart is public, and a repository name committed to it cannot be taken
-# back out of the clones.
+# The sources are named here rather than in the image because they are a property of a deployment
+# and not of the product: this chart is public, and a repository name committed to it cannot be
+# taken back out of the clones. The order of the list is the order of the rail.
+#
+# `key` goes into an address (`app://docs-item/<key>/B-01`) and has to be unique: identifiers belong
+# to a repository and collide across them — B-01 is the first item of every backlog of this method.
+#
+# `private: true` means "send the credential to this source". A public repository is read without
+# one, and that is not thrift: a token issued against somebody else's account is not neutral there,
+# it is a 404.
 docs:
-  # owner/name of the source repository.
-  repo: ""
-  # The branch to read. Empty means main.
-  ref: ""
-  # Where the item files sit inside it. Empty means docs/backlog, which is where the method puts
-  # them; a repository whose whole content is documentation keeps them at backlog.
-  root: ""
-  # The index file carrying the stage table and the title. Empty means backlog.md.
-  index: ""
+  # A reading credential for the private sources, from a secret through --set.
+  token: ""
   # How long a reading is served before the source is asked whether it moved. Empty means a minute.
   ttl: ""
-  # A read-only credential for that repository, from a secret through --set. A private source
-  # answers 404 to an anonymous request, so a missing token arrives as "no such repository".
-  token: ""
+  sources: []
+  # - key: docs
+  #   title: The platform backlog
+  #   repo: owner/name
+  #   root: backlog        # where the item files sit; empty means docs/backlog, as the method puts them
+  #   ref: ""              # the branch; empty means main
+  #   index: ""            # the index carrying the stage table; empty means backlog.md
+  #   private: true
 
 traefik:
   entrypoint: websecure
