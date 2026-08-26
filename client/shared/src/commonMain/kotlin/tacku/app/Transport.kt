@@ -80,19 +80,7 @@ class Transport(
      * degrade fails loudly and immediately; the one that does degrades **silently**, and a silent
      * success that does nothing is the harder of the two to find.
      */
-    private val json: Json =
-        kompotJson(
-            SerializersModule {
-                include(kompotEngineSerializersModule)
-                include(formStandardSerializersModule)
-                include(kompotAuthSerializersModule)
-                include(kompotCommandsSerializersModule)
-                // The two types this deployment adds. Without this line the client would meet its
-                // own server's date and lose the whole form — the hierarchy it belongs to does not
-                // degrade, and the profile declaring the name does not make anything decode it.
-                if (knowsExtensions) include(tackuFieldsSerializersModule)
-            },
-        )
+    private val json: Json = tackuJson(knowsExtensions)
 
     /**
      * The pair a sign-in hands over, replaced whenever `update_session` arrives (§12.4).
@@ -278,3 +266,26 @@ class ServerRefused(
     val reason: String,
     val path: String,
 ) : RuntimeException("$status from $path: $reason")
+
+/**
+ * How this client reads the wire.
+ *
+ * A function rather than a private field of the transport, because the transport is not the only
+ * thing that has to read what this deployment can read: the conformance corpus hands its cases over
+ * as JSON, and a corpus decoded by a second Json built to look the same would be measuring the
+ * copy — including the line below, which is the one that costs a whole form when it is missing.
+ *
+ * `knowsExtensions` is false only for the check that proves the previous sentence: a client without
+ * the two types this deployment adds meets its own server's date and loses the form around it. The
+ * hierarchy does not degrade, and the profile declaring the name does not make anything decode it.
+ */
+fun tackuJson(knowsExtensions: Boolean = true): Json =
+    kompotJson(
+        SerializersModule {
+            include(kompotEngineSerializersModule)
+            include(formStandardSerializersModule)
+            include(kompotAuthSerializersModule)
+            include(kompotCommandsSerializersModule)
+            if (knowsExtensions) include(tackuFieldsSerializersModule)
+        },
+    )

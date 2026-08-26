@@ -74,6 +74,10 @@ dependencies {
 
     testImplementation(kotlin("test"))
 
+    // The conformance corpus for the reading side. The cases travel inside the artefact, so there
+    // is nothing here to keep in step with it — see kompot#52 and tacku#21.
+    testImplementation("io.github.youndie:kompot-client-tck:$kompotVersion")
+
     // An engine that answers for the server, so a refusal can be made to happen on purpose. The
     // session this product hands out lives five minutes; what happens at minute six is not
     // observable any other way without waiting five.

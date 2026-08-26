@@ -45,10 +45,11 @@
 
 <!-- BEGIN INDEX -->
 
-## Open (11)
+## Open (12)
 
 | Task | | Priority | Size | Blocked by |
 |---|---|---|---|---|
+| [B-58](docs/backlog/B-58-client-corpus.md) `[~]` | Прогнать корпус проверок для клиента и ответить, где контракт переходника жмёт | P1 | M | - |
 | [B-36](docs/backlog/B-36-measure-where-status-changes.md) `[ ]` | Замерить, где на самом деле меняют статус: на доске или в задаче | P2 | XS | B-19 |
 | [B-43](docs/backlog/B-43-invite-a-person.md) `[ ]` | Пригласить человека: сегодня участник заводится только из шелла | P2 | M | - |
 | [B-51](docs/backlog/B-51-two-screens-are-photographed-but-not-checked.md) `[ ]` | Вернуть в сверку два экрана, выпавших из съёмки | P2 | S | - |
