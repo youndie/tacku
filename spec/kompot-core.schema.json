@@ -209,6 +209,18 @@
             "integer",
             "null"
           ]
+        },
+        "maxWidthDp": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "maxHeightDp": {
+          "type": [
+            "integer",
+            "null"
+          ]
         }
       },
       "required": [

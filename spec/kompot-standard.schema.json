@@ -9,7 +9,8 @@
       "close": "#/$defs/KompotActionClose",
       "copy_text": "#/$defs/KompotActionCopyText",
       "load_page": "#/$defs/KompotActionLoadPage",
-      "navigate": "#/$defs/KompotActionNavigate"
+      "navigate": "#/$defs/KompotActionNavigate",
+      "open_url": "#/$defs/KompotActionOpenUrl"
     },
     "KompotComponent": {
       "button": "#/$defs/KompotComponentButton",
@@ -93,6 +94,26 @@
       "required": [
         "type",
         "deeplink"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionOpenUrl": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "open_url",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "open_url"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://[^\\s]+$",
+          "description": "An address OUTSIDE the application. navigate cannot carry one and must not (§12.2); this action exists so that leaving is explicit, and a client may put a confirmation or an allowlist in front of it"
+        }
+      },
+      "required": [
+        "type",
+        "url"
       ],
       "additionalProperties": true
     },
@@ -342,6 +363,22 @@
             }
           ]
         },
+        "color": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/ColorToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TextSpan"
+          }
+        },
         "maxLines": {
           "type": [
             "integer",
@@ -416,6 +453,49 @@
       },
       "required": [
         "cells"
+      ],
+      "additionalProperties": true
+    },
+    "TextSpan": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/TypographyToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "color": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/ColorToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "text"
       ],
       "additionalProperties": true
     }

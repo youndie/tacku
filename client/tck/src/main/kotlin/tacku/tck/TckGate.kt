@@ -44,6 +44,13 @@ object TckGate {
             // look at: a check with no target proves nothing, so adding the name was a decision to
             // build the thing, not a line of configuration.
             "updates",
+            // Eleventh, arriving with kompot 0.32 and the spans this project asked for
+            // (kompot#56): a text node can now carry runs with their own style, colour and action,
+            // so a check exists for whether they are built correctly. Found the same way as the two
+            // above — by this list being checked in both directions — and added while this server
+            // still sends no spans at all, which is the honest state: the check has no target here
+            // yet, and the run says so rather than counting it as passed.
+            "text-spans",
         )
 
     /**
