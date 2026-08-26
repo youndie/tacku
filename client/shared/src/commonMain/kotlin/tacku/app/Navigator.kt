@@ -4,6 +4,7 @@ import io.github.youndie.kompot.KompotAction
 import io.github.youndie.kompot.KompotActionHandler
 import io.github.youndie.kompot.auth.UpdateSessionAction
 import io.github.youndie.kompot.commands.PerformAction
+import io.github.youndie.kompot.form.FieldValue
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.forms.SubmitFormAction
 import io.github.youndie.kompot.navigation.ScreenRoute
@@ -121,16 +122,9 @@ class Navigator(
                 is NavigateAction -> follow(action.deeplink)
 
                 is SubmitFormAction -> {
-                    // Only the fields a person can currently see. A field whose condition is not
-                    // met is not rendered, not validated and must not travel in the payload (§9.4)
-                    // — even if a value was typed into it before something else hid it.
-                    // A field with no value yet is left out rather than sent as null. §1.4: a field
-                    // whose schema does not allow null must not arrive as one — it is omitted.
-                    val values =
-                        controller.fieldsState.value
-                            .filterKeys { controller.isFieldVisible(it) }
-                            .mapNotNull { (id, state) -> state.value?.let { id to it } }
-                            .toMap()
+                    // Null when a rule stops it, and then nothing leaves: the errors are already on
+                    // the fields that carry them.
+                    val values = sendable(controller) ?: return@launchCatching
                     val answer = transport.submit(submitPathFor(action.formId), action.formId, values)
                     dispatchNow(answer, controller, formId)
                 }
@@ -302,6 +296,66 @@ class Navigator(
          * for a product's log.
          */
         var traceEnabled: Boolean = false
+
+        /**
+         * What leaves when a form is submitted, or null when a rule stops it here.
+         *
+         * The whole decision in one function, and that is not tidiness. This client used to send
+         * whatever was typed and let the server refuse — which works, in the sense that nothing
+         * invalid is stored, and costs a round trip to be told on a screen of its own what a field
+         * could have said in place. §9.5 says a rule holds a person back before the request leaves;
+         * the conformance corpus for the reading side said the same thing on its first run, in
+         * eight findings across fifteen cases, every one of them this.
+         *
+         * One function because the corpus asks the question by calling it. Split into steps the
+         * caller repeats, the adapter repeated them — and three deliberate breakages of this
+         * behaviour then left the corpus green, because it was running its own copy of the answer.
+         *
+         * Marking first is what makes a rule apply to a field nobody touched, which is exactly what
+         * an empty required field is.
+         */
+        fun sendable(controller: FormController): Map<String, FieldValue>? {
+            controller.markAllAsChanged()
+            if (refused(controller)) {
+                return null
+            }
+            return payloadOf(controller)
+        }
+
+        /**
+         * Whether a rule stops this submit, in the client rather than at the server.
+         *
+         * Every error, with no filter for visibility, and that took measuring rather than
+         * reasoning. A hidden field must not block a submit — an error nobody can see is a refusal
+         * for a reason nobody can act on — so this used to skip fields the controller called
+         * invisible. Deliberately breaking that left every check green, which is what sent me to
+         * look: the toolkit **clears** the error when a field goes away, so there is nothing here
+         * to filter. The line was guarding a state that cannot occur, and a guard against nothing
+         * reads as a guard against something.
+         *
+         * What that behaviour is relied on for is pinned in HiddenErrorTest, against the toolkit
+         * rather than against this function.
+         */
+        fun refused(controller: FormController): Boolean =
+            controller.fieldsState.value.any { (_, state) -> state.error != null }
+
+        /**
+         * What this client sends when a form is submitted.
+         *
+         * Only the fields a person can currently see. A field whose condition is not met is not
+         * rendered, not validated and must not travel in the payload (§9.4) — even if a value was
+         * typed into it before something else hid it. A field with no value yet is left out rather
+         * than sent as null: §1.4, a field whose schema does not allow null must not arrive as one.
+         *
+         * In the companion, and named, so that the conformance corpus can ask the question the
+         * specification asks — "what would this client send" — of the same code the application
+         * runs. Assembled again inside a test, it would be a second answer agreeing with itself.
+         */
+        fun payloadOf(controller: FormController): Map<String, FieldValue> =
+            controller.fieldsState.value
+                .filterKeys { controller.isFieldVisible(it) }
+                .mapNotNull { (id, state) -> state.value?.let { id to it } }
+                .toMap()
 
         const val TASK_PREFIX = "app://task/"
         const val TASK_PATH = "/forms/task/"
