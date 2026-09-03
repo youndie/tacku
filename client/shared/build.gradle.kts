@@ -57,7 +57,7 @@ kotlin {
             // Dates, because the date field offers "next Friday" and a browser has no java.time.
             // The extension was written against the JVM's calendar for as long as the JVM was the
             // only place it ran — the same shape of omission as a module that declared one target.
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
         }
 
         jvmMain {
