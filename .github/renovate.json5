@@ -1,0 +1,143 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  extends: ["config:recommended"],
+
+  // Once a week, in UTC. Updates arrive as one Monday-morning batch rather than a trickle of a PR
+  // a day — every pull request here runs the full check across both halves of the repository.
+  timezone: "Etc/UTC",
+  schedule: ["before 6am on monday"],
+
+  // Commits here are Conventional Commits, and a hook enforces it. `config:recommended` maps
+  // dependency bumps to `fix:` and everything else to `chore:`.
+  semanticCommits: "enabled",
+
+  labels: ["dependencies"],
+
+  // With the build harness merging itself these numbers stop being a throttle on human attention
+  // and become one on runner time, so they can be higher.
+  prConcurrentLimit: 5,
+  prHourlyLimit: 0,
+
+  // Renovate merges the pull request itself rather than arming GitHub's auto-merge: GitHub refuses
+  // to arm it on a branch with no required checks, and adding branch protection to `main` would
+  // change how this repository is worked in.
+  platformAutomerge: false,
+
+  // Vulnerabilities are the one thing that ignores the schedule.
+  vulnerabilityAlerts: {
+    schedule: ["at any time"],
+    labels: ["dependencies", "security"],
+  },
+
+  // `probes/` is deliberately frozen. Each directory is a separate Go module so that the versions a
+  // fact was proved at sit next to the proof and do not move with the server's dependencies —
+  // probes/README.md says so in as many words. Bumping one would not update a probe, it would
+  // invalidate the record. kotlin-js-store holds a lock file the Kotlin/Wasm plugin writes itself.
+  ignorePaths: [
+    "**/build/**",
+    "**/.gradle/**",
+    "**/kotlin-js-store/**",
+    "probes/**",
+  ],
+
+  packageRules: [
+    {
+      description: "Kotlin: the compiler and its plugins move as one version, and that is never a routine bump",
+      matchPackageNames: ["/^org\\.jetbrains\\.kotlin[:.]/"],
+      groupName: "kotlin",
+    },
+    {
+      description: "kotlinx ships as one release train — one PR",
+      matchPackageNames: ["/^org\\.jetbrains\\.kotlinx[:.]/"],
+      groupName: "kotlinx",
+    },
+    {
+      // NOT a bump to take on its own. The client is built on kompot, whose Compose modules are
+      // compiled against 1.11.1; a newer foundation beside the material3 they carry throws
+      // AbstractMethodError inside a renderer — at RUNTIME, on the first screen with a text field,
+      // with everything resolved and everything compiled. So this waits for kompot to move, and
+      // the dashboard is where it waits rather than a pull request reopened every Monday.
+      description: "Compose Multiplatform follows kompot's line, not the newest release",
+      matchPackageNames: [
+        // The plugin is named by its id, with nothing after it — a pattern that demands a `:` or
+        // a `.` next matches the artefacts and misses the plugin that sets their version.
+        "org.jetbrains.compose",
+        "/^org\\.jetbrains\\.compose[:.]/",
+        "/^org\\.jetbrains\\.androidx\\./",
+      ],
+      groupName: "compose multiplatform",
+      dependencyDashboardApproval: true,
+    },
+    {
+      // kompot publishes a dozen coordinates under one version; a half-moved set is the failure
+      // mode, and it also decides which Compose line the client can be on.
+      description: "kompot is one release across every module it publishes",
+      matchPackageNames: ["/^io\\.github\\.youndie[:.]/"],
+      groupName: "kompot",
+    },
+    {
+      description: "viddik is one release across the plugin, the annotations and the engine",
+      matchPackageNames: ["/^ru\\.workinprogress\\.viddik/"],
+      groupName: "viddik",
+    },
+    {
+      description: "Ktor: the client modules share one version",
+      matchPackageNames: ["/^io\\.ktor[:.]/"],
+      groupName: "ktor",
+    },
+    {
+      description: "The Go server's dependencies arrive as one PR",
+      matchManagers: ["gomod"],
+      groupName: "go modules",
+    },
+    {
+      description: "The build harness arrives as one PR, not one per action",
+      matchManagers: ["github-actions"],
+      groupName: "ci actions",
+    },
+    {
+      description: "ktlint is build tooling, not a runtime dependency",
+      matchPackageNames: [
+        // The Gradle plugin is named by its id, with nothing after it — a pattern that demands a
+        // `:` or a `.` next matches the coordinate and misses the plugin entirely.
+        "org.jlleitschuh.gradle.ktlint",
+        "/^com\\.pinterest\\.ktlint[:.]/",
+      ],
+      matchUpdateTypes: ["minor", "patch"],
+      automerge: true,
+    },
+    {
+      // The build stage compiles the Go binary and the runtime stage is distroless: they are a
+      // pair, and no check on a pull request builds this file.
+      description: "Base images: changing the toolchain or the distro is a decision, not a bump",
+      matchManagers: ["dockerfile"],
+      automerge: false,
+      additionalBranchPrefix: "docker-",
+    },
+    {
+      // The chart's `version` is empty on purpose — it means the chart's appVersion, which the
+      // image workflow writes. Renovate filling it in would pin the deployment to whatever tag
+      // existed the morning it ran.
+      description: "The chart names its own image; that version is not a dependency",
+      matchManagers: ["helm-values"],
+      matchPackageNames: ["/^ghcr\\.io\\/youndie\\//"],
+      enabled: false,
+    },
+    {
+      description: "Majors of anything that ships get a human",
+      matchUpdateTypes: ["major"],
+      automerge: false,
+      labels: ["dependencies", "major"],
+    },
+    // Last, so it wins over the major rule above. A major of `actions/checkout` is not the same
+    // kind of event as a major of the MCP SDK: the build harness is not shipped to anyone, and the
+    // check that would catch a bad bump is the build itself — which already ran on the PR.
+    {
+      description: "The build harness merges itself, majors included: CI on pull_request is the review",
+      matchManagers: ["github-actions", "gradle-wrapper"],
+      automerge: true,
+      automergeType: "pr",
+    },
+  ],
+}
