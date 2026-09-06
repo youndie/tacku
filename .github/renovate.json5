@@ -1,35 +1,22 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
-  extends: ["config:recommended"],
+  // The portfolio's shared configuration, extended by name: the timezone, the Monday schedule, the
+  // limits, `platformAutomerge: false`, the kotlin/kotlinx/sborka/ci-actions groups and majors going
+  // to a human were identical in ten repositories and now live in sborka. (The sborka group is inert
+  // here — this repository does not use the conventions — and costs nothing.)
+  //
+  // The automerge preset is extended second on purpose — its rule has to land after the base
+  // preset's "majors get a human" to override it for the harness — and its precondition holds
+  // here: check.yaml runs on `pull_request`.
+  extends: [
+    "github>youndie/sborka",
+    "github>youndie/sborka:automerge-harness",
+  ],
 
-  // Once a week, in UTC. Updates arrive as one Monday-morning batch rather than a trickle of a PR
-  // a day — every pull request here runs the full check across both halves of the repository.
-  timezone: "Etc/UTC",
-  schedule: ["before 6am on monday"],
-
-  // Commits here are Conventional Commits, and a hook enforces it. `config:recommended` maps
-  // dependency bumps to `fix:` and everything else to `chore:`.
-  semanticCommits: "enabled",
-
-  labels: ["dependencies"],
-
-  // With the build harness merging itself these numbers stop being a throttle on human attention
-  // and become one on runner time, so they can be higher.
-  prConcurrentLimit: 5,
-  prHourlyLimit: 0,
-
-  // Renovate merges the pull request itself rather than arming GitHub's auto-merge: GitHub refuses
-  // to arm it on a branch with no required checks, and adding branch protection to `main` would
-  // change how this repository is worked in.
-  platformAutomerge: false,
-
-  // Vulnerabilities are the one thing that ignores the schedule.
-  vulnerabilityAlerts: {
-    schedule: ["at any time"],
-    labels: ["dependencies", "security"],
-  },
-
+  // REPEATED IN FULL, not added to: `ignorePaths` is replaced by this value rather than merged with
+  // the preset's, so dropping the first two would un-ignore them.
+  //
   // `probes/` is deliberately frozen. Each directory is a separate Go module so that the versions a
   // fact was proved at sit next to the proof and do not move with the server's dependencies —
   // probes/README.md says so in as many words. Bumping one would not update a probe, it would
@@ -41,17 +28,9 @@
     "probes/**",
   ],
 
+  // Below the extends, so these win: package rules are concatenated, preset first, and the last
+  // match takes effect.
   packageRules: [
-    {
-      description: "Kotlin: the compiler and its plugins move as one version, and that is never a routine bump",
-      matchPackageNames: ["/^org\\.jetbrains\\.kotlin[:.]/"],
-      groupName: "kotlin",
-    },
-    {
-      description: "kotlinx ships as one release train — one PR",
-      matchPackageNames: ["/^org\\.jetbrains\\.kotlinx[:.]/"],
-      groupName: "kotlinx",
-    },
     {
       // NOT a bump to take on its own. The client is built on kompot, whose Compose modules are
       // compiled against 1.11.1; a newer foundation beside the material3 they carry throws
@@ -72,13 +51,27 @@
     {
       // kompot publishes a dozen coordinates under one version; a half-moved set is the failure
       // mode, and it also decides which Compose line the client can be on.
+      //
+      // NAMED DOWN TO `kompot-` rather than the whole `io.github.youndie` group. The portfolio is
+      // migrating into that group — sborka and viddik are there already — and a pattern that ends
+      // at the group would quietly pull them into this rule, so a sborka bump would arrive labelled
+      // "kompot" and grouped with a release it has nothing to do with. Today nothing else under the
+      // group is used here, so this changes nothing and stops that later.
       description: "kompot is one release across every module it publishes",
-      matchPackageNames: ["/^io\\.github\\.youndie[:.]/"],
+      matchPackageNames: ["/^io\\.github\\.youndie:kompot-/"],
       groupName: "kompot",
     },
     {
+      // BOTH GROUP NAMES, for the reason the preset names both sborka groups: this repository pins
+      // `ru.workinprogress.viddik` while viddik itself now publishes under `io.github.youndie.viddik`
+      // (its `sborka.group`). A rule naming only the old one works until the day this repository
+      // migrates and then stops matching without saying anything — which is the half-moved set the
+      // rule exists to prevent.
       description: "viddik is one release across the plugin, the annotations and the engine",
-      matchPackageNames: ["/^ru\\.workinprogress\\.viddik/"],
+      matchPackageNames: [
+        "/^ru\\.workinprogress\\.viddik/",
+        "/^io\\.github\\.youndie\\.viddik/",
+      ],
       groupName: "viddik",
     },
     {
@@ -90,11 +83,6 @@
       description: "The Go server's dependencies arrive as one PR",
       matchManagers: ["gomod"],
       groupName: "go modules",
-    },
-    {
-      description: "The build harness arrives as one PR, not one per action",
-      matchManagers: ["github-actions"],
-      groupName: "ci actions",
     },
     {
       description: "ktlint is build tooling, not a runtime dependency",
@@ -123,21 +111,6 @@
       matchManagers: ["helm-values"],
       matchPackageNames: ["/^ghcr\\.io\\/youndie\\//"],
       enabled: false,
-    },
-    {
-      description: "Majors of anything that ships get a human",
-      matchUpdateTypes: ["major"],
-      automerge: false,
-      labels: ["dependencies", "major"],
-    },
-    // Last, so it wins over the major rule above. A major of `actions/checkout` is not the same
-    // kind of event as a major of the MCP SDK: the build harness is not shipped to anyone, and the
-    // check that would catch a bad bump is the build itself — which already ran on the PR.
-    {
-      description: "The build harness merges itself, majors included: CI on pull_request is the review",
-      matchManagers: ["github-actions", "gradle-wrapper"],
-      automerge: true,
-      automergeType: "pr",
     },
   ],
 }
