@@ -5,7 +5,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import ru.workinprogress.viddik.core.ViddikGlyphCoverage
+import io.github.youndie.viddik.core.ViddikGlyphCoverage
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals

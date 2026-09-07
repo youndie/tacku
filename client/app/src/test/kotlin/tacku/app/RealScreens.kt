@@ -3,7 +3,7 @@ package tacku.app
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import ru.workinprogress.viddik.annotations.ViddikScreenshot
+import io.github.youndie.viddik.annotations.ViddikScreenshot
 import java.io.File
 
 /**
