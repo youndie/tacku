@@ -13,12 +13,12 @@ import io.github.youndie.kompot.KompotLazyScreen
 import io.github.youndie.kompot.LocalKompotPageLoader
 import io.github.youndie.kompot.form.FormController
 import io.github.youndie.kompot.form.FormSchema
+import io.github.youndie.viddik.annotations.ViddikScreenshot
+import io.github.youndie.viddik.core.ViddikFontFamily
+import io.github.youndie.viddik.core.ViddikPlatformTextStyle
+import io.github.youndie.viddik.core.viddikTypography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import ru.workinprogress.viddik.annotations.ViddikScreenshot
-import ru.workinprogress.viddik.core.ViddikFontFamily
-import ru.workinprogress.viddik.core.ViddikPlatformTextStyle
-import ru.workinprogress.viddik.core.viddikTypography
 
 /**
  * What the states actually look like.

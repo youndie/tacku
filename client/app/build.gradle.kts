@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
-    id("ru.workinprogress.viddik")
+    id("io.github.youndie.viddik")
 }
 
 // The screenshots are the only tests here that look at pixels, and what they watch is the states
