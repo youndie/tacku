@@ -62,11 +62,12 @@
       groupName: "kompot",
     },
     {
-      // BOTH GROUP NAMES, for the reason the preset names both sborka groups: this repository pins
-      // `ru.workinprogress.viddik` while viddik itself now publishes under `io.github.youndie.viddik`
-      // (its `sborka.group`). A rule naming only the old one works until the day this repository
-      // migrates and then stops matching without saying anything — which is the half-moved set the
-      // rule exists to prevent.
+      // BOTH GROUP NAMES, for the reason the preset names both sborka groups. The second is the
+      // one that matches today: this repository is on viddik 0.4.0, published under
+      // `io.github.youndie.viddik`. The first matches the plugin id as it was up to 0.3.3.19,
+      // which is still on the snapshot server, and it stays because it cannot mislead — a
+      // `matchPackageNames` pattern decides which pull requests are grouped together, not where a
+      // coordinate is looked for, so one that matches nothing costs a comparison and nothing else.
       description: "viddik is one release across the plugin, the annotations and the engine",
       matchPackageNames: [
         "/^ru\\.workinprogress\\.viddik/",
