@@ -3,12 +3,12 @@
 // the first version of this file did exactly that, and the failure read "Could not find
 // io.github.youndie:kompot-spec", which points at the artefact rather than at the cause.
 plugins {
-    kotlin("jvm") version "2.4.10" apply false
-    kotlin("plugin.serialization") version "2.4.10" apply false
+    kotlin("jvm") version "2.4.20" apply false
+    kotlin("plugin.serialization") version "2.4.20" apply false
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0" apply false
     id("org.jetbrains.compose") version "1.11.1" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.10" apply false
-    id("com.google.devtools.ksp") version "2.3.11" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.20" apply false
+    id("com.google.devtools.ksp") version "2.3.12" apply false
     id("io.github.youndie.viddik") version "0.4.0" apply false
 }
 
