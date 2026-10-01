@@ -2,7 +2,7 @@
 # Pinned to amd64 on purpose: the image is built on whatever runner is free, and a binary linked
 # for the builder's architecture would fail at exec time with nothing but "exec format error" to
 # explain it.
-FROM --platform=linux/amd64 golang:1.25-bookworm AS build
+FROM --platform=linux/amd64 golang:1.27-bookworm AS build
 
 WORKDIR /src
 COPY server/go.mod server/go.sum ./
