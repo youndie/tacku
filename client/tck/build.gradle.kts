@@ -9,7 +9,7 @@ val kompotVersion: String = property("kompot.version").toString()
 dependencies {
     api("io.github.youndie:kompot-tck:$kompotVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
-    implementation("io.ktor:ktor-client-cio:3.5.2")
+    implementation("io.ktor:ktor-client-cio:3.6.0")
     // Ktor logs through SLF4J; without a binding every run opens with three lines of warning, and a
     // report people are meant to read should not start with noise about logging.
     runtimeOnly("org.slf4j:slf4j-nop:2.0.16")

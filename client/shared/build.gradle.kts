@@ -48,16 +48,16 @@ kotlin {
             implementation("io.github.youndie:kompot-ds-material-compose:$kompotVersion")
             implementation("io.github.youndie:form-standard:$kompotVersion")
 
-            implementation("io.ktor:ktor-client-core:3.5.2")
-            implementation("io.ktor:ktor-client-content-negotiation:3.5.2")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
+            implementation("io.ktor:ktor-client-core:3.6.0")
+            implementation("io.ktor:ktor-client-content-negotiation:3.6.0")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.0")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
             // Dates, because the date field offers "next Friday" and a browser has no java.time.
             // The extension was written against the JVM's calendar for as long as the JVM was the
             // only place it ran — the same shape of omission as a module that declared one target.
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
         }
 
         jvmMain {
@@ -67,7 +67,7 @@ kotlin {
             resources.srcDir(rootProject.file("resources"))
 
             dependencies {
-                implementation("io.ktor:ktor-client-cio:3.5.2")
+                implementation("io.ktor:ktor-client-cio:3.6.0")
             }
         }
 
@@ -76,7 +76,7 @@ kotlin {
         // browser's fetch here.
         val wasmJsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:3.5.2")
+                implementation("io.ktor:ktor-client-js:3.6.0")
             }
         }
     }
