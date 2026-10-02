@@ -55,7 +55,9 @@ kompot, ни этих доков; её имеет смысл тратить то
 ## 1. Проверенные факты
 
 Пути вида `kompot-spec/...` даны от корня репозитория
-[kompot](https://github.com/youndie/kompot), версия `0.8.0.14`.
+[kompot](https://github.com/youndie/kompot), версия `0.8.0.14`. С 2026-10-02 они записаны адресами
+`youndie/kompot@f847bae!/…` — коммит, из которого собрана `0.8.0.14`: проверка якорей клонирует
+только tacku и ищет путь лишь в его собственном репозитории.
 
 ### 1.1. KOMPOT опубликован как спека для любого стека, и файлы схемы едут в jar
 
@@ -64,9 +66,9 @@ Kotlin-реализация — одна из реализаций, а не оп
 
 | Факт | Где проверено |
 |---|---|
-| Спека нормативна и написана под чужой стек | `kompot-spec/SPEC.md`, преамбула |
+| Спека нормативна и написана под чужой стек | `youndie/kompot@f847bae!/kompot-spec/SPEC.md`, преамбула |
 | Последняя опубликованная версия — `0.8.0.14` | `https://reposilite.kotlin.website/snapshots/io/github/youndie/kompot-spec/maven-metadata.xml` |
-| В jar `kompot-spec-0.8.0.14.jar` лежат 11 файлов схемы под `kompot-spec/schema/` | `unzip -l` того же артефакта |
+| В jar лежат 11 файлов схемы: `kompot-spec-0.8.0.14.jar!/kompot-spec/schema/` | `unzip -l` того же артефакта |
 | Набор проверок опубликован отдельно: `io.github.youndie:kompot-tck:0.8.0.14` | `https://reposilite.kotlin.website/snapshots/io/github/youndie/kompot-tck/maven-metadata.xml` |
 | Артефакты опубликованы под **JVM 25**: на тулчейне 21 резолв падает, а не деградирует | сообщение Gradle «only compatible with JVM runtime version 25 or newer» при сборке `client/spec-gen` |
 | Схемы модулей тулкита побайтово одинаковы у любой сборки; различается только профиль | `SPEC.md`, «Файлы схемы одинаковы у любой сборки» |
@@ -90,8 +92,8 @@ Kotlin, ни Gradle.
 
 | Факт | Где проверено |
 |---|---|
-| `kompot-spec` зависит от 10 протокольных модулей, `form-standard` среди них нет | `kompot-spec/build.gradle.kts`, блок `dependencies` |
-| В `kompot-spec/schema/` нет `form-standard.schema.json`; профиль перечисляет те же 10 имён | `ls` каталога; `x-kompot-modules` в `kompot.profile.schema.json` |
+| `kompot-spec` зависит от 10 протокольных модулей, `form-standard` среди них нет | `youndie/kompot@f847bae!/kompot-spec/build.gradle.kts`, блок `dependencies` |
+| В `youndie/kompot@f847bae!/kompot-spec/schema/` нет `form-standard.schema.json`; профиль перечисляет те же 10 имён | `ls` каталога; `x-kompot-modules` в `kompot.profile.schema.json` |
 | Профиль тулкита закрывает 15 компонентов и 10 экшенов, и **ни одного** типа поля, значения, правила или условия | `discriminator.mapping` в `kompot.profile.schema.json` |
 | Приложение объявляет модуль спеки `form-standard` у себя, вместе с протокольными аннотациями зарезервированных ключей | сборка референсного приложения тулкита (закрытый репозиторий), объявление модуля спеки |
 | `TckConfig.schemas` собирается по списку `x-kompot-modules` **из профиля**, а не по каталогу | `kompot-spec/src/main/kotlin/.../KompotSpecResources.kt`, `schemas()` |
@@ -161,8 +163,8 @@ Compose, а потому, что **спека собственной сборк�
 | Факт | Где проверено |
 |---|---|
 | `github.com/modelcontextprotocol/go-sdk` — версия `v1.7.0` от 2026-07-27 | `https://proxy.golang.org/github.com/modelcontextprotocol/go-sdk/@latest` |
-| Реализует `2026-07-28`, совместим вниз до `2024-11-05` | `mcp/shared.go:50-63` в архиве `v1.7.0` |
-| `NewStreamableHTTPHandler(...) *StreamableHTTPHandler` — это `http.Handler` | `mcp/streamable.go:232` |
+| Реализует `2026-07-28`, совместим вниз до `2024-11-05` | `modelcontextprotocol/go-sdk@v1.7.0!/mcp/shared.go:50-63` |
+| `NewStreamableHTTPHandler(...) *StreamableHTTPHandler` — это `http.Handler` | `modelcontextprotocol/go-sdk@v1.7.0!/mcp/streamable.go:232` |
 | Требует Go ≥ 1.25.0 | `go.mod` того же архива |
 | Обе поверхности поднимаются на одном `http.ServeMux` и обслуживаются одним процессом | проба [`probes/mcp-mux`](../../probes/mcp-mux/main.go), прогон |
 | `net/http.ServeMux` сам умеет `METHOD /путь/{id}` и `Request.PathValue` | `go doc net/http.ServeMux` на go1.25.4 |
@@ -193,7 +195,7 @@ Compose, а потому, что **спека собственной сборк�
 | `outputSchema` генерируется из типа результата, `inputSchema` — из типа аргумента | вывод пробы |
 | `structuredContent` ответа соответствует сгенерированному `outputSchema` | вывод пробы |
 | Диалект по умолчанию у MCP — JSON Schema 2020-12 | `https://modelcontextprotocol.io/specification/2026-07-28/server/tools`, Data Types |
-| Диалект схем KOMPOT — тот же 2020-12 | `$schema` в любом файле `kompot-spec/schema/` |
+| Диалект схем KOMPOT — тот же 2020-12 | `$schema` в любом файле `youndie/kompot@f847bae!/kompot-spec/schema/` |
 | Nil-срез Go даёт `"type":["null","array"]` | вывод пробы |
 | Сгенерированные MCP-схемы — `additionalProperties: false` | вывод пробы |
 
