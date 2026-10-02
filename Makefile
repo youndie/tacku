@@ -65,6 +65,14 @@ BACKLOG ?= backlog.md
 BACKLOG_FORM ?= files
 REPOS ?= ..
 PY ?= python3
+# THE CODE-ANCHORS REPORT BLOCKS. `--check` takes the `-` off its line in check.mk, so `make check`
+# - and CI, which runs it - fails on a path in the documents that resolves to nothing. The report
+# reached zero with every path outside this repository written as an address (SPEC 4.1:
+# `<artefact>!/<path>`, `youndie/<repo>@<commit>!/<path>`), which no refactor elsewhere can move, so
+# what can turn it red now is a path of this repository's own, renamed or deleted without its
+# document - caught in the pull request that did it. A path quoted as obsolete is written the same
+# way, at a commit it existed in. `make report ANCHORS_ARGS=` runs it as a report again.
+ANCHORS_ARGS ?= --check
 
 # Where the pin is, and what it names.
 DOCS_BOOTSTRAP_PIN ?= .github/workflows/check.yaml
@@ -94,7 +102,7 @@ help:
 	@echo "make probe   - start the server and decode every screen with the toolkit's parsers"
 	@echo "make shots   - re-record the screenshot goldens; review the diff as carefully as code"
 	@echo "make probes  - re-run the research probes; a probe that stops building is a changed fact"
-	@echo "make report  - non-blocking reports: BDD coverage, code anchors"
+	@echo "make report  - BDD coverage (non-blocking), code anchors (blocking: ANCHORS_ARGS)"
 	@echo "make fix     - regenerate the backlog index, fill in missing coverage-map lines"
 
 check: gate report

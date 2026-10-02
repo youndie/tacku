@@ -86,7 +86,8 @@ make check
 ```
 
 `make check` — гейт и отчёты, ровно то, что гоняет CI; `make fix` перегенерирует индекс бэклога и
-дописывает недостающие строки карты покрытия, `make report` — два неблокирующих отчёта. Проверки
+дописывает недостающие строки карты покрытия, `make report` — отчёты: покрытие BDD не блокирует,
+якоря в код блокируют (`ANCHORS_ARGS ?= --check` в Makefile). Проверки
 документов — из [docs-bootstrap](https://github.com/youndie/docs-bootstrap), той версии, которую
 закрепляет `.github/workflows/check.yaml`; первый запуск скачивает её в `.docs-bootstrap/`.
 
