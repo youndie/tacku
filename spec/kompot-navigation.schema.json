@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-navigation.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-navigation.schema.json",
   "title": "kompot-navigation",
   "description": "The route graph of plain screens: deeplink -> endpoint",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",

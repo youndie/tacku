@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/wizard-core.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/wizard-core.schema.json",
   "title": "wizard-core",
   "description": "A transition of a multi-step flow (Next/Back/Finish/JumpTo)",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",

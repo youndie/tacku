@@ -4,6 +4,7 @@ import io.github.youndie.kompot.spec.KompotProtocol
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /**
@@ -45,6 +46,28 @@ class SpecGoldenTest {
                 "$name has drifted from the generator; regenerate with ${SpecOutput.RECORD_ENV}=true",
             )
         }
+    }
+
+    @Test
+    fun `every file names itself under the project's own prefix`() {
+        SpecOutput.files().forEach { (name, document) ->
+            assertEquals(
+                SpecOutput.ID_PREFIX + name,
+                (document["\$id"] as? kotlinx.serialization.json.JsonPrimitive)?.content,
+                "$name declares an \$id outside the project's prefix",
+            )
+        }
+    }
+
+    // The rewrite in SpecOutput exists only while the pinned kompot prints another prefix. Once it
+    // prints this one, the rewrite is dead code that still reads as if it did something.
+    @Test
+    fun `the rewrite of the id prefix is still needed`() {
+        assertNotEquals(
+            SpecOutput.ID_PREFIX,
+            KompotProtocol.ID_PREFIX,
+            "the pinned kompot prints ${SpecOutput.ID_PREFIX} itself: remove SpecOutput.withOwnId and this test",
+        )
     }
 
     @Test

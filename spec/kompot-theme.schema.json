@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-theme.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-theme.schema.json",
   "title": "kompot-theme",
   "description": "A server-driven theme: what a client resolves its design-system tokens into",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
