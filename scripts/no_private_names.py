@@ -56,7 +56,9 @@ SHAPES = [
 
 WORD = re.compile(r"[A-Za-z][A-Za-z0-9]{2,}")
 HOST = re.compile(r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")
-SKIP = {".git", "build", "node_modules", ".gradle", "dist"}
+# `.docs-bootstrap` is the documentation checks a local `make` fetches at the pinned version: not this
+# repository's text, absent in CI, and read here it would make the local verdict differ from CI's.
+SKIP = {".git", "build", "node_modules", ".gradle", "dist", ".docs-bootstrap"}
 
 
 def main() -> int:
