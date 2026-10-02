@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-forms.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-forms.schema.json",
   "title": "kompot-forms",
   "description": "The form UI: input components, the submit action and the form/patch response envelopes",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",

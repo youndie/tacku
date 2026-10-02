@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-core.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-core.schema.json",
   "title": "kompot-core",
   "description": "The open contracts of the protocol: the KompotComponent/KompotAction bases, the closed modifier chain and the design-system tokens",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",

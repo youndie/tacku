@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot.profile.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot.profile.schema.json",
   "title": "KOMPOT profile",
   "description": "The closed list of types supported by this build of the protocol",
   "x-kompot-generated-by": "KompotSpec.profile — this file is generated, do not edit by hand",

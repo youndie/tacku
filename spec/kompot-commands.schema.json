@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-commands.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-commands.schema.json",
   "title": "kompot-commands",
   "description": "The action that performs an operation on one item of a list, with no form around it",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",

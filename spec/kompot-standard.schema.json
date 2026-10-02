@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-standard.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-standard.schema.json",
   "title": "kompot-standard",
   "description": "The basic layout and text set: containers, text, button, table, paginated list",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",

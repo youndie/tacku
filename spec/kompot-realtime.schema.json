@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kompot.workinprogress.ru/schema/kompot-realtime.schema.json",
+  "$id": "https://kompot.kotlin.website/schema/kompot-realtime.schema.json",
   "title": "kompot-realtime",
   "description": "The live-update channel: the screen envelope that names a topic, and one frame of the channel itself",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
