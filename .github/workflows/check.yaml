@@ -70,7 +70,7 @@ jobs:
             client/gradle/wrapper/gradle-wrapper.properties
 
       # The Python the checks and this repository's own scripts under `gate` run on.
-      - uses: youndie/docs-bootstrap@v0.3.0
+      - uses: youndie/docs-bootstrap@v0.3.5
         with:
           python-version: "3.14"
 
@@ -128,7 +128,7 @@ jobs:
 
       # The code lives in this checkout, so its parent is a directory whose one subdirectory is
       # this repository - which is exactly what REPOS (`..` by default) expects.
-      - uses: youndie/docs-bootstrap@v0.3.0
+      - uses: youndie/docs-bootstrap@v0.3.5
         with:
           target: report
           python-version: "3.14"
@@ -152,6 +152,6 @@ jobs:
       #       done
       #     env:
       #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   - uses: youndie/docs-bootstrap@v0.3.0
+      #   - uses: youndie/docs-bootstrap@v0.3.5
       #     with:
       #       target: report REPOS=repos
