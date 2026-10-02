@@ -70,7 +70,7 @@ jobs:
             client/gradle/wrapper/gradle-wrapper.properties
 
       # The Python the checks and this repository's own scripts under `gate` run on.
-      - uses: youndie/docs-bootstrap@v0.3.5
+      - uses: youndie/docs-bootstrap@v0.3.8
         with:
           python-version: "3.14"
 
@@ -114,12 +114,12 @@ jobs:
       # the gate just checked, and stops on the same failure.
       - run: make tck
 
-  # Separate from the gate, and on a schedule rather than on a pull request, because an anchor rots
-  # when somebody refactors a **different** repository. A pull request here is the least likely
-  # moment for one to break, and running it there trains people to ignore a red build they did not
-  # cause. It also does not block: a path quoted *as obsolete* is indistinguishable from a live one
-  # by machine, so the report is read by a person. Pass `target: report ANCHORS_ARGS=--check` once
-  # the stale list reaches zero.
+  # On a schedule, apart from the gate. The list is at zero and every path outside this repository
+  # is an address (SPEC 4.1) - inside a dependency's artefact or at a commit of another repository -
+  # which nothing elsewhere can move. So the report blocks: the Makefile sets `ANCHORS_ARGS=--check`,
+  # and `make check` in the gate fails on a path of this repository's own that resolves to nothing,
+  # in the pull request that broke it. This job runs the same report on the default branch once a
+  # week.
   anchors:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
 
       # The code lives in this checkout, so its parent is a directory whose one subdirectory is
       # this repository - which is exactly what REPOS (`..` by default) expects.
-      - uses: youndie/docs-bootstrap@v0.3.5
+      - uses: youndie/docs-bootstrap@v0.3.8
         with:
           target: report
           python-version: "3.14"
@@ -152,6 +152,6 @@ jobs:
       #       done
       #     env:
       #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   - uses: youndie/docs-bootstrap@v0.3.5
+      #   - uses: youndie/docs-bootstrap@v0.3.8
       #     with:
       #       target: report REPOS=repos
