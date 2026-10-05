@@ -436,10 +436,12 @@ func submitMove(store domain.Store) http.HandlerFunc {
 			return
 		}
 
-		// A navigate back to the board, which the client runs through the same chain as any other
-		// intent — and which puts the moved card in its new column without this endpoint having to
-		// describe a tree.
-		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": "app://board"})
+		// `refresh`: show the screen the button was pressed on again, fresh — which puts the moved
+		// card in its new column without this endpoint having to describe a tree. It was a navigate
+		// to app://board until kompot 0.38 had a word for this (§16.4), and the navigate had to name
+		// the screen the press came from, which nothing in the request says (Q-32): it was right only
+		// because this button lives on the board and nowhere else.
+		writeJSON(w, http.StatusOK, refreshAnswer)
 	}
 }
 

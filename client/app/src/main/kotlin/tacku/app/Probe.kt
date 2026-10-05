@@ -77,8 +77,8 @@ fun main() {
         val moved = transport.perform(card.moveUrl, card.movePayload)
         println("  moved ${card.taskId}, and the server answered ${moved::class.simpleName}")
 
-        // And then the half a person actually looks at: the answer is a navigate, the client follows
-        // it, and the board it gets back is what the screen becomes. Checked here because "the card
+        // And then the half a person actually looks at: the answer is a refresh, the client asks again
+        // for the screen it shows, and the board it gets back is what the screen becomes. Checked here because "the card
         // moved but the screen did not change" is a sentence about this fetch, and nothing else in
         // the client can tell the two apart.
         val reloaded = transport.screen("/screens/board")
