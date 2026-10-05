@@ -80,7 +80,7 @@ func TestTheWalkSeparatesTheHalvesOfTheProtocol(t *testing.T) {
 
 	invented := strings.Replace(formWithAnUndeclaredField,
 		`{"type": "text_input", "id": "field-title", "fieldId": "title", "label": "Title"}`,
-		`{"type": "tabs", "id": "field-title"}`, 1)
+		`{"type": "carousel", "id": "field-title"}`, 1)
 
 	result, err := s.Scan(formResponse, []byte(invented))
 	if err != nil {
@@ -91,7 +91,7 @@ func TestTheWalkSeparatesTheHalvesOfTheProtocol(t *testing.T) {
 	for _, found := range result.Undeclared {
 		costs[found.WireType] = found.Degrades
 	}
-	if degrades, found := costs["tabs"]; !found || !degrades {
+	if degrades, found := costs["carousel"]; !found || !degrades {
 		t.Errorf("an undeclared component was reported as %v; §2.1 gives it a fallback", costs)
 	}
 	if degrades, found := costs["colour_field"]; !found || degrades {

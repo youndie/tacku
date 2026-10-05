@@ -12,6 +12,7 @@ import io.github.youndie.kompot.standard.CloseAction
 import io.github.youndie.kompot.standard.CopyTextAction
 import io.github.youndie.kompot.standard.LoadPageAction
 import io.github.youndie.kompot.standard.NavigateAction
+import io.github.youndie.kompot.standard.RefreshAction
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -36,6 +37,15 @@ class Navigator(
     private val show: (Screen) -> Unit,
 ) {
     private var routes: List<ScreenRoute> = emptyList()
+
+    /**
+     * What is on the screen now, so that `refresh` has something to ask for again.
+     *
+     * §16.4 leaves "what the client shows" to the client, and this is the whole of the answer here:
+     * the address the screen came from and what kind of answer it was. Kept by [open] and nothing
+     * else, so it cannot name a screen that failed to arrive.
+     */
+    private var showing: Target.Open? = null
 
     /** The sign-in screen, which is the one place a client has to know without a graph. */
 
@@ -154,6 +164,11 @@ class Navigator(
 
                 is CloseAction -> follow(DEFAULT_SCREEN)
 
+                // The screen the press came from, again and fresh (§16.4, kompot 0.38). The server
+                // used to say this as a navigate to that screen's own deeplink, which meant it had to
+                // know where the press came from — nothing in a request says (Q-32).
+                is RefreshAction -> refresh()
+
                 is CopyTextAction -> Unit
 
                 else ->
@@ -261,6 +276,21 @@ class Navigator(
             }
             else -> show(Screen.Tree(transport.screen(path), null))
         }
+        showing = Target.Open(path, kind)
+    }
+
+    /**
+     * Ask again for what is on the screen, and show the answer in its place.
+     *
+     * Not a move: nothing is pushed to the history, because the address already names this screen,
+     * and the tree goes to the same screen — state kept under a stable id survives it (§4.4). With
+     * nothing on the screen yet there is nothing to refresh, and the action does nothing, which is
+     * also what a client that does not know the word would do.
+     */
+    private suspend fun refresh() {
+        val here = showing ?: return
+        trace("refresh ${here.path}")
+        open(here.path, here.kind)
     }
 
     suspend fun loadGraph() {

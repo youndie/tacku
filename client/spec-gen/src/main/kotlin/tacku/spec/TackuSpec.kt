@@ -7,7 +7,6 @@ import io.github.youndie.kompot.spec.KompotSpecModule
 import io.github.youndie.kompot.spec.KompotToolkitSpec
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * The spec of this build: the ten protocol modules of the toolkit plus form-standard.
@@ -86,33 +85,10 @@ object SpecOutput {
 
     fun render(document: JsonObject): String = json.encodeToString(JsonObject.serializer(), document) + "\n"
 
-    /**
-     * The `$id` prefix this build writes, which is not the one the pinned generator prints.
-     *
-     * kompot 0.39 moved the prefix off a domain the toolkit does not own (Q-75). This build is
-     * pinned to 0.32, whose generator still prints the old one, and moving the pin is a change of
-     * contract rather than of a name. The identifier is not on the wire — no body carries it, and
-     * the Go validator registers each file under whatever `$id` it declares and takes its base from
-     * there — so rewriting it changes no contract, only where a validator that fetches would go.
-     *
-     * Self-cleaning: SpecGoldenTest fails the day the pinned generator prints this prefix itself,
-     * which is the day the rewrite has to go.
-     */
-    const val ID_PREFIX: String = "https://kompot.kotlin.website/schema/"
-
     fun files(): Map<String, JsonObject> {
         val schemas = TackuSpec.generate()
-        return (
-            schemas.associate { it.fileName to it.document } +
-                (KompotProtocol.PROFILE_FILE_NAME to TackuSpec.profile(schemas))
-        ).mapValues { (_, document) -> document.withOwnId() }
-    }
-
-    // Only the prefix moves; the file name after it, and the key's position in the file, stay.
-    private fun JsonObject.withOwnId(): JsonObject {
-        val id = (this["\$id"] as? JsonPrimitive)?.content ?: return this
-        if (!id.startsWith(KompotProtocol.ID_PREFIX)) return this
-        return JsonObject(this + ("\$id" to JsonPrimitive(ID_PREFIX + id.removePrefix(KompotProtocol.ID_PREFIX))))
+        return schemas.associate { it.fileName to it.document } +
+            (KompotProtocol.PROFILE_FILE_NAME to TackuSpec.profile(schemas))
     }
 
     fun write() {

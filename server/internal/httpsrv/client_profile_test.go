@@ -144,6 +144,101 @@ func TestNoResponseCarriesATypeOutsideOurOwnProfile(t *testing.T) {
 	}
 }
 
+// What a client of this build draws and runs, at kompot 0.39 — said here because the server has no
+// other way to know it (Q-26), and said as what it CANNOT do, because that is the list the server has
+// to stay inside.
+//
+// Components: everything the profile declares. The five layout words of 0.38 — box, divider, spacer,
+// tabs, expandable — are drawn by the toolkit's standard renderers, which the client registers whole;
+// `date_input` by this deployment's own. `wizard_screen` is answered only by the wizard endpoints,
+// which nothing in the client opens (B-39), and the walk below reaches it there and nowhere else.
+//
+// Actions: the client runs answers through its own navigator, not through the toolkit's chain, so a
+// word of 0.38 is run only if the navigator has a branch for it — `refresh` has one; these do not.
+// A server that sent one of them would reach a client that does nothing with it (§2.1), silently.
+var clientCannotRun = map[string]string{
+	"show_message": "no snackbar link (withSnackbarMessages) and no place for a message in the layout (Q-35)",
+	"sequence":     "no withSequences link: the navigator runs one action per answer",
+	"present":      "no overlay host: the client draws no layer over a screen",
+	"confirm":      "no overlay host either, so there is nowhere to ask the question",
+}
+
+// The presentations a client of this build can show a screen as. `screen` only: there is no layer to
+// put a sheet or a dialog in (see `present` above), so a route or an answer asking for one would be
+// shown as a screen anyway (§12.1) — and a server that asked would be describing a product that is
+// not there.
+var clientPresents = map[string]bool{"": true, "screen": true}
+
+// Nothing this server sends is a word its client cannot run, and nothing asks for a layer.
+//
+// Walked over every described endpoint, like the profile check above, and driven by the same scan —
+// so an answer added later is covered by having been described. The list it holds the answers to is
+// checked against the profile first: a name that is not a word of the vocabulary any more would make
+// this test pass for a reason nobody intended.
+func TestNothingSentIsAWordTheClientCannotRun(t *testing.T) {
+	r := newResource(t)
+	r.seed(t)
+	token := r.reader(t)
+
+	loaded, err := spec.Load(specDir(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for word := range clientCannotRun {
+		if !loaded.Declares("KompotAction", word) {
+			t.Fatalf("%s is not an action of this build's profile any more; the list is stale", word)
+		}
+	}
+
+	actions := 0
+	for path, operation := range describedGets(t, r.url) {
+		response, body := r.get(t, path, token, "")
+		if response.StatusCode != http.StatusOK {
+			t.Errorf("%s answered %d: %s", path, response.StatusCode, body)
+			continue
+		}
+		// §16.7: the answer may say how to show itself, and the header beats the route. A client
+		// that draws no layer would show the screen anyway — which is why asking is the defect.
+		if shown := response.Header.Get("X-Kompot-Presentation"); !clientPresents[shown] {
+			t.Errorf("%s asks to be shown as %q, and this client draws no layer", path, shown)
+		}
+		result, err := loaded.Scan(operation.reference, body)
+		if err != nil {
+			t.Fatalf("%s: %v", path, err)
+		}
+		for word, count := range result.Types["KompotAction"] {
+			actions += count
+			if why, cannot := clientCannotRun[word]; cannot {
+				t.Errorf("%s sends %s %d time(s), and this client cannot run it: %s", path, word, count, why)
+			}
+		}
+	}
+	if actions == 0 {
+		t.Fatal("the walk met no action at all, so this check proves nothing")
+	}
+	t.Logf("checked %d actions", actions)
+
+	// The route half of the same question (§12.1): `presentation` on a route of the graph.
+	_, graph := r.get(t, "/graph", token, "")
+	var described struct {
+		Routes []struct {
+			Deeplink     string `json:"deeplink"`
+			Presentation string `json:"presentation"`
+		} `json:"routes"`
+	}
+	if err := json.Unmarshal(graph, &described); err != nil {
+		t.Fatal(err)
+	}
+	if len(described.Routes) == 0 {
+		t.Fatal("the graph has no routes, so nothing was checked")
+	}
+	for _, route := range described.Routes {
+		if !clientPresents[route.Presentation] {
+			t.Errorf("%s asks to be shown as %q, and this client draws no layer", route.Deeplink, route.Presentation)
+		}
+	}
+}
+
 type describedOperation struct {
 	reference string
 }

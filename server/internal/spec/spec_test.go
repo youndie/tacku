@@ -65,15 +65,20 @@ func TestProfileCarriesEveryHierarchy(t *testing.T) {
 	// for — what THIS BUILD serves, not what the protocol defines. Two of the three are components,
 	// which is the cheap half of extending: an unfamiliar one costs a node rather than a response.
 	want := map[string]int{
-		// Sixteen. It was seventeen while this deployment carried a component of its own for
+		// Sixteen until 0.38. It was seventeen while this deployment carried a component of its own for
 		// multiline text; kompot 0.21 put the same thing on `text_input` as a flag, so the type
 		// went away and the count came down with it — a number that moves when a decision moves.
-		"KompotComponent": 16,
-		// Twelve. `open_url` arrived in kompot 0.32, and it arrived because this project asked for
+		// Twenty-one since kompot 0.38: `box`, `divider`, `spacer`, `tabs` and `expandable` — the
+		// layout words a server had to fake with empty columns and sized boxes (SPEC.md §4.8–§4.12).
+		"KompotComponent": 21,
+		// Twelve until 0.38. `open_url` arrived in kompot 0.32, and it arrived because this project asked for
 		// it: the vocabulary had no way to leave the application, so a card standing for a file in
 		// another repository could not lead to it (Q-72, kompot#55). A count that moves when the
 		// protocol moves is the point of writing it down.
-		"KompotAction":        12,
+		// Seventeen since kompot 0.38: `show_message`, `present`, `confirm`, `sequence` and
+		// `refresh` (§12.5, §16.4) — the answers to `perform` that used to be a `navigate` to the
+		// same screen or nothing at all.
+		"KompotAction":        17,
 		"FormFieldDefinition": 6,
 		"ValidationRule":      4,
 		"FieldValue":          4,
@@ -105,8 +110,15 @@ func TestProfileIsClosed(t *testing.T) {
 	if s.Declares("FormFieldDefinition", "colour_field") {
 		t.Error("colour_field is not part of this build; the profile accepted a type nobody declared")
 	}
-	if s.Declares("KompotComponent", "tabs") {
-		t.Error("tabs is not in the vocabulary; the profile accepted a type nobody declared")
+	// `tabs` stood here until kompot 0.38 made it a word of the vocabulary — the second negative
+	// fixture in this test to turn positive, the same way `date_field` did above. That it went red
+	// rather than quietly true is the check doing its job; the replacement is just as plausible and
+	// just as likely to become real one day.
+	if !s.Declares("KompotComponent", "tabs") {
+		t.Error("tabs is a word of the vocabulary since kompot 0.38 and must be in the profile")
+	}
+	if s.Declares("KompotComponent", "carousel") {
+		t.Error("carousel is not in the vocabulary; the profile accepted a type nobody declared")
 	}
 }
 

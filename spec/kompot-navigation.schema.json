@@ -47,6 +47,10 @@
         "kind": {
           "type": "string",
           "description": "What stands behind the endpoint, in the vocabulary of x-kompot-endpoint-kind: \"screen\" yields a KompotComponent, \"form\" a KompotFormResponse. Absent means \"screen\". An open string rather than an enum on purpose: a client MUST ignore a route whose kind it does not recognise, and an unknown enum constant would fail the parse of the whole graph before one route could be skipped"
+        },
+        "presentation": {
+          "type": "string",
+          "description": "How the route's screen is shown: \"screen\" (pushed, the default), \"sheet\" or \"dialog\" (laid over the screen it was opened from). An open string: a client MUST show a route whose presentation it does not recognise or cannot draw as a screen, never hide it"
         }
       },
       "required": [

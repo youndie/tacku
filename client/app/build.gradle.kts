@@ -45,26 +45,27 @@ dependencies {
     // dispatcher because "a plain JVM test has none". That was the application saying so a week
     // early.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.11.0")
-    implementation(compose.material3)
+    // The same material3 as :shared, for the reason written there.
+    implementation("org.jetbrains.compose.material3:material3:1.12.0-alpha03")
 
     // The wire types are declared even though the client modules depend on them: they arrive as
     // `implementation` there, so a consumer that needs to name a KompotFormResponse cannot see one.
-    implementation("io.github.youndie:kompot-core:$kompotVersion")
-    implementation("io.github.youndie:kompot-standard:$kompotVersion")
-    implementation("io.github.youndie:kompot-forms:$kompotVersion")
-    implementation("io.github.youndie:kompot-navigation:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-core:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-standard:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-forms:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-navigation:$kompotVersion")
     // The live channel: the wire type of a frame, and the client-side provider that applies one to
     // the tree. Both live here rather than in the toolkit's core because a build that does not open
     // a channel should not carry either.
-    implementation("io.github.youndie:kompot-realtime:$kompotVersion")
-    implementation("io.github.youndie:form-core:$kompotVersion")
-    implementation("io.github.youndie:kompot-auth:$kompotVersion")
-    implementation("io.github.youndie:kompot-commands:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-realtime:$kompotVersion")
+    implementation("io.github.youndie.kompot:form-core:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-auth:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-commands:$kompotVersion")
 
-    implementation("io.github.youndie:kompot-client:$kompotVersion")
-    implementation("io.github.youndie:kompot-forms-client:$kompotVersion")
-    implementation("io.github.youndie:kompot-ds-material-compose:$kompotVersion")
-    implementation("io.github.youndie:form-standard:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-client:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-forms-client:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-ds-material-compose:$kompotVersion")
+    implementation("io.github.youndie.kompot:form-standard:$kompotVersion")
 
     implementation("io.ktor:ktor-client-cio:3.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
@@ -76,7 +77,7 @@ dependencies {
 
     // The conformance corpus for the reading side. The cases travel inside the artefact, so there
     // is nothing here to keep in step with it — see kompot#52 and tacku#21.
-    testImplementation("io.github.youndie:kompot-client-tck:$kompotVersion")
+    testImplementation("io.github.youndie.kompot:kompot-client-tck:$kompotVersion")
 
     // An engine that answers for the server, so a refusal can be made to happen on purpose. The
     // session this product hands out lives five minutes; what happens at minute six is not
@@ -88,7 +89,7 @@ dependencies {
     // need them for is the published shape of `wizard_screen` itself — the subject of B-31 — and
     // reading it from the artefact rather than from the schema file is the second half of the same
     // question: a field that is absent from both is absent from the contract.
-    testImplementation("io.github.youndie:kompot-wizard:$kompotVersion")
+    testImplementation("io.github.youndie.kompot:kompot-wizard:$kompotVersion")
 
     // Compose's own test harness, because one thing here cannot be checked from a JSON body: a
     // filter reaches the server only if the toolkit re-requests when a value changes, and that

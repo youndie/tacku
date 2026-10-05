@@ -32,21 +32,25 @@ kotlin {
             implementation(project(":fields"))
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material3)
+            // Named with its own version rather than through `compose.material3`: material3 is on a
+            // line of its own (1.12.0-alpha03 beside Compose 1.12.1), and kompot's Compose half is
+            // compiled against exactly this pair. A material3 from another line resolves, compiles
+            // and throws NoSuchMethodError on the first frame.
+            implementation("org.jetbrains.compose.material3:material3:1.12.0-alpha03")
             implementation(compose.ui)
 
-            implementation("io.github.youndie:kompot-core:$kompotVersion")
-            implementation("io.github.youndie:kompot-standard:$kompotVersion")
-            implementation("io.github.youndie:kompot-forms:$kompotVersion")
-            implementation("io.github.youndie:kompot-navigation:$kompotVersion")
-            implementation("io.github.youndie:kompot-realtime:$kompotVersion")
-            implementation("io.github.youndie:form-core:$kompotVersion")
-            implementation("io.github.youndie:kompot-auth:$kompotVersion")
-            implementation("io.github.youndie:kompot-commands:$kompotVersion")
-            implementation("io.github.youndie:kompot-client:$kompotVersion")
-            implementation("io.github.youndie:kompot-forms-client:$kompotVersion")
-            implementation("io.github.youndie:kompot-ds-material-compose:$kompotVersion")
-            implementation("io.github.youndie:form-standard:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-core:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-standard:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-forms:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-navigation:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-realtime:$kompotVersion")
+            implementation("io.github.youndie.kompot:form-core:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-auth:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-commands:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-client:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-forms-client:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-ds-material-compose:$kompotVersion")
+            implementation("io.github.youndie.kompot:form-standard:$kompotVersion")
 
             implementation("io.ktor:ktor-client-core:3.6.0")
             implementation("io.ktor:ktor-client-content-negotiation:3.6.0")

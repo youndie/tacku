@@ -176,6 +176,53 @@ class TckGateTest {
         assertTrue(verdict.passed)
     }
 
+    /**
+     * A check this server cannot give a target is said by name, not passed by a zero.
+     *
+     * The run prints the reason where the count would be, so whoever reads it can disagree with the
+     * claim — which a silent zero would not let them do.
+     */
+    @Test
+    fun `a check declared not applicable passes with its reason printed`() {
+        val claim = TckGate.NotApplicable("patch", "no patch endpoint here", declaredKind = "patch")
+        val subject = report(everyCheckBusy - "patch")
+
+        val verdict = TckGate.judge(subject, openApiOf("form"), inapplicable = listOf(claim))
+
+        assertTrue(verdict.passed, TckGate.describe(subject, verdict))
+        assertTrue(TckGate.describe(subject, verdict).contains("n/a — no patch endpoint here"))
+    }
+
+    /**
+     * And it expires, the same way an allowance does: a claim that there is nothing to check is false
+     * the moment the check finds something, and the gate fails until somebody deletes it.
+     */
+    @Test
+    fun `a not-applicable claim fails the run once its check has a target`() {
+        val claim = TckGate.NotApplicable("updates-isolation", "no topic on this channel")
+
+        val verdict = TckGate.judge(report(everyCheckBusy), inapplicable = listOf(claim))
+
+        assertFalse(verdict.passed, "a claim that no longer holds was kept")
+        assertEquals(listOf(claim.toString()), verdict.staleInapplicable)
+    }
+
+    /**
+     * The other way a claim stops holding: the endpoint it says is absent gets described. Without
+     * this a patch endpoint added with no configuration to reach it would sit behind "not
+     * applicable" for ever, its check still at zero.
+     */
+    @Test
+    fun `a not-applicable claim fails the run once its endpoint kind is described`() {
+        val claim = TckGate.NotApplicable("patch", "no patch endpoint here", declaredKind = "patch")
+        val subject = report(everyCheckBusy - "patch")
+
+        val verdict = TckGate.judge(subject, openApiOf("form", "patch"), inapplicable = listOf(claim))
+
+        assertFalse(verdict.passed, "a patch endpoint was described and the claim that there is none survived")
+        assertEquals(listOf(claim.toString()), verdict.staleInapplicable)
+    }
+
     private fun openApiOf(vararg kinds: String) =
         buildJsonObject {
             put(

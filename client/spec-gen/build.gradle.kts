@@ -16,8 +16,8 @@ val kompotVersion: String = property("kompot.version").toString()
 // allowed is carrying protocol knowledge learned here into the Go handlers.
 dependencies {
     implementation(project(":fields"))
-    implementation("io.github.youndie:kompot-spec:$kompotVersion")
-    implementation("io.github.youndie:form-standard-jvm:$kompotVersion")
+    implementation("io.github.youndie.kompot:kompot-spec:$kompotVersion")
+    implementation("io.github.youndie.kompot:form-standard-jvm:$kompotVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     testImplementation(kotlin("test"))

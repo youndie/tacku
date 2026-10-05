@@ -51,6 +51,54 @@ object TckGate {
             // still sends no spans at all, which is the honest state: the check has no target here
             // yet, and the run says so rather than counting it as passed.
             "text-spans",
+            // Twelfth and thirteenth, arriving between 0.32 and 0.39 and found the same way, on the
+            // move to 0.39 (tacku#62). Neither has a target on this server, and each says why in
+            // [notApplicable] rather than by a zero — see there.
+            "patch",
+            "updates-isolation",
+        )
+
+    /**
+     * A check that cannot have a target on this server, said by name and with the reason.
+     *
+     * Not an allowance and not a zero. A zero is what a check that stopped looking produces, and the
+     * gate exists to refuse it; this is a claim that there is nothing here for the check to look at,
+     * printed on every run so it can be disagreed with. And it expires: [declaredKind], when set, is
+     * the endpoint kind whose appearance in the description makes the claim false, and any target at
+     * all makes it false too. Either way the gate fails until the entry is deleted — the same way out
+     * an allowance has, for the same reason.
+     */
+    class NotApplicable(
+        val check: String,
+        val because: String,
+        val declaredKind: String? = null,
+    ) {
+        override fun toString(): String = "$check — $because"
+    }
+
+    /**
+     * What this server gives two checks nothing to look at, and why.
+     *
+     * `patch` checks the fields a patch names against its form (§9.6.6), and only a `patch` endpoint
+     * answers one. This build declares none: no form here asks the server for values while it is
+     * being filled in. The day one is described, the entry stops matching.
+     *
+     * `updates-isolation` is built on `realtimeTopic` (§10.4), and the channel here has none: the
+     * subscriber is the token, and what travels is one shared board, so a frame raised by one person
+     * reaching another is the product working (Q-76). Isolation is checked by this server's own
+     * two-identity test instead (`server/internal/httpsrv/updates_test.go`).
+     */
+    val notApplicable =
+        listOf(
+            NotApplicable(
+                "patch",
+                "this build declares no patch endpoint: no form asks for values while it is filled in",
+                declaredKind = "patch",
+            ),
+            NotApplicable(
+                "updates-isolation",
+                "the channel has no realtimeTopic and carries one shared board, nothing personal (Q-76)",
+            ),
         )
 
     /**
@@ -78,6 +126,9 @@ object TckGate {
          */
         val tolerated: List<String> = emptyList(),
         val staleAllowances: List<String> = emptyList(),
+        /** Checks excused by [NotApplicable], with the reason, and the claims that no longer hold. */
+        val inapplicable: List<String> = emptyList(),
+        val staleInapplicable: List<String> = emptyList(),
     ) {
         val passed: Boolean
             get() =
@@ -85,6 +136,7 @@ object TckGate {
                     unknown.isEmpty() &&
                     findings == 0 &&
                     staleAllowances.isEmpty() &&
+                    staleInapplicable.isEmpty() &&
                     bodiesChecked >= bodiesDeclared
     }
 
@@ -146,12 +198,23 @@ object TckGate {
         report: TckReport,
         openApi: JsonObject? = null,
         allowances: List<Allowance> = emptyList(),
+        inapplicable: List<NotApplicable> = emptyList(),
     ): Verdict {
         val exercised = report.exercised
         val declared = openApi?.let { countBodyEndpoints(it) } ?: 0
         val excused = report.findings.filter { finding -> allowances.any { it.covers(finding) } }
+        val kinds = openApi?.let { declaredKinds(it) }.orEmpty()
+        val stale =
+            inapplicable.filter { claim ->
+                (exercised[claim.check] ?: 0) > 0 || (claim.declaredKind != null && claim.declaredKind in kinds)
+            }
+        val holding = inapplicable - stale.toSet()
         return Verdict(
-            unexercised = expectedChecks.filter { (exercised[it] ?: 0) < 1 }.sorted(),
+            unexercised =
+                expectedChecks
+                    .filter { (exercised[it] ?: 0) < 1 }
+                    .filterNot { check -> holding.any { it.check == check } }
+                    .sorted(),
             unknown = exercised.keys.filterNot { it in expectedChecks }.sorted(),
             findings = report.findings.size - excused.size,
             tolerated = excused.map { "[${it.check}] ${it.target}: ${it.message}" },
@@ -163,8 +226,19 @@ object TckGate {
             bodiesDeclared = declared,
             bodiesChecked = exercised["schema"] ?: 0,
             skipped = report.skipped,
+            inapplicable = holding.map { it.toString() },
+            staleInapplicable = stale.map { it.toString() },
         )
     }
+
+    private fun declaredKinds(openApi: JsonObject): Set<String> =
+        (openApi["paths"] as? JsonObject)
+            ?.values
+            ?.flatMap { path -> (path as? JsonObject)?.values.orEmpty() }
+            ?.mapNotNull { operation ->
+                ((operation as? JsonObject)?.get("x-kompot-endpoint-kind") as? JsonPrimitive)?.content
+            }?.toSet()
+            .orEmpty()
 
     private fun countBodyEndpoints(openApi: JsonObject): Int {
         val paths = openApi["paths"] as? JsonObject ?: return 0
@@ -209,13 +283,14 @@ object TckGate {
             appendLine("targets per check:")
             expectedChecks.sorted().forEach { check ->
                 val count = verdict.exercised[check] ?: 0
+                val excused = verdict.inapplicable.firstOrNull { it.startsWith("$check — ") }
                 val note =
-                    if (count < 1) {
-                        "0  <- no target: this check proved nothing"
-                    } else {
-                        count.toString()
+                    when {
+                        count < 1 && excused != null -> "n/a — " + excused.removePrefix("$check — ")
+                        count < 1 -> "0  <- no target: this check proved nothing"
+                        else -> count.toString()
                     }
-                appendLine("  %-14s %s".format(check, note))
+                appendLine("  %-18s %s".format(check, note))
             }
 
             if (verdict.bodiesDeclared > 0) {
@@ -261,6 +336,15 @@ object TckGate {
                 appendLine()
                 appendLine("tolerated (${verdict.tolerated.size}) — about the kit, not this server:")
                 verdict.tolerated.forEach { appendLine("  $it") }
+            }
+
+            if (verdict.staleInapplicable.isNotEmpty()) {
+                appendLine()
+                appendLine(
+                    "checks declared not applicable that now have something to check (${verdict.staleInapplicable.size}):",
+                )
+                verdict.staleInapplicable.forEach { appendLine("  $it") }
+                appendLine("  the reason no longer holds — delete the entry in TckGate.notApplicable.")
             }
 
             if (verdict.staleAllowances.isNotEmpty()) {

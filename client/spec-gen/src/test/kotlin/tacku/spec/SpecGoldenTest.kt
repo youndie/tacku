@@ -4,7 +4,6 @@ import io.github.youndie.kompot.spec.KompotProtocol
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /**
@@ -48,26 +47,18 @@ class SpecGoldenTest {
         }
     }
 
+    // kompot 0.39 names its files under a domain the toolkit owns (Q-75). This build rewrote the
+    // prefix by hand while it was pinned to 0.32; the rewrite went with the pin, and this is what
+    // stops the old prefix from coming back with a generator that prints it again.
     @Test
-    fun `every file names itself under the project's own prefix`() {
+    fun `every file names itself under the toolkit's own domain`() {
         SpecOutput.files().forEach { (name, document) ->
             assertEquals(
-                SpecOutput.ID_PREFIX + name,
+                "https://kompot.kotlin.website/schema/$name",
                 (document["\$id"] as? kotlinx.serialization.json.JsonPrimitive)?.content,
-                "$name declares an \$id outside the project's prefix",
+                "$name declares an \$id outside kompot.kotlin.website",
             )
         }
-    }
-
-    // The rewrite in SpecOutput exists only while the pinned kompot prints another prefix. Once it
-    // prints this one, the rewrite is dead code that still reads as if it did something.
-    @Test
-    fun `the rewrite of the id prefix is still needed`() {
-        assertNotEquals(
-            SpecOutput.ID_PREFIX,
-            KompotProtocol.ID_PREFIX,
-            "the pinned kompot prints ${SpecOutput.ID_PREFIX} itself: remove SpecOutput.withOwnId and this test",
-        )
     }
 
     @Test

@@ -104,8 +104,18 @@ func submitSeen(seen domain.Seen, store domain.Store, now func() time.Time) http
 			return
 		}
 
-		writeJSON(w, http.StatusOK, map[string]any{"type": "navigate", "deeplink": render.LinkCatchUp})
+		// The feed again, fresh: everything on it is now behind the boundary. `refresh` rather than a
+		// navigate to the feed's own deeplink, which is what this was before kompot 0.38 (§16.4).
+		writeJSON(w, http.StatusOK, refreshAnswer)
 	}
 }
+
+// refreshAnswer is what an action answers when the screen it was pressed on is the one to show next.
+//
+// A word of kompot 0.38 (§16.4). A client released before it does not run it (§2.1): the screen stays
+// as it was. That is acceptable here because no such client is in service — the page is served by
+// this binary and ships with it, and the desktop client is an instrument built from the same tree —
+// and because what a move changes also arrives as a frame on the live channel (Q-26).
+var refreshAnswer = map[string]any{"type": "refresh"}
 
 const seenURL = "/submit/seen"
