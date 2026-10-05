@@ -48,6 +48,10 @@
             "$ref": "#/$defs/KompotModifierNode"
           },
           "description": "The order of nodes matters — they are applied left to right"
+        },
+        "fallback": {
+          "$ref": "#/$defs/KompotComponent",
+          "description": "The equivalent for a reader that does not know this type (SPEC.md §2.1). A reader that knows the type ignores it"
         }
       },
       "required": [
@@ -97,6 +101,12 @@
         },
         "color": {
           "$ref": "#/$defs/ColorToken"
+        },
+        "role": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -237,7 +247,8 @@
           "const": "weight"
         },
         "value": {
-          "type": "number"
+          "type": "number",
+          "format": "float"
         }
       },
       "required": [

@@ -28,13 +28,15 @@
           "type": [
             "number",
             "null"
-          ]
+          ],
+          "format": "float"
         },
         "lineHeightSp": {
           "type": [
             "number",
             "null"
-          ]
+          ],
+          "format": "float"
         },
         "fontWeight": {
           "type": [
@@ -46,7 +48,8 @@
           "type": [
             "number",
             "null"
-          ]
+          ],
+          "format": "float"
         },
         "color": {
           "type": [

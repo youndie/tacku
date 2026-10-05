@@ -25,12 +25,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api("io.github.youndie:kompot-core:$kompotVersion")
-            api("io.github.youndie:form-core:$kompotVersion")
+            api("io.github.youndie.kompot:kompot-core:$kompotVersion")
+            api("io.github.youndie.kompot:form-core:$kompotVersion")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
         }
         jvmMain.dependencies {
-            implementation("io.github.youndie:kompot-spec:$kompotVersion")
+            implementation("io.github.youndie.kompot:kompot-spec:$kompotVersion")
         }
     }
 }

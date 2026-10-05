@@ -33,7 +33,8 @@
   packageRules: [
     {
       // NOT a bump to take on its own. The client is built on kompot, whose Compose modules are
-      // compiled against 1.11.1; a newer foundation beside the material3 they carry throws
+      // compiled against one line (1.12.1 with material3 1.12.0-alpha03 since kompot 0.38); a
+      // newer foundation beside the material3 they carry throws
       // AbstractMethodError inside a renderer — at RUNTIME, on the first screen with a text field,
       // with everything resolved and everything compiled. So this waits for kompot to move, and
       // the dashboard is where it waits rather than a pull request reopened every Monday.
@@ -52,18 +53,20 @@
       // kompot publishes a dozen coordinates under one version; a half-moved set is the failure
       // mode, and it also decides which Compose line the client can be on.
       //
-      // NAMED DOWN TO `kompot-` rather than the whole `io.github.youndie` group. The portfolio is
-      // migrating into that group — sborka and viddik are there already — and a pattern that ends
-      // at the group would quietly pull them into this rule, so a sborka bump would arrive labelled
-      // "kompot" and grouped with a release it has nothing to do with. Today nothing else under the
-      // group is used here, so this changes nothing and stops that later.
+      // THE GROUP IS kompot's OWN since 0.38 — `io.github.youndie.kompot`, which also carries the
+      // form-* modules the old `kompot-` prefix never matched, so the whole release is one group by
+      // construction. The old pattern stays for the reason the viddik rule keeps its first one: a
+      // pattern that matches nothing costs a comparison and cannot pull anything else in.
       description: "kompot is one release across every module it publishes",
-      matchPackageNames: ["/^io\\.github\\.youndie:kompot-/"],
+      matchPackageNames: [
+        "/^io\\.github\\.youndie\\.kompot:/",
+        "/^io\\.github\\.youndie:kompot-/",
+      ],
       groupName: "kompot",
     },
     {
       // BOTH GROUP NAMES, for the reason the preset names both sborka groups. The second is the
-      // one that matches today: this repository is on viddik 0.4.0, published under
+      // one that matches today: this repository is on viddik 0.7.0, published under
       // `io.github.youndie.viddik`. The first matches the plugin id as it was up to 0.3.3.19,
       // which is still on the snapshot server, and it stays because it cannot mislead — a
       // `matchPackageNames` pattern decides which pull requests are grouped together, not where a

@@ -7,7 +7,7 @@ val kompotVersion: String = property("kompot.version").toString()
 // The gate takes a report, not a server, so this module has no transport dependency and no
 // coroutines: it can be built and tested long before there is anything to run the kit against.
 dependencies {
-    api("io.github.youndie:kompot-tck:$kompotVersion")
+    api("io.github.youndie.kompot:kompot-tck:$kompotVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation("io.ktor:ktor-client-cio:3.6.0")
     // Ktor logs through SLF4J; without a binding every run opens with three lines of warning, and a

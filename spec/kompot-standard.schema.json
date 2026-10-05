@@ -7,17 +7,27 @@
   "x-kompot-contributes": {
     "KompotAction": {
       "close": "#/$defs/KompotActionClose",
+      "confirm": "#/$defs/KompotActionConfirm",
       "copy_text": "#/$defs/KompotActionCopyText",
       "load_page": "#/$defs/KompotActionLoadPage",
       "navigate": "#/$defs/KompotActionNavigate",
-      "open_url": "#/$defs/KompotActionOpenUrl"
+      "open_url": "#/$defs/KompotActionOpenUrl",
+      "present": "#/$defs/KompotActionPresent",
+      "refresh": "#/$defs/KompotActionRefresh",
+      "sequence": "#/$defs/KompotActionSequence",
+      "show_message": "#/$defs/KompotActionShowMessage"
     },
     "KompotComponent": {
+      "box": "#/$defs/KompotComponentBox",
       "button": "#/$defs/KompotComponentButton",
       "column": "#/$defs/KompotComponentColumn",
+      "divider": "#/$defs/KompotComponentDivider",
+      "expandable": "#/$defs/KompotComponentExpandable",
       "paginated_list": "#/$defs/KompotComponentPaginatedList",
       "row": "#/$defs/KompotComponentRow",
+      "spacer": "#/$defs/KompotComponentSpacer",
       "table": "#/$defs/KompotComponentTable",
+      "tabs": "#/$defs/KompotComponentTabs",
       "text": "#/$defs/KompotComponentText"
     }
   },
@@ -33,6 +43,46 @@
       },
       "required": [
         "type"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionConfirm": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "confirm",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "confirm"
+        },
+        "question": {
+          "type": "string"
+        },
+        "action": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirmLabel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cancelLabel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "question",
+        "action"
       ],
       "additionalProperties": true
     },
@@ -117,9 +167,148 @@
       ],
       "additionalProperties": true
     },
+    "KompotActionPresent": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "present",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "present"
+        },
+        "content": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "content"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionRefresh": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "refresh",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "refresh"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionSequence": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "sequence",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "sequence"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "actions"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionShowMessage": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "show_message",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "show_message"
+        },
+        "text": {
+          "type": "string"
+        },
+        "level": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actionLabel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/KompotAction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentBox": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "box",
+      "description": "Nodes laid over one another, in order: the first is the bottom layer. The box is as large as its children that do not fill it; a child whose size is `Fill` on an axis takes the box's extent there.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "box"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+          }
+        },
+        "alignment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where the layers sit in the box: `top_start` (default), `top_center`, `top_end`, `center_start`, `center`, `center_end`, `bottom_start`, `bottom_center` or `bottom_end`. An unfamiliar word means `top_start`."
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "children"
+      ],
+      "additionalProperties": true
+    },
     "KompotComponentButton": {
       "x-kompot-kind": "variant",
       "x-kompot-wire-type": "button",
+      "description": "A control that raises an action when pressed.",
       "type": "object",
       "properties": {
         "type": {
@@ -144,7 +333,15 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "Which of the client's button styles to use. An unfamiliar word draws the neutral one."
+        },
+        "accessibilityLabel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "What assistive technology announces for the button, when its words alone do not say what it does."
         }
       },
       "required": [
@@ -158,6 +355,7 @@
     "KompotComponentColumn": {
       "x-kompot-kind": "variant",
       "x-kompot-wire-type": "column",
+      "description": "A vertical stack of nodes. The root of most screens, and the only container that scrolls.",
       "type": "object",
       "properties": {
         "type": {
@@ -179,7 +377,8 @@
           }
         },
         "spacing": {
-          "type": "integer"
+          "type": "integer",
+          "description": "The gap between children, in density-independent pixels."
         },
         "action": {
           "anyOf": [
@@ -190,12 +389,105 @@
               "type": "null"
             }
           ]
+        },
+        "alignment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where the children sit across the column: `start` (default), `center` or `end`. An unfamiliar word means `start`."
+        },
+        "arrangement": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "How the children share the column's height: `start` (default), `center`, `end`, `space_between`, `space_around` or `space_evenly`. `spacing` stays the smallest gap. An unfamiliar word means `start`."
+        },
+        "accessibilityLabel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "What assistive technology announces for this container when it has an `action`, instead of reading its children."
         }
       },
       "required": [
         "type",
         "id",
         "children"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentDivider": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "divider",
+      "description": "A thin rule between neighbours, drawn across its parent's axis: horizontal in a column, vertical in a row. Its colour is the design system's unless the server names a token.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "divider"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "color": {
+          "anyOf": [
+            {
+              "$ref": "kompot-core.schema.json#/$defs/ColorToken"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The rule's colour; the design system's own when absent."
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentExpandable": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "expandable",
+      "description": "A section that opens and closes: [header] is always shown and toggles [content], on the client and without asking the server (SPEC.md §4.12). [expanded] is how it opens, re-applied only when a later version of the node carries a different value.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "expandable"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "header": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        },
+        "content": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        },
+        "expanded": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "header",
+        "content"
       ],
       "additionalProperties": true
     },
@@ -261,6 +553,7 @@
     "KompotComponentRow": {
       "x-kompot-kind": "variant",
       "x-kompot-wire-type": "row",
+      "description": "A horizontal row of nodes. Unlike a column it never scrolls: a row is one item of its parent.",
       "type": "object",
       "properties": {
         "type": {
@@ -282,7 +575,8 @@
           }
         },
         "spacing": {
-          "type": "integer"
+          "type": "integer",
+          "description": "The gap between children, in density-independent pixels."
         },
         "action": {
           "anyOf": [
@@ -293,12 +587,66 @@
               "type": "null"
             }
           ]
+        },
+        "alignment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where the children sit across the row — top, middle or bottom: `start` (default), `center` or `end`. An unfamiliar word means `start`."
+        },
+        "arrangement": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "How the children share the row's width: `start` (default), `center`, `end`, `space_between`, `space_around` or `space_evenly`. `spacing` stays the smallest gap. An unfamiliar word means `start`."
+        },
+        "scrollable": {
+          "type": "boolean",
+          "description": "Whether the row scrolls sideways when its children are wider than it. `weight` means nothing in a row that scrolls."
+        },
+        "accessibilityLabel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "What assistive technology announces for this container when it has an `action`, instead of reading its children."
         }
       },
       "required": [
         "type",
         "id",
         "children"
+      ],
+      "additionalProperties": true
+    },
+    "KompotComponentSpacer": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "spacer",
+      "description": "Empty room along its parent's axis: [size] dp of height in a column, of width in a row. A `weight` modifier makes it take its share instead — what pushes a button to the bottom of a fixed screen.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "spacer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "size": {
+          "type": "integer",
+          "description": "The room it takes along the parent's axis, in density-independent pixels."
+        }
+      },
+      "required": [
+        "type",
+        "id"
       ],
       "additionalProperties": true
     },
@@ -333,9 +681,46 @@
       ],
       "additionalProperties": true
     },
+    "KompotComponentTabs": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "tabs",
+      "description": "Tabs: a strip of titles and the content of the one selected, switched by the client without asking the server (SPEC.md §4.12). [selected] is where the screen opens; the client applies it again only when a later version of the node carries a different value, so a reload does not undo the reader's choice.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "tabs"
+        },
+        "id": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-core.schema.json#/$defs/KompotModifierNode"
+          }
+        },
+        "tabs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TabsItem"
+          }
+        },
+        "selected": {
+          "type": "integer",
+          "description": "The tab the screen opens on, counted from 0. Outside the list means the first."
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "tabs"
+      ],
+      "additionalProperties": true
+    },
     "KompotComponentText": {
       "x-kompot-kind": "variant",
       "x-kompot-wire-type": "text",
+      "description": "A run of words to show. The only node that carries copy, and every string a person reads is one.",
       "type": "object",
       "properties": {
         "type": {
@@ -383,10 +768,16 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "description": "How many lines the text may occupy before it is cut. Null lets it take as many as it needs."
         },
         "ellipsis": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Whether a cut is marked with an ellipsis. Only meaningful together with maxLines."
+        },
+        "heading": {
+          "type": "boolean",
+          "description": "Whether this text is a heading, for assistive technology to navigate by."
         }
       },
       "required": [
@@ -453,6 +844,23 @@
       },
       "required": [
         "cells"
+      ],
+      "additionalProperties": true
+    },
+    "TabsItem": {
+      "x-kompot-kind": "object",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "kompot-core.schema.json#/$defs/KompotComponent"
+        }
+      },
+      "required": [
+        "title",
+        "content"
       ],
       "additionalProperties": true
     },

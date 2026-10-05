@@ -131,6 +131,9 @@
           "$ref": "kompot-standard.schema.json#/$defs/KompotActionClose"
         },
         {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionConfirm"
+        },
+        {
           "$ref": "kompot-standard.schema.json#/$defs/KompotActionCopyText"
         },
         {
@@ -144,6 +147,18 @@
         },
         {
           "$ref": "kompot-commands.schema.json#/$defs/KompotActionPerform"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionPresent"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionRefresh"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionSequence"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotActionShowMessage"
         },
         {
           "$ref": "kompot-forms.schema.json#/$defs/KompotActionSubmitForm"
@@ -168,11 +183,16 @@
         "propertyName": "type",
         "mapping": {
           "close": "kompot-standard.schema.json#/$defs/KompotActionClose",
+          "confirm": "kompot-standard.schema.json#/$defs/KompotActionConfirm",
           "copy_text": "kompot-standard.schema.json#/$defs/KompotActionCopyText",
           "load_page": "kompot-standard.schema.json#/$defs/KompotActionLoadPage",
           "navigate": "kompot-standard.schema.json#/$defs/KompotActionNavigate",
           "open_url": "kompot-standard.schema.json#/$defs/KompotActionOpenUrl",
           "perform": "kompot-commands.schema.json#/$defs/KompotActionPerform",
+          "present": "kompot-standard.schema.json#/$defs/KompotActionPresent",
+          "refresh": "kompot-standard.schema.json#/$defs/KompotActionRefresh",
+          "sequence": "kompot-standard.schema.json#/$defs/KompotActionSequence",
+          "show_message": "kompot-standard.schema.json#/$defs/KompotActionShowMessage",
           "submit_form": "kompot-forms.schema.json#/$defs/KompotActionSubmitForm",
           "update_session": "kompot-auth.schema.json#/$defs/KompotActionUpdateSession",
           "wizard_back": "kompot-wizard.schema.json#/$defs/KompotActionWizardBack",
@@ -197,6 +217,9 @@
           "$ref": "kompot-forms.schema.json#/$defs/KompotComponentAutocompleteInput"
         },
         {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentBox"
+        },
+        {
           "$ref": "kompot-standard.schema.json#/$defs/KompotComponentButton"
         },
         {
@@ -204,6 +227,12 @@
         },
         {
           "$ref": "kompot-standard.schema.json#/$defs/KompotComponentColumn"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentDivider"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentExpandable"
         },
         {
           "$ref": "kompot-images.schema.json#/$defs/KompotComponentImage"
@@ -224,7 +253,13 @@
           "$ref": "kompot-forms.schema.json#/$defs/KompotComponentSelectInput"
         },
         {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentSpacer"
+        },
+        {
           "$ref": "kompot-standard.schema.json#/$defs/KompotComponentTable"
+        },
+        {
+          "$ref": "kompot-standard.schema.json#/$defs/KompotComponentTabs"
         },
         {
           "$ref": "kompot-standard.schema.json#/$defs/KompotComponentText"
@@ -244,16 +279,21 @@
         "mapping": {
           "amount_input": "kompot-forms.schema.json#/$defs/KompotComponentAmountInput",
           "autocomplete_input": "kompot-forms.schema.json#/$defs/KompotComponentAutocompleteInput",
+          "box": "kompot-standard.schema.json#/$defs/KompotComponentBox",
           "button": "kompot-standard.schema.json#/$defs/KompotComponentButton",
           "checkbox_input": "kompot-forms.schema.json#/$defs/KompotComponentCheckboxInput",
           "column": "kompot-standard.schema.json#/$defs/KompotComponentColumn",
+          "divider": "kompot-standard.schema.json#/$defs/KompotComponentDivider",
+          "expandable": "kompot-standard.schema.json#/$defs/KompotComponentExpandable",
           "image": "kompot-images.schema.json#/$defs/KompotComponentImage",
           "paginated_list": "kompot-standard.schema.json#/$defs/KompotComponentPaginatedList",
           "radio_group": "kompot-forms.schema.json#/$defs/KompotComponentRadioGroup",
           "read_only_field": "kompot-forms.schema.json#/$defs/KompotComponentReadOnlyField",
           "row": "kompot-standard.schema.json#/$defs/KompotComponentRow",
           "select_input": "kompot-forms.schema.json#/$defs/KompotComponentSelectInput",
+          "spacer": "kompot-standard.schema.json#/$defs/KompotComponentSpacer",
           "table": "kompot-standard.schema.json#/$defs/KompotComponentTable",
+          "tabs": "kompot-standard.schema.json#/$defs/KompotComponentTabs",
           "text": "kompot-standard.schema.json#/$defs/KompotComponentText",
           "text_input": "kompot-forms.schema.json#/$defs/KompotComponentTextInput",
           "wizard_screen": "kompot-wizard.schema.json#/$defs/KompotComponentWizardScreen",
