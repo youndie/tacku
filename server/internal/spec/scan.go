@@ -34,9 +34,14 @@ func (u Undeclared) String() string {
 // Visited counts the nodes of each hierarchy the walk actually reached, and it is there for the
 // same reason the conformance gate counts targets: a check that found nothing to look at proves
 // nothing, and without the count it is indistinguishable from a check that looked and was happy.
+//
+// Types breaks the same count down by wire type, hierarchy first. It answers a different question:
+// not "did the walk get there" but "which words did this response use" — which is what a server
+// that confines itself to what its client runs has to know (client_profile_test.go).
 type ScanResult struct {
 	Undeclared []Undeclared
 	Visited    map[string]int
+	Types      map[string]map[string]int
 }
 
 // NonDegrading names the hierarchies of this contract that have no runtime fallback — the ones
@@ -95,7 +100,7 @@ func (s *Spec) Scan(reference string, body []byte) (*ScanResult, error) {
 	}
 
 	sc := &scanner{spec: s, defs: map[string]map[string]json.RawMessage{},
-		result: &ScanResult{Visited: map[string]int{}}}
+		result: &ScanResult{Visited: map[string]int{}, Types: map[string]map[string]int{}}}
 
 	file, name, err := split("", reference)
 	if err != nil {
@@ -227,6 +232,10 @@ func (sc *scanner) hierarchy(instance any, file, name string, n node, path strin
 	wireType, _ := object[property].(string)
 
 	sc.result.Visited[name]++
+	if sc.result.Types[name] == nil {
+		sc.result.Types[name] = map[string]int{}
+	}
+	sc.result.Types[name][wireType]++
 
 	// Which mapping closes this hierarchy depends on who owns the closing. The open ones (§2.1,
 	// §2.2) are closed by the build, so the list is in the profile; KompotModifierNode is closed by
