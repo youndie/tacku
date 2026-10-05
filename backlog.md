@@ -62,7 +62,7 @@
 | [B-38](docs/backlog/B-38-visit-gap-measurement.md) `[ ]` | Померить порог визита в догоняющей ленте | P3 | M | B-27 |
 | [B-41](docs/backlog/B-41-confirmation-gate.md) `[ ]` | Шлюз подтверждения: опасное действие агента ждёт человека | P3 | L | B-16 |
 
-## Closed (47)
+## Closed (48)
 
 **Чем меряем**
 
@@ -125,6 +125,7 @@
 - [B-50](docs/backlog/B-50-roll-the-browser-onto-the-stand.md) `[x]` - Выкатить браузерный клиент на стенд
 - [B-52](docs/backlog/B-52-the-address-names-the-screen.md) `[x]` - Адрес называет экран: назад, перезагрузка, ссылка
 - [B-59](docs/backlog/B-59-adopt-kompot-0-39.md) `[x]` - Принять kompot 0.39: клиент, генератор спеки и Go-сервер уходят с 0.32
+- [B-60](docs/backlog/B-60-kompot-0-40-snapshot.md) `[x]` - Перейти на снапшот kompot 0.40 и ответить на две новые роли дизайн-системы
 
 <!-- END INDEX -->
 

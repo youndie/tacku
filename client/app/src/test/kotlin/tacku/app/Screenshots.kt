@@ -270,3 +270,36 @@ fun AStripeAsTallAsItsCard() =
           {"type":"column","id":"se","modifiers":[{"type":"background","color":"agent"},{"type":"size","width":"Fill"},{"type":"padding","start":3}],"children":[{"type":"column","id":"se-b","modifiers":[{"type":"background","color":"surface_field"},{"type":"size","width":"Fill"},{"type":"padding","all":10}],"children":[{"type":"text","id":"se-t","text":"two lines of text so the card has some height at all, and a little more so that it wraps onto a second line","style":"body"}]}]}]}
         """.trimIndent(),
     )
+
+/**
+ * Three lines that have to be one line.
+ *
+ * The first is painted by the server: an empty column with the `divider` token behind it, which is
+ * how every rule on every screen of this product is drawn. The other two are drawn by the toolkit —
+ * a `divider` with no colour of its own and a `table`, which the docs screens send for every table in
+ * a markdown file — and since 0.40 they ask the design system for their line through the `divider`
+ * surface role, and for the header row through `table_header` (SPEC §4.10, §6).
+ *
+ * A design system that does not answer those roles keeps Material's colour, and this one answered
+ * every role it did not name with a flat, transparent-outlined block — so the table's lines and the
+ * divider vanished, and its header turned into a block like the rest. No golden had a table in it,
+ * so nothing would have said so. If the three lines here ever stop being the same colour, the role
+ * is no longer answered.
+ */
+@ViddikScreenshot(name = "Does a drawn rule take the product divider", group = "Diagnostics", width = 520, height = 240)
+@Composable
+fun DrawnRule() =
+    Shot(
+        """
+        {"type":"column","id":"dr","spacing":10,"modifiers":[{"type":"size","width":"Fill"},{"type":"background","color":"surface_block"},{"type":"padding","all":16}],"children":[
+          {"type":"text","id":"dr-p","text":"painted: a column with the divider token","style":"label"},
+          {"type":"column","id":"dr-rule","modifiers":[{"type":"size","heightDp":1,"width":"Fill"},{"type":"background","color":"divider"}],"children":[]},
+          {"type":"text","id":"dr-d","text":"drawn: a divider with no colour","style":"label"},
+          {"type":"divider","id":"dr-div"},
+          {"type":"text","id":"dr-t","text":"drawn: a table","style":"label"},
+          {"type":"table","id":"dr-table","modifiers":[{"type":"size","width":"Fill"}],"rows":[
+            {"cells":["Field","Meaning"],"header":true},
+            {"cells":["status","Where the item stands"]},
+            {"cells":["blocked_by","What it waits for"]}]}]}
+        """.trimIndent(),
+    )
