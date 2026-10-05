@@ -69,7 +69,8 @@ class TackuDesignSystem(
      * The third key, and the one that ends a whole family of workarounds.
      *
      * A colour token answers a name the **server** sent; this answers a role the **client** knows —
-     * `button`, `field`, `read_only_field`, `container`, and a button's variant beside them. So the
+     * `button`, `field`, `read_only_field`, `container`, `divider`, `table_header`, and a button's
+     * variant beside them. So the
      * appearance of a control stays off the wire, which is the property worth protecting, while the
      * product still gets to decide what a control looks like. Until 0.22 there was no such place at
      * all: the shape of a Material button comes from `ButtonDefaults` rather than the theme, so
@@ -93,12 +94,31 @@ class TackuDesignSystem(
             // Flat and unbordered: a value is text on a block, not a control.
             "read_only_field" -> surface(container = color("surface_block"), content = resolved("value"))
 
+            // The line the toolkit draws itself: a `divider` with no colour, and a table's frame and
+            // row rules. Only the outline is read, and it is the token every rule this server paints
+            // is drawn with, so the two kinds of line stay one line. Named rather than left to the
+            // `else` below: that answers with a transparent outline, and since 0.40 asks this role,
+            // an answer of "transparent" erased every table line on the docs screens.
+            divider ->
+                KompotSurface(
+                    shape = square,
+                    container = Color.Transparent,
+                    content = resolved("body"),
+                    outline = color("divider"),
+                )
+
+            // The header row of a table: the field fill, which is what Material's surfaceVariant
+            // maps to in [materialColors], so the header looks as it did before the role existed.
+            tableHeader -> surface(container = color("surface_field"), content = resolved("value"))
+
             else -> surface(container = color("surface_block"), content = resolved("body"))
         }
 
     // Matched by key rather than by identity: the role for a variant is composed by the toolkit, so
     // asking it for the key is the only way to be sure of the one we answer to.
     private val primaryButton = KompotSurfaceRoles.button(VARIANT_PRIMARY).key
+    private val divider = KompotSurfaceRoles.Divider.key
+    private val tableHeader = KompotSurfaceRoles.TableHeader.key
 
     /**
      * Square, and never outlined.

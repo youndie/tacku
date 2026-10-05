@@ -26,6 +26,7 @@ class SnapshotCoverageTest {
             "Diagnostics_A_stripe_as_tall_as_its_card.png",
             "Diagnostics_Does_a_control_take_the_product_accent.png",
             "Diagnostics_Does_a_token_carry_colour.png",
+            "Diagnostics_Does_a_drawn_rule_take_the_product_divider.png",
             "States_Empty_column.png",
             "States_Provenance___agent_beside_a_person.png",
             "States_Refused_on_the_merits.png",
@@ -38,7 +39,7 @@ class SnapshotCoverageTest {
             // `Screens_Task`, `Screens_New_task` and the docs item screen are missing on purpose,
             // and this list is where that is said out loud: each carries a back link, the harness's
             // font has no `←`, and the host draws that one glyph — so everything after it sits
-            // differently on each machine. Twelve compared screens look exactly like fifteen from
+            // differently on each machine. Thirteen compared screens look exactly like sixteen from
             // the outside. B-51.
         )
 
