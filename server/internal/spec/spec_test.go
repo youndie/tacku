@@ -78,7 +78,10 @@ func TestProfileCarriesEveryHierarchy(t *testing.T) {
 		// Seventeen since kompot 0.38: `show_message`, `present`, `confirm`, `sequence` and
 		// `refresh` (§12.5, §16.4) — the answers to `perform` that used to be a `navigate` to the
 		// same screen or nothing at all.
-		"KompotAction":        17,
+		// Nineteen since kompot 0.40: `load`, a read answered with an action, and `update`, the
+		// answer that replaces nodes by id — the two calls besides `perform` that run what the
+		// server sends back.
+		"KompotAction":        19,
 		"FormFieldDefinition": 6,
 		"ValidationRule":      4,
 		"FieldValue":          4,
