@@ -56,6 +56,11 @@ object TckGate {
             // [notApplicable] rather than by a zero — see there.
             "patch",
             "updates-isolation",
+            // Fourteenth, arriving with kompot 0.40 and the `load` action, found the same way on the
+            // Renovate move to 0.40 (tacku#71). Unlike the two above it has a target here: it walks
+            // the same fetchable endpoints `perform` does and reads every `load` in their bodies, so
+            // it counts as many targets as `perform` while this server still sends no `load` at all.
+            "load",
         )
 
     /**

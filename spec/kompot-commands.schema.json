@@ -2,14 +2,36 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kompot.kotlin.website/schema/kompot-commands.schema.json",
   "title": "kompot-commands",
-  "description": "The action that performs an operation on one item of a list, with no form around it",
+  "description": "The actions that call the server and run its answer: perform, an operation on one item with no form around it; load, a read answered with an action; and update, the answer that replaces nodes by id",
   "x-kompot-generated-by": "KompotSchemaGenerator — this file is generated, do not edit by hand",
   "x-kompot-contributes": {
     "KompotAction": {
-      "perform": "#/$defs/KompotActionPerform"
+      "load": "#/$defs/KompotActionLoad",
+      "perform": "#/$defs/KompotActionPerform",
+      "update": "#/$defs/KompotActionUpdate"
     }
   },
   "$defs": {
+    "KompotActionLoad": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "load",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "load"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^/[^\\s#]*$",
+          "description": "The relative address of an endpoint of kind `load`: a GET answered with a KompotAction, which the client runs through the same handler chain as any other intent. It changes nothing, so it carries no Idempotency-Key. Of two loads pressed on one screen, the answer to the earlier is dropped (§16.4)"
+        }
+      },
+      "required": [
+        "type",
+        "url"
+      ],
+      "additionalProperties": true
+    },
     "KompotActionPerform": {
       "x-kompot-kind": "variant",
       "x-kompot-wire-type": "perform",
@@ -34,6 +56,46 @@
       "required": [
         "type",
         "url"
+      ],
+      "additionalProperties": true
+    },
+    "KompotActionUpdate": {
+      "x-kompot-kind": "variant",
+      "x-kompot-wire-type": "update",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "update"
+        },
+        "updates": {
+          "type": "array",
+          "items": {
+            "$ref": "kompot-realtime.schema.json#/$defs/UpdateComponentMessage"
+          },
+          "description": "Frames of §10, applied in order: of two frames for one id the later wins, and a frame for an id the screen does not have is ignored. A node's state under its id survives the replacement (§4.4)"
+        },
+        "deeplink": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9+.-]*://[^\\s]*$",
+          "not": {
+            "pattern": "^https?:"
+          },
+          "description": "The address of the screen after the update, by the rules of navigate.deeplink (§12.2). The client hands it to the application, which keeps the history; the toolkit does not navigate. Absent leaves the address as it was"
+        },
+        "history": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "How the deeplink enters the application's history: \"push\" (the default) or \"replace\". An open string: an unfamiliar word means \"push\""
+        }
+      },
+      "required": [
+        "type",
+        "updates"
       ],
       "additionalProperties": true
     }
