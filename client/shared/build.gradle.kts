@@ -52,9 +52,9 @@ kotlin {
             implementation("io.github.youndie.kompot:kompot-ds-material-compose:$kompotVersion")
             implementation("io.github.youndie.kompot:form-standard:$kompotVersion")
 
-            implementation("io.ktor:ktor-client-core:3.6.0")
-            implementation("io.ktor:ktor-client-content-negotiation:3.6.0")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.0")
+            implementation("io.ktor:ktor-client-core:3.6.1")
+            implementation("io.ktor:ktor-client-content-negotiation:3.6.1")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.1")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
@@ -71,7 +71,7 @@ kotlin {
             resources.srcDir(rootProject.file("resources"))
 
             dependencies {
-                implementation("io.ktor:ktor-client-cio:3.6.0")
+                implementation("io.ktor:ktor-client-cio:3.6.1")
             }
         }
 
@@ -80,7 +80,7 @@ kotlin {
         // browser's fetch here.
         val wasmJsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:3.6.0")
+                implementation("io.ktor:ktor-client-js:3.6.1")
             }
         }
     }
