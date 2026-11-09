@@ -67,10 +67,10 @@ dependencies {
     implementation("io.github.youndie.kompot:kompot-ds-material-compose:$kompotVersion")
     implementation("io.github.youndie.kompot:form-standard:$kompotVersion")
 
-    implementation("io.ktor:ktor-client-cio:3.6.0")
+    implementation("io.ktor:ktor-client-cio:3.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
-    implementation("io.ktor:ktor-client-content-negotiation:3.6.0")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.0")
+    implementation("io.ktor:ktor-client-content-negotiation:3.6.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     testImplementation(kotlin("test"))
@@ -82,7 +82,7 @@ dependencies {
     // An engine that answers for the server, so a refusal can be made to happen on purpose. The
     // session this product hands out lives five minutes; what happens at minute six is not
     // observable any other way without waiting five.
-    testImplementation("io.ktor:ktor-client-mock:3.6.0")
+    testImplementation("io.ktor:ktor-client-mock:3.6.1")
 
     // The wizard's wire types, for tests only: this deployment has no scenario endpoints yet
     // (B-39), so the client draws no wizard and the product does not need them. What the tests
