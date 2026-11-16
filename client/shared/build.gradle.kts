@@ -55,7 +55,7 @@ kotlin {
             implementation("io.ktor:ktor-client-core:3.6.1")
             implementation("io.ktor:ktor-client-content-negotiation:3.6.1")
             implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.1")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
             // Dates, because the date field offers "next Friday" and a browser has no java.time.
