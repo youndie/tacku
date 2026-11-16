@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":fields"))
     implementation("io.github.youndie.kompot:kompot-spec:$kompotVersion")
     implementation("io.github.youndie.kompot:form-standard-jvm:$kompotVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
 
     testImplementation(kotlin("test"))
 }

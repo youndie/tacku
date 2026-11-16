@@ -27,7 +27,7 @@ kotlin {
         commonMain.dependencies {
             api("io.github.youndie.kompot:kompot-core:$kompotVersion")
             api("io.github.youndie.kompot:form-core:$kompotVersion")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
         }
         jvmMain.dependencies {
             implementation("io.github.youndie.kompot:kompot-spec:$kompotVersion")

@@ -71,7 +71,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
     implementation("io.ktor:ktor-client-content-negotiation:3.6.1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
 
     testImplementation(kotlin("test"))
 
