@@ -5,8 +5,6 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        // Compose Multiplatform's plugin is published by JetBrains rather than to the portal.
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
 
@@ -24,7 +22,6 @@ dependencyResolutionManagement {
                 includeGroupAndSubgroups("com.google")
             }
         }
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         // `includeGroup` is an exact match. kompot publishes under a group of its own since 0.38
         // (io.github.youndie.kompot), and a filter naming only the owner's group does not admit it:
         // resolution then fails with "could not find" naming the artefact, not the filter.
